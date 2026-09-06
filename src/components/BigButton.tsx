@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
+import { GradientSurface } from './GradientSurface';
+import { font, gradientForColor, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
 
 type Props = {
   readonly label: string;
@@ -21,6 +22,10 @@ type Props = {
  * Every instance is at least `hitTarget` tall, carries a visible label, and
  * grows its own press feedback — small children press imprecisely and need to
  * see that something happened.
+ *
+ * Shadow lives on the outer `Pressable` and the gradient fill on an inner,
+ * clipped `View`: combining a shadow with `overflow: hidden` on the same
+ * layer clips the shadow itself on iOS, so the two are kept apart.
  */
 export function BigButton({
   label,
@@ -42,32 +47,40 @@ export function BigButton({
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
-        styles.base,
-        solid ? { backgroundColor: color } : styles.quiet,
+        styles.outer,
         pressed && !disabled && styles.pressed,
         disabled && styles.disabled,
         style,
       ]}
     >
-      <View style={styles.row}>
-        {icon ? <Text style={styles.icon}>{icon}</Text> : null}
-        <Text style={[styles.label, solid ? styles.labelSolid : { color: palette.ink }]}>
-          {label}
-        </Text>
+      <View style={[styles.inner, solid ? undefined : styles.quiet]}>
+        {solid ? <GradientSurface colors={gradientForColor(color)} style={StyleSheet.absoluteFill} /> : null}
+        <View style={styles.row}>
+          {icon ? <Text style={styles.icon}>{icon}</Text> : null}
+          <Text style={[styles.label, solid ? styles.labelSolid : { color: palette.ink }]}>
+            {label}
+          </Text>
+        </View>
       </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  base: {
+  outer: {
+    minHeight: hitTarget,
+    borderRadius: radius.lg,
+    ...shadow,
+  },
+  inner: {
+    flex: 1,
     minHeight: hitTarget,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: space.lg,
     paddingVertical: space.md,
     borderRadius: radius.lg,
-    ...shadow,
+    overflow: 'hidden',
   },
   quiet: {
     backgroundColor: palette.surface,
@@ -76,8 +89,8 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   icon: { fontSize: font.label },
-  label: { fontSize: font.label, fontWeight: '700', textAlign: 'center' },
+  label: { fontSize: font.label, fontWeight: '800', textAlign: 'center' },
   labelSolid: { color: '#FFFFFF' },
-  pressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
+  pressed: { transform: [{ scale: 0.96 }], opacity: 0.92 },
   disabled: { opacity: 0.4 },
 });

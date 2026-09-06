@@ -2,8 +2,9 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '../components/BigButton';
+import { GradientSurface } from '../components/GradientSurface';
 import { Screen } from '../components/Screen';
-import { font, palette, radius, shadow, space } from '../theme/tokens';
+import { font, gradients, palette, radius, shadowFloating, space } from '../theme/tokens';
 
 /**
  * Shown when a screen-time limit is reached.
@@ -26,8 +27,26 @@ export function TimeUpScreen({
 
   return (
     <Screen>
-      <View style={styles.root}>
-        <Text style={styles.icon}>🌙</Text>
+      <GradientSurface colors={gradients.bg} style={styles.root}>
+        <Text
+          style={styles.floatLeft}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        >
+          💤
+        </Text>
+        <Text
+          style={styles.floatRight}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        >
+          ⭐
+        </Text>
+
+        <View style={styles.iconBadge}>
+          <Text style={styles.icon}>🌙</Text>
+        </View>
+
         <Text style={styles.title} accessibilityRole="header">
           All done for now
         </Text>
@@ -40,7 +59,7 @@ export function TimeUpScreen({
           onPress={onOpenParentZone}
           style={styles.button}
         />
-      </View>
+      </GradientSurface>
     </Screen>
   );
 }
@@ -51,11 +70,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.lg,
-    backgroundColor: palette.surface,
-    borderRadius: radius.lg,
-    ...shadow,
+    borderRadius: radius.xl,
+    overflow: 'hidden',
+    ...shadowFloating,
   },
-  icon: { fontSize: 90, marginBottom: space.md },
+  floatLeft: { position: 'absolute', top: '12%', left: '10%', fontSize: 34, opacity: 0.6 },
+  floatRight: { position: 'absolute', bottom: '15%', right: '12%', fontSize: 30, opacity: 0.6 },
+  iconBadge: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: space.md,
+  },
+  icon: { fontSize: 72 },
   title: { fontSize: font.title, fontWeight: '800', color: palette.ink, textAlign: 'center' },
   body: {
     fontSize: font.body,

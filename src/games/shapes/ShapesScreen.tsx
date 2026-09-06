@@ -9,7 +9,7 @@ import { font, palette, radius, shadow, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, currentItem, isMatch, place, type ShapesState } from './logic';
-import { describe, Shape } from './Shape';
+import { describe, SHAPE_COLORS, Shape } from './Shape';
 
 export function ShapesScreen({ level, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
@@ -37,19 +37,28 @@ export function ShapesScreen({ level, onRoundComplete, onExit }: GameScreenProps
   const stars = starsForMistakes(state.mistakes);
   const progress = state.queue.length ? state.placed / state.queue.length : 0;
   const rule = state.sortBy === 'shape' ? 'Match the shape' : 'Match the colour';
+  const ruleIcon = state.sortBy === 'shape' ? '🔺' : '🎨';
 
   return (
     <GameFrame title="Sort It Out" icon="🔺" onExit={onExit} progress={progress}>
-      <Text style={styles.rule} accessibilityRole="header">
-        {rule}
-      </Text>
+      <View style={styles.ruleBadge}>
+        <Text style={styles.ruleIcon}>{ruleIcon}</Text>
+        <Text style={styles.rule} accessibilityRole="header">
+          {rule}
+        </Text>
+      </View>
 
-      <View style={styles.stage}>
-        {item ? (
-          <View accessibilityLabel={`Sort this ${describe(item.shape, item.color)}`}>
-            <Shape shape={item.shape} color={item.color} size={150} />
-          </View>
-        ) : null}
+      <View style={styles.stageOuter}>
+        <View style={styles.stageInner}>
+          <Text style={styles.stageRing} accessibilityElementsHidden importantForAccessibility="no">
+            ⭕
+          </Text>
+          {item ? (
+            <View accessibilityLabel={`Sort this ${describe(item.shape, item.color)}`}>
+              <Shape shape={item.shape} color={item.color} size={150} />
+            </View>
+          ) : null}
+        </View>
       </View>
 
       <View style={styles.baskets}>
@@ -63,9 +72,18 @@ export function ShapesScreen({ level, onRoundComplete, onExit }: GameScreenProps
                 : describe(basket.shape, basket.color).split(' ')[0]
             }`}
             onPress={() => onDrop(index)}
-            style={({ pressed }) => [styles.basket, pressed && styles.pressed]}
+            style={({ pressed }) => [
+              styles.basketOuter,
+              { borderColor: SHAPE_COLORS[basket.color] },
+              pressed && styles.pressed,
+            ]}
           >
-            <Shape shape={basket.shape} color={basket.color} size={54} />
+            <View style={styles.basketInner}>
+              <Text style={styles.basketGlyph} accessibilityElementsHidden importantForAccessibility="no">
+                🧺
+              </Text>
+              <Shape shape={basket.shape} color={basket.color} size={50} />
+            </View>
           </Pressable>
         ))}
       </View>
@@ -89,23 +107,31 @@ export function ShapesScreen({ level, onRoundComplete, onExit }: GameScreenProps
 }
 
 const styles = StyleSheet.create({
-  rule: {
-    fontSize: font.label,
-    fontWeight: '800',
-    color: palette.ink,
-    textAlign: 'center',
+  ruleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.xs,
+    alignSelf: 'center',
+    backgroundColor: palette.surface,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
     marginBottom: space.sm,
+    ...shadow,
   },
-  stage: {
+  ruleIcon: { fontSize: font.body },
+  rule: { fontSize: font.body, fontWeight: '800', color: palette.ink },
+  stageOuter: { flex: 1, borderRadius: radius.lg, marginBottom: space.md, ...shadow },
+  stageInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: palette.surface,
     borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: palette.border,
-    marginBottom: space.md,
+    overflow: 'hidden',
   },
+  stageRing: { position: 'absolute', fontSize: 220, opacity: 0.05 },
   baskets: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -113,17 +139,21 @@ const styles = StyleSheet.create({
     paddingBottom: space.md,
     flexWrap: 'wrap',
   },
-  basket: {
+  basketOuter: {
     width: 104,
     height: 104,
+    borderRadius: radius.md,
+    borderWidth: 4,
+    ...shadow,
+  },
+  basketInner: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: palette.surfaceAlt,
-    borderRadius: radius.md,
-    borderWidth: 4,
-    borderColor: palette.border,
-    borderStyle: 'dashed',
-    ...shadow,
+    borderRadius: radius.md - 2,
+    overflow: 'hidden',
   },
-  pressed: { transform: [{ scale: 0.94 }], borderColor: palette.ink },
+  basketGlyph: { position: 'absolute', fontSize: 70, opacity: 0.12 },
+  pressed: { transform: [{ scale: 0.94 }] },
 });

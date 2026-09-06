@@ -1,19 +1,38 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, type DimensionValue } from 'react-native';
 
+import { GradientSurface } from '../components/GradientSurface';
 import { Screen } from '../components/Screen';
 import { GAMES } from '../games/registry';
 import { tap } from '../feedback/feedback';
 import { useApp } from '../state/AppProvider';
 import { progressFor, totalStars } from '../state/progress';
-import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
+import {
+  font,
+  gradientForColor,
+  hitTarget,
+  palette,
+  radius,
+  shadow,
+  space,
+} from '../theme/tokens';
+
+/** Fixed, decorative-only positions for the floating sparkles behind the
+ *  header. Fixed rather than random so the layout never jumps between
+ *  renders. */
+const SPARKLES: readonly { readonly emoji: string; readonly top: number; readonly left: DimensionValue }[] = [
+  { emoji: '✨', top: 2, left: '78%' },
+  { emoji: '🌟', top: 46, left: '90%' },
+  { emoji: '🎈', top: 70, left: '8%' },
+];
 
 /**
  * The child's home.
  *
- * Each game is one large card carrying an icon, a colour, and a name. A
- * pre-reader picks by icon and colour; nothing here requires reading. There is
- * no store, no "more games" link, no promotion of anything outside this app.
+ * Each game is one large gradient card carrying an icon, a colour, and a
+ * name. A pre-reader picks by icon and colour; nothing here requires reading.
+ * There is no store, no "more games" link, no promotion of anything outside
+ * this app.
  */
 export function HomeScreen({
   onOpenGame,
@@ -28,13 +47,24 @@ export function HomeScreen({
   return (
     <Screen>
       <View style={styles.header}>
+        {SPARKLES.map((s, i) => (
+          <Text
+            key={i}
+            style={[styles.sparkle, { top: s.top, left: s.left }]}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          >
+            {s.emoji}
+          </Text>
+        ))}
+
         <View style={styles.headerText}>
           <Text style={styles.title} accessibilityRole="header">
-            Games 4 All
+            Games 4 All 👋
           </Text>
-          <Text style={styles.stars} accessibilityLabel={`${stars} stars collected`}>
-            ⭐ {stars}
-          </Text>
+          <View style={styles.starBadge} accessibilityLabel={`${stars} stars collected`}>
+            <Text style={styles.starBadgeText}>⭐ {stars}</Text>
+          </View>
         </View>
 
         <Pressable
@@ -51,6 +81,8 @@ export function HomeScreen({
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {GAMES.map((game) => {
           const gp = progressFor(progress, game.id);
+          const earnedPips = Math.min(3, Math.ceil(gp.stars / 5));
+
           return (
             <Pressable
               key={game.id}
@@ -60,17 +92,19 @@ export function HomeScreen({
                 tap(settings);
                 onOpenGame(game.id);
               }}
-              style={({ pressed }) => [
-                styles.card,
-                { backgroundColor: game.color },
-                pressed && styles.cardPressed,
-              ]}
+              style={({ pressed }) => [styles.cardOuter, pressed && styles.cardPressed]}
             >
-              <Text style={styles.cardIcon}>{game.icon}</Text>
-              <View style={styles.cardText}>
-                <Text style={styles.cardTitle}>{game.title}</Text>
-                <Text style={styles.cardStars}>{'⭐'.repeat(Math.min(3, Math.ceil(gp.stars / 5)))}</Text>
-              </View>
+              <GradientSurface colors={gradientForColor(game.color)} style={styles.card}>
+                <View style={styles.cardIconWrap}>
+                  <Text style={styles.cardIcon}>{game.icon}</Text>
+                </View>
+                <View style={styles.cardText}>
+                  <Text style={styles.cardTitle}>{game.title}</Text>
+                  <Text style={styles.cardStars} accessibilityElementsHidden importantForAccessibility="no">
+                    {earnedPips > 0 ? '⭐'.repeat(earnedPips) : 'Tap to play 🚀'}
+                  </Text>
+                </View>
+              </GradientSurface>
             </Pressable>
           );
         })}
@@ -84,11 +118,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: space.md,
+    minHeight: 100,
+    marginBottom: space.xs,
   },
-  headerText: { flex: 1 },
+  sparkle: { position: 'absolute', fontSize: 22, opacity: 0.7 },
+  headerText: { flex: 1, gap: space.xs },
   title: { fontSize: font.title, fontWeight: '800', color: palette.ink },
-  stars: { fontSize: font.body, color: palette.inkSoft, marginTop: 2 },
+  starBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: palette.sunLight,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+  },
+  starBadgeText: { fontSize: font.body - 3, fontWeight: '800', color: palette.ink },
   parentButton: {
     width: hitTarget,
     height: hitTarget,
@@ -98,22 +141,31 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surface,
     borderWidth: 2,
     borderColor: palette.border,
+    ...shadow,
   },
   parentIcon: { fontSize: 30 },
   pressed: { opacity: 0.6 },
   list: { gap: space.md, paddingBottom: space.xl },
+  cardOuter: { borderRadius: radius.xl, ...shadow },
+  cardPressed: { transform: [{ scale: 0.97 }], opacity: 0.94 },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
-    minHeight: 132,
+    minHeight: 136,
     padding: space.lg,
-    borderRadius: radius.lg,
-    ...shadow,
+    borderRadius: radius.xl,
   },
-  cardPressed: { transform: [{ scale: 0.97 }], opacity: 0.92 },
-  cardIcon: { fontSize: 60 },
-  cardText: { flex: 1 },
+  cardIconWrap: {
+    width: 78,
+    height: 78,
+    borderRadius: radius.lg,
+    backgroundColor: 'rgba(255,255,255,0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardIcon: { fontSize: 46 },
+  cardText: { flex: 1, gap: space.xs },
   cardTitle: { fontSize: font.title - 4, fontWeight: '800', color: '#FFFFFF' },
-  cardStars: { fontSize: font.body, marginTop: space.xs },
+  cardStars: { fontSize: font.body - 2, fontWeight: '700', color: 'rgba(255,255,255,0.92)' },
 });

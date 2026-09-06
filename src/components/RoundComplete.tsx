@@ -1,8 +1,35 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View, type DimensionValue } from 'react-native';
 
 import { BigButton } from './BigButton';
-import { font, palette, radius, shadow, space } from '../theme/tokens';
+import { GradientSurface } from './GradientSurface';
+import { font, gradients, palette, radius, shadowFloating, space } from '../theme/tokens';
+
+/** Praise scales with effort, never with failure — even one star gets a warm
+ *  headline, since finishing a round is always worth celebrating. */
+const PRAISE: readonly { readonly hero: string; readonly text: string }[] = [
+  { hero: '👍', text: 'Nice try!' },
+  { hero: '🎉', text: 'Great job!' },
+  { hero: '🎉', text: 'Great job!' },
+  { hero: '🏆', text: 'Amazing!' },
+];
+
+/** Decorative confetti around the card. Fixed positions, not random, so the
+ *  layout is stable across renders and re-renders don't jitter. */
+const CONFETTI: readonly {
+  readonly emoji: string;
+  readonly left: DimensionValue;
+  readonly top?: DimensionValue;
+  readonly bottom?: DimensionValue;
+}[] = [
+  { emoji: '✨', top: '-3%', left: '8%' },
+  { emoji: '🎈', top: '-4%', left: '80%' },
+  // Anchored from the bottom edge rather than a top percentage, so these sit
+  // just outside the card instead of drifting over the button row as the
+  // card's height changes with content.
+  { emoji: '🌟', bottom: '-3%', left: '4%' },
+  { emoji: '🎊', bottom: '-4%', left: '84%' },
+];
 
 /**
  * End-of-round celebration.
@@ -24,6 +51,7 @@ export function RoundComplete({
   readonly reduceMotion: boolean;
 }) {
   const pop = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
+  const { hero, text } = PRAISE[Math.max(0, Math.min(PRAISE.length - 1, stars))];
 
   useEffect(() => {
     if (reduceMotion) {
@@ -35,24 +63,38 @@ export function RoundComplete({
 
   return (
     <View style={styles.overlay}>
-      <Animated.View style={[styles.card, { transform: [{ scale: pop }] }]}>
-        <Text style={styles.hero} accessibilityElementsHidden importantForAccessibility="no">
-          🎉
-        </Text>
+      <Animated.View style={[styles.cardOuter, { transform: [{ scale: pop }] }]}>
+        {!reduceMotion &&
+          CONFETTI.map((c, i) => (
+            <Text
+              key={i}
+              style={[styles.confetti, { top: c.top, bottom: c.bottom, left: c.left }]}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            >
+              {c.emoji}
+            </Text>
+          ))}
 
-        <Text style={styles.praise} accessibilityRole="header">
-          Nice work!
-        </Text>
+        <GradientSurface colors={gradients.bg} style={styles.card}>
+          <Text style={styles.hero} accessibilityElementsHidden importantForAccessibility="no">
+            {hero}
+          </Text>
 
-        <Text
-          style={styles.stars}
-          accessibilityLabel={`You earned ${stars} ${stars === 1 ? 'star' : 'stars'}`}
-        >
-          {'⭐'.repeat(stars)}
-        </Text>
+          <Text style={styles.praise} accessibilityRole="header">
+            {text}
+          </Text>
 
-        <BigButton label="Play again" icon="🔁" onPress={onPlayAgain} color={palette.leaf} />
-        <BigButton label="Back to games" icon="🏠" onPress={onExit} tone="quiet" style={styles.gap} />
+          <Text
+            style={styles.stars}
+            accessibilityLabel={`You earned ${stars} ${stars === 1 ? 'star' : 'stars'}`}
+          >
+            {'⭐'.repeat(stars)}
+          </Text>
+
+          <BigButton label="Play again" icon="🔁" onPress={onPlayAgain} color={palette.leaf} />
+          <BigButton label="Back to games" icon="🏠" onPress={onExit} tone="quiet" style={styles.gap} />
+        </GradientSurface>
       </Animated.View>
     </View>
   );
@@ -70,14 +112,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: space.lg,
   },
-  card: {
+  cardOuter: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: palette.surface,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
+    ...shadowFloating,
+  },
+  confetti: { position: 'absolute', fontSize: 30, zIndex: 1 },
+  card: {
+    borderRadius: radius.xl,
     padding: space.lg,
     alignItems: 'stretch',
-    ...shadow,
+    overflow: 'hidden',
   },
   hero: { fontSize: font.hero, textAlign: 'center' },
   praise: {

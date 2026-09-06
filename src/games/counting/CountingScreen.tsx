@@ -2,10 +2,11 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
+import { GradientSurface } from '../../components/GradientSurface';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
+import { font, gradients, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { starsForMistakes, type GameScreenProps } from '../types';
 import { answer, createGame, QUESTIONS_PER_ROUND, type CountingState } from './logic';
@@ -44,16 +45,15 @@ export function CountingScreen({ level, onRoundComplete, onExit }: GameScreenPro
 
   return (
     <GameFrame title="How Many?" icon="🔢" onExit={onExit} progress={progress}>
-      <View style={styles.stage}>
-        <View
-          style={styles.objects}
-          accessibilityLabel={`${state.question.count} objects to count`}
-        >
-          {Array.from({ length: state.question.count }, (_, i) => (
-            <Text key={i} style={[styles.object, { fontSize: objectSize, lineHeight: objectSize * 1.2 }]}>
-              {state.question.symbol}
-            </Text>
-          ))}
+      <View style={styles.stageOuter}>
+        <View style={styles.stageInner}>
+          <View style={styles.objects} accessibilityLabel={`${state.question.count} objects to count`}>
+            {Array.from({ length: state.question.count }, (_, i) => (
+              <Text key={i} style={[styles.object, { fontSize: objectSize, lineHeight: objectSize * 1.2 }]}>
+                {state.question.symbol}
+              </Text>
+            ))}
+          </View>
         </View>
       </View>
 
@@ -69,12 +69,20 @@ export function CountingScreen({ level, onRoundComplete, onExit }: GameScreenPro
               disabled={isRuledOut}
               onPress={() => onChoose(choice)}
               style={({ pressed }) => [
-                styles.choice,
-                isRuledOut && styles.ruledOut,
+                styles.choiceOuter,
                 pressed && !isRuledOut && styles.pressed,
+                isRuledOut && styles.ruledOutOuter,
               ]}
             >
-              <Text style={[styles.choiceText, isRuledOut && styles.ruledOutText]}>{choice}</Text>
+              {isRuledOut ? (
+                <View style={[styles.choiceInner, styles.ruledOut]}>
+                  <Text style={[styles.choiceText, styles.ruledOutText]}>{choice}</Text>
+                </View>
+              ) : (
+                <GradientSurface colors={gradients.sun} style={styles.choiceInner}>
+                  <Text style={styles.choiceText}>{choice}</Text>
+                </GradientSurface>
+              )}
             </Pressable>
           );
         })}
@@ -99,30 +107,29 @@ export function CountingScreen({ level, onRoundComplete, onExit }: GameScreenPro
 }
 
 const styles = StyleSheet.create({
-  stage: {
+  stageOuter: { flex: 1, borderRadius: radius.lg, marginBottom: space.md, ...shadow },
+  stageInner: {
     flex: 1,
     justifyContent: 'center',
     backgroundColor: palette.surface,
     borderRadius: radius.lg,
-    borderWidth: 2,
-    borderColor: palette.border,
     padding: space.md,
-    marginBottom: space.md,
+    overflow: 'hidden',
   },
   objects: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm },
   object: { textAlign: 'center' },
   choices: { flexDirection: 'row', justifyContent: 'center', gap: space.md, paddingBottom: space.md },
-  choice: {
-    minWidth: hitTarget + 16,
-    minHeight: hitTarget + 16,
+  choiceOuter: { minWidth: hitTarget + 16, minHeight: hitTarget + 16, borderRadius: radius.lg, ...shadow },
+  ruledOutOuter: { shadowOpacity: 0, elevation: 0 },
+  choiceInner: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: palette.sun,
     borderRadius: radius.lg,
-    ...shadow,
+    overflow: 'hidden',
   },
-  choiceText: { fontSize: font.title + 8, fontWeight: '800', color: palette.ink },
-  ruledOut: { backgroundColor: palette.surfaceAlt, opacity: 0.6 },
+  choiceText: { fontSize: font.title + 8, fontWeight: '800', color: '#FFFFFF' },
+  ruledOut: { backgroundColor: palette.surfaceAlt },
   ruledOutText: { color: palette.inkSoft },
   pressed: { transform: [{ scale: 0.95 }] },
 });

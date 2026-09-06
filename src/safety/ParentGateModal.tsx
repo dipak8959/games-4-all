@@ -2,7 +2,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '../components/BigButton';
-import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
+import { GradientSurface } from '../components/GradientSurface';
+import { font, gradients, hitTarget, palette, radius, shadow, shadowFloating, space } from '../theme/tokens';
 import { systemRng } from '../util/random';
 import { createChallenge, isCorrect } from './parentGate';
 
@@ -43,7 +44,7 @@ export function ParentGateModal({
       <View style={styles.overlay}>
         <View style={styles.card}>
           <Text style={styles.title} accessibilityRole="header">
-            Grown-ups only
+            🔒 Grown-ups only
           </Text>
           <Text style={styles.body}>Answer to continue.</Text>
 
@@ -53,7 +54,7 @@ export function ParentGateModal({
 
           {wrong ? (
             <Text style={styles.wrong} accessibilityLiveRegion="polite">
-              Not quite — here is a new one.
+              🤔 Not quite — here is a new one.
             </Text>
           ) : null}
 
@@ -64,9 +65,11 @@ export function ParentGateModal({
                 accessibilityRole="button"
                 accessibilityLabel={`${choice}`}
                 onPress={() => choose(choice)}
-                style={({ pressed }) => [styles.choice, pressed && styles.pressed]}
+                style={({ pressed }) => [styles.choiceOuter, pressed && styles.pressed]}
               >
-                <Text style={styles.choiceText}>{choice}</Text>
+                <GradientSurface colors={gradients.deep} style={styles.choice}>
+                  <Text style={styles.choiceText}>{choice}</Text>
+                </GradientSurface>
               </Pressable>
             ))}
           </View>
@@ -90,9 +93,9 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 420,
     backgroundColor: palette.surface,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     padding: space.lg,
-    ...shadow,
+    ...shadowFloating,
   },
   title: { fontSize: font.title, fontWeight: '800', color: palette.ink, textAlign: 'center' },
   body: { fontSize: font.body, color: palette.inkSoft, textAlign: 'center', marginTop: space.xs },
@@ -111,17 +114,15 @@ const styles = StyleSheet.create({
     gap: space.sm,
     marginBottom: space.md,
   },
+  choiceOuter: { borderRadius: radius.md, ...shadow },
+  pressed: { transform: [{ scale: 0.95 }], opacity: 0.92 },
   choice: {
     minWidth: hitTarget + 24,
     minHeight: hitTarget,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: space.md,
-    backgroundColor: palette.surfaceAlt,
     borderRadius: radius.md,
-    borderWidth: 2,
-    borderColor: palette.border,
   },
-  choiceText: { fontSize: font.title, fontWeight: '700', color: palette.ink },
-  pressed: { backgroundColor: palette.border },
+  choiceText: { fontSize: font.title, fontWeight: '800', color: '#FFFFFF' },
 });

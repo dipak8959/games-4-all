@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
+import { GradientSurface } from '../../components/GradientSurface';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, palette, playColors, radius, shadow, space } from '../../theme/tokens';
+import { font, gradients, palette, playColors, radius, shadow, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, flip, hasPendingPair, resolvePair, type MemoryState } from './logic';
@@ -77,6 +78,8 @@ export function MemoryScreen({ level, onRoundComplete, onExit }: GameScreenProps
       <View style={[styles.grid, { maxWidth: columns * (size + space.sm) }]}>
         {state.cards.map((card, index) => {
           const visible = card.faceUp || card.matched;
+          const accent = playColors[card.colorIndex % playColors.length];
+
           return (
             <Pressable
               key={card.id}
@@ -85,18 +88,22 @@ export function MemoryScreen({ level, onRoundComplete, onExit }: GameScreenProps
               accessibilityState={{ selected: visible, disabled: card.matched }}
               onPress={() => onFlip(index)}
               style={({ pressed }) => [
-                styles.card,
-                { width: size, height: size },
-                visible
-                  ? { backgroundColor: palette.surface, borderColor: playColors[card.colorIndex % playColors.length] }
-                  : styles.faceDown,
+                styles.cardOuter,
+                { width: size, height: size, borderColor: visible ? accent : palette.deep },
                 card.matched && styles.matched,
                 pressed && !visible && styles.pressed,
               ]}
             >
-              <Text style={[styles.symbol, { fontSize: size * 0.5 }]}>
-                {visible ? card.symbol : '❓'}
-              </Text>
+              <View style={styles.cardInner}>
+                {visible ? (
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.surface }]} />
+                ) : (
+                  <GradientSurface colors={gradients.sky} style={StyleSheet.absoluteFill} />
+                )}
+                <Text style={[styles.symbol, { fontSize: size * 0.5 }]}>
+                  {visible ? card.symbol : '❓'}
+                </Text>
+              </View>
             </Pressable>
           );
         })}
@@ -130,14 +137,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flex: 1,
   },
-  card: {
-    borderRadius: radius.md,
+  cardOuter: { borderRadius: radius.md, borderWidth: 4, ...shadow },
+  cardInner: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 4,
-    ...shadow,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
   },
-  faceDown: { backgroundColor: palette.sky, borderColor: palette.deep },
   matched: { opacity: 0.55 },
   pressed: { transform: [{ scale: 0.95 }] },
   symbol: { fontSize: font.title },

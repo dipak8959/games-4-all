@@ -40,14 +40,14 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header">
-          Parent Zone
+        <Text style={styles.title} accessibilityRole="header" numberOfLines={1} ellipsizeMode="tail">
+          🛠️ Parent Zone
         </Text>
         <BigButton label="Done" onPress={onClose} tone="quiet" style={styles.done} />
       </View>
 
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-        <Section title="Screen time">
+        <Section title="⏰ Screen time">
           <Text style={styles.caption}>
             Played today: {formatMinutes(usage.playedTodayMs)}
           </Text>
@@ -64,7 +64,7 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
           />
         </Section>
 
-        <Section title="Play">
+        <Section title="🎮 Play">
           <Toggle
             label="Sound effects"
             value={settings.soundOn}
@@ -94,7 +94,7 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
           </View>
         </Section>
 
-        <Section title="What each game practises">
+        <Section title="🧩 What each game practises">
           {GAMES.map((game) => {
             const gp = progressFor(progress, game.id);
             return (
@@ -114,7 +114,7 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
           })}
         </Section>
 
-        <Section title="Privacy">
+        <Section title="🔐 Privacy">
           <Text style={styles.privacy}>
             This app works entirely offline. It has no ads, no in-app purchases, no accounts,
             no analytics, and no third-party trackers. It does not ask for any device
@@ -227,12 +227,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: space.md,
   },
-  title: { fontSize: font.title, fontWeight: '800', color: palette.ink },
-  done: { paddingHorizontal: space.lg },
+  title: { flex: 1, flexShrink: 1, fontSize: font.title - 8, fontWeight: '800', color: palette.ink },
+  done: { paddingHorizontal: space.md, marginLeft: space.sm },
   body: { paddingBottom: space.xxl, gap: space.md },
   section: {
     backgroundColor: palette.surface,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     padding: space.md,
     gap: space.sm,
     ...shadow,

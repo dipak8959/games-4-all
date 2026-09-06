@@ -63,11 +63,11 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
   );
 
   const restart = useCallback(
-    (atLevel: number) => {
+    (atLevel: number, avoidSymbols: ReadonlySet<string>) => {
       clearTimer();
       setDone(false);
       setLevel(atLevel);
-      setState(createGame(systemRng, atLevel));
+      setState(createGame(systemRng, atLevel, avoidSymbols));
     },
     [clearTimer],
   );
@@ -124,7 +124,8 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
           onPlayAgain={() => {
             const stars = starsForMistakes(state.mistakes);
             onRoundComplete({ stars, level });
-            restart(nextLevel(level, stars));
+            const usedSymbols = new Set(state.cards.map((c) => c.symbol));
+            restart(nextLevel(level, stars), usedSymbols);
           }}
           onExit={() => {
             onRoundComplete({ stars: starsForMistakes(state.mistakes), level });

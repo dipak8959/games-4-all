@@ -8,7 +8,16 @@ import { useApp } from '../../state/AppProvider';
 import { font, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
-import { createGame, currentItem, isMatch, place, type Basket, type ShapesState } from './logic';
+import {
+  createGame,
+  currentItem,
+  historyFrom,
+  isMatch,
+  place,
+  type Basket,
+  type ShapesHistory,
+  type ShapesState,
+} from './logic';
 import { describe, SHAPE_COLORS, Shape } from './Shape';
 
 /** Basket box size in dp, keyed by role. Both stay well above the 72dp
@@ -47,9 +56,9 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
     [settings],
   );
 
-  const restart = useCallback((atLevel: number) => {
+  const restart = useCallback((atLevel: number, avoid: ShapesHistory) => {
     setLevel(atLevel);
-    setState(createGame(systemRng, atLevel));
+    setState(createGame(systemRng, atLevel, avoid));
   }, []);
 
   const stars = starsForMistakes(state.mistakes);
@@ -126,7 +135,7 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
           reduceMotion={settings.reduceMotion}
           onPlayAgain={() => {
             onRoundComplete({ stars, level });
-            restart(nextLevel(level, stars));
+            restart(nextLevel(level, stars), historyFrom(state));
           }}
           onExit={() => {
             onRoundComplete({ stars, level });

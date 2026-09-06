@@ -1,4 +1,4 @@
-import { pick, sample, shuffle, type Rng } from '../../util/random';
+import { pick, sampleFresh, shuffle, type Rng } from '../../util/random';
 
 /**
  * Shape, colour & size sorting.
@@ -58,14 +58,30 @@ export const ITEMS_PER_ROUND = 6;
  * only appears from level 3 on, once a child has shown they can handle two
  * baskets reliably; it is a harder discrimination than shape or colour
  * because the *irrelevant* shape and colour actively compete for attention.
+ *
+ * `avoidSortBy` keeps the same rule from ever running twice in a row: the
+ * usual weighted roll happens first (so the overall mix of rules is
+ * unchanged), and only a roll that lands on the previous round's rule gets
+ * re-picked, uniformly, from whatever else is available at this level.
  */
-export function sortRuleForLevel(rng: Rng, level: number): SortBy {
-  if (level <= 1) return 'shape';
-  if (level === 2) return rng() < 0.5 ? 'shape' : 'color';
-  const roll = rng();
-  if (roll < 0.4) return 'shape';
-  if (roll < 0.8) return 'color';
-  return 'size';
+export function sortRuleForLevel(rng: Rng, level: number, avoidSortBy: SortBy | null = null): SortBy {
+  const roll = (): SortBy => {
+    if (level <= 1) return 'shape';
+    if (level === 2) return rng() < 0.5 ? 'shape' : 'color';
+    const r = rng();
+    if (r < 0.4) return 'shape';
+    if (r < 0.8) return 'color';
+    return 'size';
+  };
+
+  const first = roll();
+  if (first !== avoidSortBy) return first;
+
+  const options: readonly SortBy[] = level <= 1 ? ['shape'] : level === 2 ? ['shape', 'color'] : ['shape', 'color', 'size'];
+  const rest = options.filter((o) => o !== avoidSortBy);
+  // If the only option at this level is the one being avoided (level 1),
+  // the pedagogical rule wins: stay on 'shape' rather than force a repeat.
+  return rest.length > 0 ? pick(rng, rest) : first;
 }
 
 /** Basket count for shape/colour rounds: two to start, growing with level, but
@@ -77,8 +93,24 @@ export function basketsForLevel(sortBy: 'shape' | 'color', level: number): numbe
   return Math.min(2 + Math.floor(level / 2), pool);
 }
 
-export function createGame(rng: Rng, level: number): ShapesState {
-  const sortBy = sortRuleForLevel(rng, level);
+/** What the previous round used, so the next one can avoid repeating it and
+ *  feel fresh rather than reusing the same rule or the same set of shapes or
+ *  colours two rounds running. Every field defaults to "nothing to avoid",
+ *  so a game's very first round is unaffected. */
+export type ShapesHistory = {
+  readonly sortBy: SortBy | null;
+  readonly shapes: ReadonlySet<ShapeKind>;
+  readonly colors: ReadonlySet<ColorKind>;
+};
+
+export const EMPTY_SHAPES_HISTORY: ShapesHistory = {
+  sortBy: null,
+  shapes: new Set(),
+  colors: new Set(),
+};
+
+export function createGame(rng: Rng, level: number, avoid: ShapesHistory = EMPTY_SHAPES_HISTORY): ShapesState {
+  const sortBy = sortRuleForLevel(rng, level, avoid.sortBy);
 
   if (sortBy === 'size') {
     const baskets: Basket[] = SIZES.map((size) => ({
@@ -96,8 +128,12 @@ export function createGame(rng: Rng, level: number): ShapesState {
   }
 
   const count = basketsForLevel(sortBy, level);
-  const shapes = sample(rng, SHAPES, count);
-  const colors = sample(rng, COLORS, count);
+  // Only the attribute that actually matters this round is kept fresh — the
+  // other one is decorative regardless, so staleness there isn't noticeable.
+  const shapes =
+    sortBy === 'shape' ? sampleFresh(rng, SHAPES, count, avoid.shapes) : sampleFresh(rng, SHAPES, count, new Set());
+  const colors =
+    sortBy === 'color' ? sampleFresh(rng, COLORS, count, avoid.colors) : sampleFresh(rng, COLORS, count, new Set());
 
   const baskets: Basket[] = shapes.map((shape, i) => ({
     key: sortBy === 'shape' ? shape : colors[i],
@@ -124,6 +160,16 @@ export function createGame(rng: Rng, level: number): ShapesState {
     placed: 0,
     mistakes: 0,
     complete: false,
+  };
+}
+
+/** Builds the `avoid` history for the *next* round from the round that just
+ *  finished, so `ShapesScreen` doesn't need to know which fields matter. */
+export function historyFrom(state: ShapesState): ShapesHistory {
+  return {
+    sortBy: state.sortBy,
+    shapes: new Set(state.baskets.map((b) => b.shape)),
+    colors: new Set(state.baskets.map((b) => b.color)),
   };
 }
 

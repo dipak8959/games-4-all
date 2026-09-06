@@ -44,3 +44,36 @@ export function shuffle<T>(rng: Rng, items: readonly T[]): T[] {
 export function sample<T>(rng: Rng, items: readonly T[], count: number): T[] {
   return shuffle(rng, items).slice(0, Math.min(count, items.length));
 }
+
+/**
+ * Picks one item while preferring anything other than `avoid`, so the same
+ * round never quietly repeats what the child just saw. Falls back to the full
+ * pool only when avoiding would leave nothing to choose from (e.g. a
+ * single-item pool), so it can never fail to return a value.
+ */
+export function pickFresh<T>(rng: Rng, items: readonly T[], avoid: T | null): T {
+  const fresh = avoid == null ? items : items.filter((item) => item !== avoid);
+  return pick(rng, fresh.length > 0 ? fresh : items);
+}
+
+/**
+ * Samples `count` items while preferring ones outside `avoid`, so a new round
+ * doesn't draw the same set the previous round just used. If avoiding leaves
+ * too few items to fill the round, tops up from the avoided ones rather than
+ * shrinking the round — freshness never comes at the cost of a broken round.
+ */
+export function sampleFresh<T>(
+  rng: Rng,
+  items: readonly T[],
+  count: number,
+  avoid: ReadonlySet<T>,
+): T[] {
+  if (avoid.size === 0) return sample(rng, items, count);
+
+  const fresh = items.filter((item) => !avoid.has(item));
+  if (fresh.length >= count) return sample(rng, fresh, count);
+
+  const stale = items.filter((item) => avoid.has(item));
+  const topUp = sample(rng, stale, count - fresh.length);
+  return shuffle(rng, [...fresh, ...topUp]);
+}

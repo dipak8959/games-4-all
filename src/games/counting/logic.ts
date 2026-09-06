@@ -1,4 +1,4 @@
-import { pick, randInt, shuffle, type Rng } from '../../util/random';
+import { pickFresh, randInt, shuffle, type Rng } from '../../util/random';
 
 /**
  * Counting.
@@ -24,6 +24,9 @@ export type CountingState = {
   readonly complete: boolean;
 };
 
+/** `createQuestion`'s `avoidSymbol` keeps the same picture from appearing on
+ *  two consecutive questions, so a bigger pool here means more variety across
+ *  a round rather than just across replays. */
 const SYMBOLS = [
   '🍎', '⭐', '🐟', '🌻', '🐝', '🍓', '🎈', '🐸',
   '🍊', '🍇', '🥕', '🦋', '🐶', '🍌',
@@ -44,9 +47,11 @@ export function rangeForLevel(level: number): { min: number; max: number } {
  * Builds one question with three near-miss choices.
  *
  * Distractors sit adjacent to the answer so the child has to actually count
- * rather than eyeball "the big one" or "the small one".
+ * rather than eyeball "the big one" or "the small one". `avoidSymbol` keeps
+ * the same picture from ever appearing twice in a row, across both questions
+ * within a round and the seam between one round and the next.
  */
-export function createQuestion(rng: Rng, level: number): CountingQuestion {
+export function createQuestion(rng: Rng, level: number, avoidSymbol: string | null = null): CountingQuestion {
   const { min, max } = rangeForLevel(level);
   const count = randInt(rng, min, max);
 
@@ -62,14 +67,14 @@ export function createQuestion(rng: Rng, level: number): CountingQuestion {
 
   return {
     count,
-    symbol: pick(rng, SYMBOLS),
+    symbol: pickFresh(rng, SYMBOLS, avoidSymbol),
     choices: shuffle(rng, [...choices]),
   };
 }
 
-export function createGame(rng: Rng, level: number): CountingState {
+export function createGame(rng: Rng, level: number, avoidSymbol: string | null = null): CountingState {
   return {
-    question: createQuestion(rng, level),
+    question: createQuestion(rng, level, avoidSymbol),
     questionIndex: 0,
     mistakes: 0,
     ruledOut: [],
@@ -99,7 +104,7 @@ export function answer(state: CountingState, choice: number, rng: Rng, level: nu
 
   return {
     ...state,
-    question: createQuestion(rng, level),
+    question: createQuestion(rng, level, state.question.symbol),
     questionIndex: nextIndex,
     ruledOut: [],
   };

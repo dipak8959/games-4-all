@@ -31,9 +31,9 @@ export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }:
     [level, settings],
   );
 
-  const restart = useCallback((atLevel: number) => {
+  const restart = useCallback((atLevel: number, avoidSymbol: string | null) => {
     setLevel(atLevel);
-    setState(createGame(systemRng, atLevel));
+    setState(createGame(systemRng, atLevel, avoidSymbol));
   }, []);
 
   const stars = starsForMistakes(state.mistakes);
@@ -101,7 +101,7 @@ export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }:
           reduceMotion={settings.reduceMotion}
           onPlayAgain={() => {
             onRoundComplete({ stars, level });
-            restart(nextLevel(level, stars));
+            restart(nextLevel(level, stars), state.question.symbol);
           }}
           onExit={() => {
             onRoundComplete({ stars, level });

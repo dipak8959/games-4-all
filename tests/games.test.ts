@@ -20,6 +20,7 @@ import {
   basketsForLevel,
   createGame as createShapes,
   currentItem,
+  historyFrom,
   isMatch,
   ITEMS_PER_ROUND,
   place,
@@ -55,6 +56,32 @@ test('memory draws from a picture pool bigger than one round needs, for replay v
   // pairsForLevel(3) draws only 5 pictures per round; seeing more than that
   // across many replays proves the pool is larger than a single round.
   assert.ok(seen.size > 5, `only saw ${seen.size} distinct pictures across 40 replays`);
+});
+
+test('memory avoids every picture the previous round just used, when the pool allows it', () => {
+  for (let seed = 0; seed < 100; seed++) {
+    const level = 3; // 5 pairs per round, well under the 20-picture pool
+    const previous = createMemory(seededRng(seed), level);
+    const previousSymbols = new Set(previous.cards.map((c) => c.symbol));
+
+    const next = createMemory(seededRng(seed + 1000), level, previousSymbols);
+    const nextSymbols = new Set(next.cards.map((c) => c.symbol));
+
+    for (const symbol of nextSymbols) {
+      assert.ok(!previousSymbols.has(symbol), `seed ${seed}: ${symbol} repeated from the previous round`);
+    }
+  }
+});
+
+test('memory still fills the round even if the entire picture pool were avoided', () => {
+  // Mirrors memory/logic.ts's SYMBOLS pool. Avoiding all of it is the
+  // worst case sampleFresh has to handle: nothing is "fresh" at all.
+  const wholePool = new Set([
+    '🐰', '🐸', '🐼', '🦋', '🐟', '🐝', '🍎', '🍌', '🍓', '⭐', '🌙', '🌻',
+    '🐶', '🐱', '🐷', '🐵', '🍇', '🍊', '🥕', '🚗',
+  ]);
+  const state = createMemory(seededRng(2), 6, wholePool);
+  assert.equal(state.cards.length, pairsForLevel(6) * 2);
 });
 
 test('memory ignores taps on a revealed card and while a pair is pending', () => {
@@ -127,6 +154,28 @@ test('counting draws pictures from a pool bigger than one question needs, for va
   const seen = new Set<string>();
   for (let seed = 0; seed < 40; seed++) seen.add(createQuestion(seededRng(seed), 1).symbol);
   assert.ok(seen.size > 1, 'every replay showed the same picture');
+});
+
+test('counting never repeats the avoided picture back-to-back', () => {
+  for (let seed = 0; seed < 300; seed++) {
+    const q = createQuestion(seededRng(seed), 1, '🍎');
+    assert.notEqual(q.symbol, '🍎');
+  }
+});
+
+test('an entire round never shows the same picture on two consecutive questions', () => {
+  const rng = seededRng(42);
+  let state = createCounting(rng, 2);
+  const symbolsSeen = [state.question.symbol];
+
+  for (let i = 0; i < QUESTIONS_PER_ROUND - 1; i++) {
+    state = answer(state, state.question.count, rng, 2);
+    symbolsSeen.push(state.question.symbol);
+  }
+
+  for (let i = 1; i < symbolsSeen.length; i++) {
+    assert.notEqual(symbolsSeen[i], symbolsSeen[i - 1], `question ${i} repeated question ${i - 1}'s picture`);
+  }
 });
 
 test('a wrong tap rules that choice out without advancing the round', () => {
@@ -210,6 +259,44 @@ test('a size-sort round always has exactly a small and a big basket', () => {
     );
   }
   assert.ok(sawSize, 'no seed in this range ever rolled a size round at level 6');
+});
+
+test('sortRuleForLevel never repeats the avoided rule when another is available', () => {
+  for (let seed = 0; seed < 300; seed++) {
+    const rng = seededRng(seed);
+    for (const avoid of ['shape', 'color', 'size'] as const) {
+      assert.notEqual(sortRuleForLevel(rng, 4, avoid), avoid, `seed ${seed}, avoiding ${avoid}`);
+    }
+  }
+});
+
+test('sortRuleForLevel falls back to shape at level 1 even if shape is avoided', () => {
+  for (let seed = 0; seed < 50; seed++) {
+    assert.equal(sortRuleForLevel(seededRng(seed), 1, 'shape'), 'shape');
+  }
+});
+
+test('a fresh round of shapes never repeats the previous round\'s sort rule', () => {
+  for (let seed = 0; seed < 200; seed++) {
+    const rng = seededRng(seed);
+    const first = createShapes(rng, 4);
+    const second = createShapes(rng, 4, historyFrom(first));
+    assert.notEqual(second.sortBy, first.sortBy, `seed ${seed}`);
+  }
+});
+
+test('a fresh shape-sort round avoids every shape the previous round used, when the pool allows it', () => {
+  for (let seed = 0; seed < 200; seed++) {
+    const rng = seededRng(seed);
+    const first = createShapes(rng, 1); // level 1 always rolls 'shape'
+    const second = createShapes(seededRng(seed + 5000), 1, historyFrom(first));
+
+    if (second.sortBy !== 'shape') continue; // only 'shape' possible at level 1, but stay defensive
+    const previousShapes = new Set(first.baskets.map((b) => b.shape));
+    for (const basket of second.baskets) {
+      assert.ok(!previousShapes.has(basket.shape), `seed ${seed}: basket shape ${basket.shape} repeated`);
+    }
+  }
 });
 
 test('a wrong basket keeps the same item up and costs only a mistake', () => {

@@ -28,10 +28,28 @@ how the last round went (`nextLevel` in `src/games/types.ts`): a perfect round
 nudges it up one step, a rough one nudges it down one step, never more than
 one step at a time. The parent's "Starting difficulty" in Parent Zone only
 seeds where a game *begins*; after that it adapts on its own, and Parent Zone
-shows the level it's currently sitting at for each game. Content pools
-(pictures, shapes, colours) are kept larger than any single round draws from,
-so replays don't reuse the same set — this is bounded variety within a fixed,
-kid-safe pool, not literally unlimited content.
+shows the level it's currently sitting at for each game.
+
+### Staying fresh round to round
+
+Every game actively avoids repeating what the previous round just used —
+not just "the pool is big enough that it probably won't repeat," but an
+explicit exclusion each time a new round is built (`sampleFresh`/`pickFresh`
+in `src/util/random.ts`):
+
+- **Find the Pairs** never deals the same set of pictures two rounds running.
+- **How Many?** never shows the same picture on two consecutive questions,
+  including the seam between one round and the next.
+- **Sort It Out** never repeats the same sorting rule (shape/colour/size) two
+  rounds running, and a shape- or colour-sort round avoids the previous
+  round's basket shapes or colours too.
+
+This only ever *excludes* recent content, never fails a round: if avoiding
+would leave too few items to fill it (an exhausted pool at a high basket
+count, say), it tops back up from the avoided set rather than breaking. It's
+bounded variety within a fixed, kid-safe content pool, not literally
+unlimited content, and it resets whenever a game is freshly opened from
+Home — the "just used" memory only lives within one continuous play session.
 
 ## Getting started
 

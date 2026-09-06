@@ -1,4 +1,4 @@
-import { sample, shuffle, type Rng } from '../../util/random';
+import { sampleFresh, shuffle, type Rng } from '../../util/random';
 
 /**
  * Memory match.
@@ -25,9 +25,9 @@ export type MemoryState = {
 };
 
 /** Concrete, nameable objects a pre-reader recognises at a glance. A pool
- *  bigger than any single round needs means replays draw a fresh subset each
- *  time (see `createGame`'s `sample` call) instead of showing the same set of
- *  pictures every round. */
+ *  bigger than any single round needs, combined with `createGame`'s
+ *  `avoidSymbols` parameter, means a new round actively avoids the pictures
+ *  the last one just used rather than merely being free to. */
 const SYMBOLS = [
   '🐰', '🐸', '🐼', '🦋', '🐟', '🐝',
   '🍎', '🍌', '🍓', '⭐', '🌙', '🌻',
@@ -40,9 +40,13 @@ export function pairsForLevel(level: number): number {
   return Math.min(2 + level, 8);
 }
 
-export function createGame(rng: Rng, level: number): MemoryState {
+export function createGame(
+  rng: Rng,
+  level: number,
+  avoidSymbols: ReadonlySet<string> = new Set(),
+): MemoryState {
   const pairCount = pairsForLevel(level);
-  const chosen = sample(rng, SYMBOLS, pairCount);
+  const chosen = sampleFresh(rng, SYMBOLS, pairCount, avoidSymbols);
 
   const deck = chosen.flatMap((symbol, colorIndex) => [
     { symbol, colorIndex },

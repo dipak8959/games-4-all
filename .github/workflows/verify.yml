@@ -1,0 +1,27 @@
+name: verify
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # Child-safety gate, type check, and unit tests. See SAFETY.md for what
+      # the safety step enforces and why each rule exists.
+      - run: npm run verify
+
+      # Proves the app still bundles for both stores, not just type-checks.
+      - run: npx expo export --platform ios --output-dir /tmp/export-ios
+      - run: npx expo export --platform android --output-dir /tmp/export-android

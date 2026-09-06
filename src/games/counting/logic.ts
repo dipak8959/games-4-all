@@ -24,7 +24,10 @@ export type CountingState = {
   readonly complete: boolean;
 };
 
-const SYMBOLS = ['🍎', '⭐', '🐟', '🌻', '🐝', '🍓', '🎈', '🐸'] as const;
+const SYMBOLS = [
+  '🍎', '⭐', '🐟', '🌻', '🐝', '🍓', '🎈', '🐸',
+  '🍊', '🍇', '🥕', '🦋', '🐶', '🍌',
+] as const;
 
 export const QUESTIONS_PER_ROUND = 5;
 

@@ -23,6 +23,7 @@ import {
   isMatch,
   ITEMS_PER_ROUND,
   place,
+  sortRuleForLevel,
 } from '../src/games/shapes/logic.ts';
 import { starsForMistakes } from '../src/games/types.ts';
 
@@ -44,6 +45,16 @@ test('memory deals exactly two of every symbol', () => {
 test('memory grid stays within a size a phone can show', () => {
   assert.equal(pairsForLevel(1), 3);
   assert.equal(pairsForLevel(99), 8, 'pair count is capped');
+});
+
+test('memory draws from a picture pool bigger than one round needs, for replay variety', () => {
+  const seen = new Set<string>();
+  for (let seed = 0; seed < 40; seed++) {
+    for (const card of createMemory(seededRng(seed), 3).cards) seen.add(card.symbol);
+  }
+  // pairsForLevel(3) draws only 5 pictures per round; seeing more than that
+  // across many replays proves the pool is larger than a single round.
+  assert.ok(seen.size > 5, `only saw ${seen.size} distinct pictures across 40 replays`);
 });
 
 test('memory ignores taps on a revealed card and while a pair is pending', () => {
@@ -112,6 +123,12 @@ test('counting never asks for more objects than a young child can count', () => 
   assert.ok(rangeForLevel(99).max <= 12);
 });
 
+test('counting draws pictures from a pool bigger than one question needs, for variety', () => {
+  const seen = new Set<string>();
+  for (let seed = 0; seed < 40; seed++) seen.add(createQuestion(seededRng(seed), 1).symbol);
+  assert.ok(seen.size > 1, 'every replay showed the same picture');
+});
+
 test('a wrong tap rules that choice out without advancing the round', () => {
   const state = createCounting(seededRng(5), 1);
   const wrong = state.question.choices.find((c) => c !== state.question.count)!;
@@ -146,7 +163,9 @@ test('every shapes item belongs to exactly one basket', () => {
     for (let level = 1; level <= 6; level++) {
       const state = createShapes(seededRng(seed), level);
 
-      assert.equal(state.baskets.length, basketsForLevel(level));
+      const expectedBaskets =
+        state.sortBy === 'size' ? 2 : basketsForLevel(state.sortBy, level);
+      assert.equal(state.baskets.length, expectedBaskets, `seed ${seed} level ${level}`);
       assert.equal(state.queue.length, ITEMS_PER_ROUND);
 
       for (const item of state.queue) {
@@ -157,11 +176,12 @@ test('every shapes item belongs to exactly one basket', () => {
   }
 });
 
-test('shapes baskets are distinguishable by both shape and colour', () => {
+test('shape and colour baskets are distinguishable by their own sorting rule', () => {
   for (let seed = 0; seed < 200; seed++) {
     const state = createShapes(seededRng(seed), 5);
-    assert.equal(new Set(state.baskets.map((b) => b.shape)).size, state.baskets.length);
-    assert.equal(new Set(state.baskets.map((b) => b.color)).size, state.baskets.length);
+    if (state.sortBy === 'size') continue; // size baskets are distinguished by size, not glyph
+    const attribute = state.sortBy === 'shape' ? 'shape' : 'color';
+    assert.equal(new Set(state.baskets.map((b) => b[attribute])).size, state.baskets.length);
   }
 });
 
@@ -169,6 +189,27 @@ test('level 1 always sorts by shape, the more concrete rule', () => {
   for (let seed = 0; seed < 50; seed++) {
     assert.equal(createShapes(seededRng(seed), 1).sortBy, 'shape');
   }
+});
+
+test('size sorting never appears before level 3, once shape and colour are established', () => {
+  for (let seed = 0; seed < 200; seed++) {
+    assert.notEqual(sortRuleForLevel(seededRng(seed), 1), 'size');
+    assert.notEqual(sortRuleForLevel(seededRng(seed), 2), 'size');
+  }
+});
+
+test('a size-sort round always has exactly a small and a big basket', () => {
+  let sawSize = false;
+  for (let seed = 0; seed < 200; seed++) {
+    const state = createShapes(seededRng(seed), 6);
+    if (state.sortBy !== 'size') continue;
+    sawSize = true;
+    assert.deepEqual(
+      state.baskets.map((b) => b.key).sort(),
+      ['big', 'small'],
+    );
+  }
+  assert.ok(sawSize, 'no seed in this range ever rolled a size round at level 6');
 });
 
 test('a wrong basket keeps the same item up and costs only a mistake', () => {

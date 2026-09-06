@@ -5,14 +5,29 @@ import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, palette, radius, shadow, space } from '../../theme/tokens';
+import { font, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
-import { starsForMistakes, type GameScreenProps } from '../types';
-import { createGame, currentItem, isMatch, place, type ShapesState } from './logic';
+import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
+import { createGame, currentItem, isMatch, place, type Basket, type ShapesState } from './logic';
 import { describe, SHAPE_COLORS, Shape } from './Shape';
 
-export function ShapesScreen({ level, onRoundComplete, onExit }: GameScreenProps) {
+/** Basket box size in dp, keyed by role. Both stay well above the 72dp
+ *  minimum tap target even in "small" size-sort rounds. */
+const BASKET_BOX = { normal: 104, small: 92, big: 140 } as const;
+
+function basketLabel(state: ShapesState, basket: Basket): string {
+  if (state.sortBy === 'size') return basket.key === 'small' ? 'Basket for small things' : 'Basket for big things';
+  const described = describe(basket.shape, basket.color);
+  const word = state.sortBy === 'shape' ? described.split(' ')[1] : described.split(' ')[0];
+  return `Basket for ${word}`;
+}
+
+export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  // The prop only seeds the first round; from here the screen adapts locally
+  // each round (via `nextLevel`) so "Play again" reflects the new difficulty
+  // immediately, without waiting on a round-trip through app-level state.
+  const [level, setLevel] = useState(initialLevel);
   const [state, setState] = useState<ShapesState>(() => createGame(systemRng, level));
 
   const item = currentItem(state);
@@ -32,12 +47,26 @@ export function ShapesScreen({ level, onRoundComplete, onExit }: GameScreenProps
     [settings],
   );
 
-  const restart = useCallback(() => setState(createGame(systemRng, level)), [level]);
+  const restart = useCallback((atLevel: number) => {
+    setLevel(atLevel);
+    setState(createGame(systemRng, atLevel));
+  }, []);
 
   const stars = starsForMistakes(state.mistakes);
   const progress = state.queue.length ? state.placed / state.queue.length : 0;
-  const rule = state.sortBy === 'shape' ? 'Match the shape' : 'Match the colour';
-  const ruleIcon = state.sortBy === 'shape' ? '🔺' : '🎨';
+  const rule =
+    state.sortBy === 'shape' ? 'Match the shape' : state.sortBy === 'color' ? 'Match the colour' : 'Match the size';
+  const ruleIcon = state.sortBy === 'shape' ? '🔺' : state.sortBy === 'color' ? '🎨' : '📏';
+
+  // The item on stage is drawn at its own size only when size is the rule —
+  // otherwise size is one of the irrelevant, randomised attributes and every
+  // item stays the same visual size so it can't leak the answer.
+  const itemDisplaySize = state.sortBy === 'size' ? (item?.size === 'small' ? 88 : 170) : 150;
+  const itemLabel = item
+    ? state.sortBy === 'size'
+      ? `Sort this ${item.size} shape`
+      : `Sort this ${describe(item.shape, item.color)}`
+    : '';
 
   return (
     <GameFrame title="Sort It Out" icon="🔺" onExit={onExit} progress={progress}>
@@ -54,38 +83,41 @@ export function ShapesScreen({ level, onRoundComplete, onExit }: GameScreenProps
             ⭕
           </Text>
           {item ? (
-            <View accessibilityLabel={`Sort this ${describe(item.shape, item.color)}`}>
-              <Shape shape={item.shape} color={item.color} size={150} />
+            <View accessibilityLabel={itemLabel}>
+              <Shape shape={item.shape} color={item.color} size={itemDisplaySize} />
             </View>
           ) : null}
         </View>
       </View>
 
       <View style={styles.baskets}>
-        {state.baskets.map((basket, index) => (
-          <Pressable
-            key={`${basket.shape}-${basket.color}`}
-            accessibilityRole="button"
-            accessibilityLabel={`Basket for ${
-              state.sortBy === 'shape'
-                ? describe(basket.shape, basket.color).split(' ')[1]
-                : describe(basket.shape, basket.color).split(' ')[0]
-            }`}
-            onPress={() => onDrop(index)}
-            style={({ pressed }) => [
-              styles.basketOuter,
-              { borderColor: SHAPE_COLORS[basket.color] },
-              pressed && styles.pressed,
-            ]}
-          >
-            <View style={styles.basketInner}>
-              <Text style={styles.basketGlyph} accessibilityElementsHidden importantForAccessibility="no">
-                🧺
-              </Text>
-              <Shape shape={basket.shape} color={basket.color} size={50} />
-            </View>
-          </Pressable>
-        ))}
+        {state.baskets.map((basket, index) => {
+          const box =
+            state.sortBy === 'size'
+              ? BASKET_BOX[basket.key === 'small' ? 'small' : 'big']
+              : BASKET_BOX.normal;
+
+          return (
+            <Pressable
+              key={basket.key}
+              accessibilityRole="button"
+              accessibilityLabel={basketLabel(state, basket)}
+              onPress={() => onDrop(index)}
+              style={({ pressed }) => [
+                styles.basketOuter,
+                { width: box, height: box, borderColor: SHAPE_COLORS[basket.color] },
+                pressed && styles.pressed,
+              ]}
+            >
+              <View style={styles.basketInner}>
+                <Text style={styles.basketGlyph} accessibilityElementsHidden importantForAccessibility="no">
+                  🧺
+                </Text>
+                <Shape shape={basket.shape} color={basket.color} size={box * 0.48} />
+              </View>
+            </Pressable>
+          );
+        })}
       </View>
 
       {state.complete ? (
@@ -94,7 +126,7 @@ export function ShapesScreen({ level, onRoundComplete, onExit }: GameScreenProps
           reduceMotion={settings.reduceMotion}
           onPlayAgain={() => {
             onRoundComplete({ stars, level });
-            restart();
+            restart(nextLevel(level, stars));
           }}
           onExit={() => {
             onRoundComplete({ stars, level });
@@ -134,14 +166,15 @@ const styles = StyleSheet.create({
   stageRing: { position: 'absolute', fontSize: 220, opacity: 0.05 },
   baskets: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: space.md,
     paddingBottom: space.md,
     flexWrap: 'wrap',
   },
   basketOuter: {
-    width: 104,
-    height: 104,
+    minWidth: hitTarget,
+    minHeight: hitTarget,
     borderRadius: radius.md,
     borderWidth: 4,
     ...shadow,

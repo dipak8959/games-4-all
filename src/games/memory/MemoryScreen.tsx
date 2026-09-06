@@ -8,15 +8,19 @@ import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { font, gradients, palette, playColors, radius, shadow, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
-import { starsForMistakes, type GameScreenProps } from '../types';
+import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, flip, hasPendingPair, resolvePair, type MemoryState } from './logic';
 
 /** How long an unmatched pair stays visible before flipping back. Long enough
  *  for a young child to register both cards. */
 const PEEK_MS = 1100;
 
-export function MemoryScreen({ level, onRoundComplete, onExit }: GameScreenProps) {
+export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  // The prop only seeds the first round; from here the screen adapts locally
+  // each round (via `nextLevel`) so "Play again" reflects the new difficulty
+  // immediately, without waiting on a round-trip through app-level state.
+  const [level, setLevel] = useState(initialLevel);
   const [state, setState] = useState<MemoryState>(() => createGame(systemRng, level));
   const [done, setDone] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -58,11 +62,15 @@ export function MemoryScreen({ level, onRoundComplete, onExit }: GameScreenProps
     [settings],
   );
 
-  const restart = useCallback(() => {
-    clearTimer();
-    setDone(false);
-    setState(createGame(systemRng, level));
-  }, [clearTimer, level]);
+  const restart = useCallback(
+    (atLevel: number) => {
+      clearTimer();
+      setDone(false);
+      setLevel(atLevel);
+      setState(createGame(systemRng, atLevel));
+    },
+    [clearTimer],
+  );
 
   const matched = state.cards.filter((c) => c.matched).length;
   const progress = state.cards.length ? matched / state.cards.length : 0;
@@ -114,8 +122,9 @@ export function MemoryScreen({ level, onRoundComplete, onExit }: GameScreenProps
           stars={starsForMistakes(state.mistakes)}
           reduceMotion={settings.reduceMotion}
           onPlayAgain={() => {
-            onRoundComplete({ stars: starsForMistakes(state.mistakes), level });
-            restart();
+            const stars = starsForMistakes(state.mistakes);
+            onRoundComplete({ stars, level });
+            restart(nextLevel(level, stars));
           }}
           onExit={() => {
             onRoundComplete({ stars: starsForMistakes(state.mistakes), level });

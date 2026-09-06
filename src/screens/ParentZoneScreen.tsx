@@ -4,6 +4,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 're
 import { BigButton } from '../components/BigButton';
 import { Screen } from '../components/Screen';
 import { GAMES } from '../games/registry';
+import { MAX_LEVEL } from '../games/types';
 import { formatMinutes, LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
 import { useApp } from '../state/AppProvider';
 import { progressFor } from '../state/progress';
@@ -17,7 +18,7 @@ import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens
  * does and does not do with data, and the delete-everything control.
  */
 export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) {
-  const { settings, progress, usage, updateSettings, resetEverything } = useApp();
+  const { settings, progress, usage, updateSettings, resetEverything, levelForGame } = useApp();
   const [erased, setErased] = useState(false);
 
   const confirmErase = useCallback(() => {
@@ -92,6 +93,10 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
               />
             ))}
           </View>
+          <Text style={styles.caption}>
+            Where a new game starts. After that, each game quietly gets a little
+            easier or harder round to round, based on how it's going.
+          </Text>
         </Section>
 
         <Section title="🧩 What each game practises">
@@ -106,7 +111,8 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
                     {game.skill} · ages {game.ages}
                   </Text>
                   <Text style={styles.caption}>
-                    {gp.rounds} {gp.rounds === 1 ? 'round' : 'rounds'} played
+                    {gp.rounds} {gp.rounds === 1 ? 'round' : 'rounds'} played · level{' '}
+                    {levelForGame(game.id)} of {MAX_LEVEL}
                   </Text>
                 </View>
               </View>

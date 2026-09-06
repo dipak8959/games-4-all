@@ -36,3 +36,28 @@ export function starsForMistakes(mistakes: number): number {
   if (mistakes <= 2) return 2;
   return 1;
 }
+
+/** The adaptive difficulty range every game clamps into. A game's own level
+ *  scaling (pool sizes, ranges, basket counts) is free to saturate before
+ *  MAX_LEVEL — that just means its difficulty curve is shorter, not wrong. */
+export const MIN_LEVEL = 1;
+export const MAX_LEVEL = 6;
+
+export function clampLevel(level: number): number {
+  return Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, level));
+}
+
+/**
+ * One adaptive-difficulty step.
+ *
+ * A perfect round (3 stars, no mistakes) nudges the level up; a rough one (1
+ * star, 3+ mistakes) nudges it down; a middling round (2 stars) holds steady.
+ * Never more than one step at a time, so difficulty drifts with a child's
+ * performance rather than swinging — a single lucky or unlucky round can't
+ * catapult them from the easiest to the hardest content.
+ */
+export function nextLevel(level: number, stars: number): number {
+  if (stars >= 3) return clampLevel(level + 1);
+  if (stars <= 1) return clampLevel(level - 1);
+  return clampLevel(level);
+}

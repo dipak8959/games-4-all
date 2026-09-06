@@ -24,10 +24,15 @@ export type MemoryState = {
   readonly complete: boolean;
 };
 
-/** Concrete, nameable objects a pre-reader recognises at a glance. */
+/** Concrete, nameable objects a pre-reader recognises at a glance. A pool
+ *  bigger than any single round needs means replays draw a fresh subset each
+ *  time (see `createGame`'s `sample` call) instead of showing the same set of
+ *  pictures every round. */
 const SYMBOLS = [
   '🐰', '🐸', '🐼', '🦋', '🐟', '🐝',
   '🍎', '🍌', '🍓', '⭐', '🌙', '🌻',
+  '🐶', '🐱', '🐷', '🐵', '🍇', '🍊',
+  '🥕', '🚗',
 ] as const;
 
 /** Pairs per level. Grows gently; capped so the grid always fits a phone. */

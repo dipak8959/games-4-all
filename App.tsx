@@ -26,7 +26,7 @@ type Route =
   | { readonly name: 'parent' };
 
 function Root() {
-  const { ready, settings, verdict, finishRound, startPlaying, stopPlaying } = useApp();
+  const { ready, verdict, finishRound, levelForGame, startPlaying, stopPlaying } = useApp();
   const [route, setRoute] = useState<Route>({ name: 'home' });
   const [gateOpen, setGateOpen] = useState(false);
 
@@ -100,7 +100,7 @@ function Root() {
       return (
         <>
           <GameScreen
-            level={settings.difficulty}
+            level={levelForGame(game.id)}
             onRoundComplete={(result) => onRoundComplete(game.id, result)}
             onExit={() => setRoute({ name: 'home' })}
           />

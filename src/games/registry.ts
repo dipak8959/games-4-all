@@ -35,7 +35,7 @@ export const GAMES: readonly GameDefinition[] = [
     title: 'Sort It Out',
     icon: '🔺',
     color: palette.leaf,
-    skill: 'Sorting by shape and colour',
+    skill: 'Sorting by shape, colour, and size',
     ages: '3-6',
     Screen: ShapesScreen,
   },

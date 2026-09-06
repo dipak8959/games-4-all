@@ -15,11 +15,23 @@ Three learning-basics games for roughly ages 3-7, none of which require reading:
 | --- | --- |
 | 🧠 **Find the Pairs** | Visual memory and concentration |
 | 🔢 **How Many?** | Counting and recognising numerals 1-12 |
-| 🔺 **Sort It Out** | Sorting by shape and colour |
+| 🔺 **Sort It Out** | Sorting by shape, colour, and size |
 
 Plus a **Parent Zone** behind a parent gate, holding screen-time limits, sound
-and motion toggles, starting difficulty, a plain-language privacy statement, and
-a delete-all-data control.
+and motion toggles, a starting difficulty, a plain-language privacy statement,
+and a delete-all-data control.
+
+### Adaptive difficulty
+
+Each game's level isn't fixed — it drifts up or down round by round based on
+how the last round went (`nextLevel` in `src/games/types.ts`): a perfect round
+nudges it up one step, a rough one nudges it down one step, never more than
+one step at a time. The parent's "Starting difficulty" in Parent Zone only
+seeds where a game *begins*; after that it adapts on its own, and Parent Zone
+shows the level it's currently sitting at for each game. Content pools
+(pictures, shapes, colours) are kept larger than any single round draws from,
+so replays don't reuse the same set — this is bounded variety within a fixed,
+kid-safe pool, not literally unlimited content.
 
 ## Getting started
 
@@ -84,9 +96,13 @@ exactly one basket; every round is completable).
 
 ## Adding a game
 
-1. Create `src/games/<id>/logic.ts` — pure rules, taking an `Rng`.
+1. Create `src/games/<id>/logic.ts` — pure rules, taking an `Rng` and a `level`.
 2. Add `tests/` coverage asserting the round is always completable and fair.
-3. Create `<id>Screen.tsx` implementing `GameScreenProps`.
+3. Create `<id>Screen.tsx` implementing `GameScreenProps`. Seed local level
+   state from the `level` prop, then advance it with `nextLevel` (from
+   `src/games/types.ts`) on "Play again" — see any existing game screen for
+   the pattern. This is what makes the game's difficulty adaptive rather than
+   fixed at whatever the parent chose as a starting point.
 4. Register it in `src/games/registry.ts`.
 
 The home screen, progress tracking, and the parent-facing skills list all read

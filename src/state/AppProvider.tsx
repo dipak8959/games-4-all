@@ -20,7 +20,7 @@ import {
   type UsageState,
 } from '../safety/screenTime';
 import { DEFAULT_SETTINGS, type Settings } from './settings';
-import { EMPTY_PROGRESS, recordRound, type Progress } from './progress';
+import { EMPTY_PROGRESS, progressFor, recordRound, type Progress } from './progress';
 
 /**
  * Single source of truth for settings, progress, and screen-time accounting.
@@ -40,6 +40,9 @@ type AppContextValue = {
   readonly verdict: LimitVerdict;
   readonly updateSettings: (patch: Partial<Settings>) => void;
   readonly finishRound: (gameId: string, result: { stars: number; level: number }) => void;
+  /** The level a game should open at: its own adaptive level once it has been
+   *  played, or the parent's chosen starting difficulty before that. */
+  readonly levelForGame: (gameId: string) => number;
   readonly startPlaying: () => void;
   readonly stopPlaying: () => void;
   readonly resetEverything: () => Promise<void>;
@@ -169,6 +172,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, [persistUsage]);
 
+  const levelForGame = useCallback(
+    (gameId: string) => progressFor(progress, gameId).currentLevel ?? settings.difficulty,
+    [progress, settings.difficulty],
+  );
+
   const resetEverything = useCallback(async () => {
     await eraseAllData();
     setSettings(DEFAULT_SETTINGS);
@@ -187,6 +195,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       verdict,
       updateSettings,
       finishRound,
+      levelForGame,
       startPlaying,
       stopPlaying,
       resetEverything,
@@ -199,6 +208,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       verdict,
       updateSettings,
       finishRound,
+      levelForGame,
       startPlaying,
       stopPlaying,
       resetEverything,

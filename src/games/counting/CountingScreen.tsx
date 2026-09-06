@@ -8,11 +8,15 @@ import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { font, gradients, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
-import { starsForMistakes, type GameScreenProps } from '../types';
+import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { answer, createGame, QUESTIONS_PER_ROUND, type CountingState } from './logic';
 
-export function CountingScreen({ level, onRoundComplete, onExit }: GameScreenProps) {
+export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  // The prop only seeds the first round; from here the screen adapts locally
+  // each round (via `nextLevel`) so "Play again" reflects the new difficulty
+  // immediately, without waiting on a round-trip through app-level state.
+  const [level, setLevel] = useState(initialLevel);
   const [state, setState] = useState<CountingState>(() => createGame(systemRng, level));
 
   const onChoose = useCallback(
@@ -27,7 +31,10 @@ export function CountingScreen({ level, onRoundComplete, onExit }: GameScreenPro
     [level, settings],
   );
 
-  const restart = useCallback(() => setState(createGame(systemRng, level)), [level]);
+  const restart = useCallback((atLevel: number) => {
+    setLevel(atLevel);
+    setState(createGame(systemRng, atLevel));
+  }, []);
 
   const stars = starsForMistakes(state.mistakes);
   const progress = state.questionIndex / QUESTIONS_PER_ROUND;
@@ -94,7 +101,7 @@ export function CountingScreen({ level, onRoundComplete, onExit }: GameScreenPro
           reduceMotion={settings.reduceMotion}
           onPlayAgain={() => {
             onRoundComplete({ stars, level });
-            restart();
+            restart(nextLevel(level, stars));
           }}
           onExit={() => {
             onRoundComplete({ stars, level });

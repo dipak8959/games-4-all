@@ -84,12 +84,15 @@ game where reading is the point rather than something to avoid:
   notifications, no "come back tomorrow" pressure. Nothing here is designed to
   maximise time-in-app — the screen-time limits point the other way.
 - **Reading is never required to navigate or play, except where it's the
-  explicit skill.** Home, Parent Zone, and three of the four games are
-  navigated entirely by icon, colour, and shape — no child needs to read
-  anything to use this app. "Spell It!" is the deliberate exception: it
+  explicit skill.** Home, Parent Zone, and four of the five games are
+  navigated entirely by icon, colour, shape, and number — no child needs to
+  read anything to use this app. "Spell It!" is the deliberate exception: it
   teaches reading and spelling, so reading its own picture clue is the task,
   not a barrier to it. It's restricted to the 7+ age group for exactly this
-  reason — see `src/games/catalog.ts`.
+  reason — see `src/games/catalog.ts`. "Sudoku" is also 7+, but for a
+  different reason: it doesn't require reading, just the numbers a 5-6 year
+  old already knows — what it needs is holding a row/column/box rule in mind
+  at once, a later-developing reasoning skill rather than a literacy one.
 - **Colour is never the only signal.** The palette is Okabe-Ito derived, and
   anything identified by colour also differs in shape, so the games work for
   colour-blind players.

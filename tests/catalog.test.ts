@@ -52,6 +52,13 @@ test('Spell It! requires reading, so it is restricted to the 7+ group only', () 
   assert.ok(ids(3).includes('wordbuilder'), 'missing from the 7+ group');
 });
 
+test('Sudoku requires multi-step logical reasoning, so it is restricted to the 7+ group only', () => {
+  const ids = (level: 1 | 2 | 3) => gamesForAgeGroup(level).map((g) => g.id);
+  assert.ok(!ids(1).includes('sudoku'), 'shown to the 3-4 group');
+  assert.ok(!ids(2).includes('sudoku'), 'shown to the 5-6 group');
+  assert.ok(ids(3).includes('sudoku'), 'missing from the 7+ group');
+});
+
 test('How Many? and Spell It! are never both hidden from the same age group', () => {
   // A sanity check on the catalogue as a whole: every group should have a
   // reasonable spread, not accidentally lose most of its games.

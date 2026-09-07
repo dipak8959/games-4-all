@@ -83,6 +83,21 @@ export const GAMES_META: readonly GameMeta[] = [
     minAgeGroup: 3,
     maxAgeGroup: 3,
   },
+  {
+    id: 'sudoku',
+    title: 'Sudoku',
+    icon: '🧩',
+    color: palette.berry,
+    skill: 'Logical reasoning and number placement',
+    ages: '7+',
+    // Restricted to 7+ like Spell It!, but for a different reason: reading
+    // isn't the barrier here, following a grid rule across rows/columns/boxes
+    // at once is. That kind of multi-step logical reasoning is squarely a
+    // 7+ skill even though the youngest tier (4x4) uses only the numbers a
+    // 5-6 year old already knows.
+    minAgeGroup: 3,
+    maxAgeGroup: 3,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

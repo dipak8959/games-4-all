@@ -9,8 +9,9 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Four learning-basics games spanning roughly ages 3-7+. The first three need
-no reading at all; the fourth is the deliberate exception, built for readers:
+Five learning-basics games spanning roughly ages 3-7+. The first three need
+no reading at all; the last two are the deliberate exceptions, built for the
+7+ group specifically:
 
 | Game | Practises | Shown for |
 | --- | --- | --- |
@@ -18,6 +19,7 @@ no reading at all; the fourth is the deliberate exception, built for readers:
 | 🔢 **How Many?** | Counting and recognising numerals 1-12 | 3-4, 5-6 |
 | 🔺 **Sort It Out** | Sorting by shape, colour, and size | 3-4, 5-6, 7+ |
 | 🔤 **Spell It!** | Reading and spelling simple words | 7+ |
+| 🧩 **Sudoku** | Logical reasoning and number placement | 7+ |
 
 Plus a **Parent Zone** behind a parent gate, holding screen-time limits, sound
 and motion toggles, the child's age group, a plain-language privacy statement,
@@ -41,11 +43,12 @@ Age group does two genuinely different things, not one:
    range includes the current group — `gamesForAgeGroup`. Right now that
    means "How Many?" (counting to 12) steps aside for the 7+ group, since
    it's squarely a preschool skill by then, while "Spell It!" (reading and
-   spelling) does the opposite — it only appears for 7+, since the younger
-   groups include children who can't read yet. "Find the Pairs" and "Sort
-   It Out" suit the whole range. Parent Zone's game list is intentionally
-   unfiltered, so a parent can always see the full catalogue and why
-   something isn't showing on Home.
+   spelling) and "Sudoku" (multi-step logical reasoning) do the opposite —
+   they only appear for 7+, since the younger groups either can't read yet
+   or aren't ready to hold a row/column/box rule in mind at once. "Find the
+   Pairs" and "Sort It Out" suit the whole range. Parent Zone's game list is
+   intentionally unfiltered, so a parent can always see the full catalogue
+   and why something isn't showing on Home.
 2. **Seeds where a shown game's difficulty starts.** From there each game's
    level drifts up or down round by round based on how the last round went
    (`nextLevel` in `src/games/types.ts`) — a perfect round nudges it up one
@@ -76,6 +79,11 @@ would leave too few items to fill it (an exhausted pool at a high basket
 count, say), it tops back up from the avoided set rather than breaking. It's
 bounded variety within a fixed, kid-safe content pool, not literally
 unlimited content.
+
+**Sudoku** is the one exception, deliberately: every puzzle is generated
+fresh by solving a full grid and digging holes (`src/games/sudoku/logic.ts`),
+so there's no fixed pool to exhaust and nothing to avoid repeating — the
+generator already gives effectively unlimited variety on its own.
 
 What each game last showed is persisted (`g4a:freshness`, via
 `getFreshness`/`setFreshness` on `AppProvider`), so the "just used" memory
@@ -131,7 +139,7 @@ src/
   games/
     catalog.ts              Pure game metadata + age-group filtering (no React)
     registry.ts             Attaches each game's Screen component to the catalogue
-    memory/ counting/ shapes/ wordbuilder/
+    memory/ counting/ shapes/ wordbuilder/ sudoku/
       logic.ts              Pure, seeded, unit-tested game rules
       *Screen.tsx           Presentation only
   screens/                  Home, Parent Zone, time's-up

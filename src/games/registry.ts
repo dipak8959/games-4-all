@@ -2,6 +2,7 @@ import { GAMES_META } from './catalog';
 import { CountingScreen } from './counting/CountingScreen';
 import { MemoryScreen } from './memory/MemoryScreen';
 import { ShapesScreen } from './shapes/ShapesScreen';
+import { SudokuScreen } from './sudoku/SudokuScreen';
 import type { GameDefinition } from './types';
 import { WordBuilderScreen } from './wordbuilder/WordBuilderScreen';
 
@@ -18,6 +19,7 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   counting: CountingScreen,
   shapes: ShapesScreen,
   wordbuilder: WordBuilderScreen,
+  sudoku: SudokuScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

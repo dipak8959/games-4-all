@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { BigButton } from '../components/BigButton';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { Screen } from '../components/Screen';
-import { GAMES } from '../games/registry';
+import { GAMES_META } from '../games/catalog';
 import { MAX_LEVEL } from '../games/types';
 import { formatMinutes, LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
 import { AGE_GROUPS } from '../state/ageGroups';
@@ -92,7 +92,7 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
         </Section>
 
         <Section title="🧩 What each game practises">
-          {GAMES.map((game) => {
+          {GAMES_META.map((game) => {
             const gp = progressFor(progress, game.id);
             return (
               <View key={game.id} style={styles.gameRow}>

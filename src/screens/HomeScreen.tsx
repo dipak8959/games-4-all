@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, type DimensionValue } fr
 
 import { GradientSurface } from '../components/GradientSurface';
 import { Screen } from '../components/Screen';
-import { GAMES } from '../games/registry';
+import { gamesForAgeGroup } from '../games/catalog';
 import { tap } from '../feedback/feedback';
 import { ageGroupIcon, ageGroupLabel } from '../state/ageGroups';
 import { useApp } from '../state/AppProvider';
@@ -45,6 +45,7 @@ export function HomeScreen({
   const { progress, settings } = useApp();
   const stars = totalStars(progress);
   const ageGroup = settings.ageGroup;
+  const games = gamesForAgeGroup(ageGroup);
 
   return (
     <Screen>
@@ -95,7 +96,17 @@ export function HomeScreen({
       </View>
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
-        {GAMES.map((game) => {
+        {games.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyIcon} accessibilityElementsHidden importantForAccessibility="no">
+              🌱
+            </Text>
+            <Text style={styles.emptyText}>
+              More games are on the way for this age group. Try changing it in Parent Zone.
+            </Text>
+          </View>
+        ) : null}
+        {games.map((game) => {
           const gp = progressFor(progress, game.id);
           const earnedPips = Math.min(3, Math.ceil(gp.stars / 5));
 
@@ -173,6 +184,9 @@ const styles = StyleSheet.create({
   parentIcon: { fontSize: 30 },
   pressed: { opacity: 0.6 },
   list: { gap: space.md, paddingBottom: space.xl },
+  empty: { alignItems: 'center', padding: space.xl, gap: space.sm },
+  emptyIcon: { fontSize: 60 },
+  emptyText: { fontSize: font.body, color: palette.inkSoft, textAlign: 'center' },
   cardOuter: { borderRadius: radius.xl, ...shadow },
   cardPressed: { transform: [{ scale: 0.97 }], opacity: 0.94 },
   card: {

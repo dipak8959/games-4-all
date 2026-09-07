@@ -11,17 +11,17 @@ model is not a policy document; it is a build gate (see
 
 Three learning-basics games for roughly ages 3-7, none of which require reading:
 
-| Game | Practises |
-| --- | --- |
-| 🧠 **Find the Pairs** | Visual memory and concentration |
-| 🔢 **How Many?** | Counting and recognising numerals 1-12 |
-| 🔺 **Sort It Out** | Sorting by shape, colour, and size |
+| Game | Practises | Shown for |
+| --- | --- | --- |
+| 🧠 **Find the Pairs** | Visual memory and concentration | 3-4, 5-6, 7+ |
+| 🔢 **How Many?** | Counting and recognising numerals 1-12 | 3-4, 5-6 |
+| 🔺 **Sort It Out** | Sorting by shape, colour, and size | 3-4, 5-6, 7+ |
 
 Plus a **Parent Zone** behind a parent gate, holding screen-time limits, sound
 and motion toggles, the child's age group, a plain-language privacy statement,
 and a delete-all-data control.
 
-### Age group and adaptive difficulty
+### Age group: which games show, and how hard they start
 
 A one-time, first-launch setup step (`OnboardingScreen`, gated behind the
 parent gate — a child shouldn't be the one setting this) asks a grown-up
@@ -32,11 +32,26 @@ as a pill on Home next to the star count — no need to open Parent Zone just
 to see it — and it's changeable any time after, either by tapping that pill
 or in Parent Zone directly.
 
-Age group is a starting point, not a fixed setting from then on: each game's
-level drifts up or down round by round based on how the last round went
-(`nextLevel` in `src/games/types.ts`) — a perfect round nudges it up one
-step, a rough one nudges it down one step, never more than one step at a
-time. Parent Zone shows the level each game is currently sitting at.
+Age group does two genuinely different things, not one:
+
+1. **Filters the catalogue.** Each game declares a `minAgeGroup`/
+   `maxAgeGroup` (`src/games/catalog.ts`), and Home only shows games whose
+   range includes the current group — `gamesForAgeGroup`. Right now that
+   means "How Many?" (counting to 12) steps aside for the 7+ group, since
+   it's squarely a preschool skill by then; the other two games suit the
+   whole range. Parent Zone's game list is intentionally unfiltered, so a
+   parent can always see the full catalogue and why something isn't
+   showing on Home.
+2. **Seeds where a shown game's difficulty starts.** From there each game's
+   level drifts up or down round by round based on how the last round went
+   (`nextLevel` in `src/games/types.ts`) — a perfect round nudges it up one
+   step, a rough one nudges it down one step, never more than one step at a
+   time. Parent Zone shows the level each game is currently sitting at.
+
+Adding a game to the catalogue means picking its age range deliberately
+(what age is this actually appropriate or interesting for?), not defaulting
+to "all ages" — that default is what made every group look identical
+before this existed.
 
 ### Staying fresh round to round
 
@@ -108,9 +123,10 @@ src/
     ParentGateModal.tsx     The gate a grown-up passes
   state/
     AppProvider.tsx         Settings, progress, and usage accounting
-    settings.ts, progress.ts
+    settings.ts, progress.ts, ageGroups.ts, freshness.ts
   games/
-    registry.ts             The catalogue every other screen reads from
+    catalog.ts              Pure game metadata + age-group filtering (no React)
+    registry.ts             Attaches each game's Screen component to the catalogue
     memory/ counting/ shapes/
       logic.ts              Pure, seeded, unit-tested game rules
       *Screen.tsx           Presentation only
@@ -135,10 +151,14 @@ exactly one basket; every round is completable).
    `src/games/types.ts`) on "Play again" — see any existing game screen for
    the pattern. This is what makes the game's difficulty adaptive rather than
    fixed at whatever the parent chose as a starting point.
-4. Register it in `src/games/registry.ts`.
+4. Add an entry to `GAMES_META` in `src/games/catalog.ts`, including a
+   deliberate `minAgeGroup`/`maxAgeGroup` — don't default to "all ages"
+   without thinking about it; that's what made every age group identical
+   before this field existed. Register the screen component in
+   `src/games/registry.ts`'s `SCREEN_BY_ID`.
 
-The home screen, progress tracking, and the parent-facing skills list all read
-from the registry, so a game cannot ship half-wired.
+Home, progress tracking, and the parent-facing skills list all read from the
+catalogue, so a game cannot ship half-wired.
 
 Then run `npm run verify`.
 

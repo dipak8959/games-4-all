@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
@@ -11,13 +11,23 @@ import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { answer, createGame, QUESTIONS_PER_ROUND, type CountingState } from './logic';
 
+const GAME_ID = 'counting';
+
 export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
-  const { settings } = useApp();
+  const { settings, getFreshness, setFreshness } = useApp();
   // The prop only seeds the first round; from here the screen adapts locally
   // each round (via `nextLevel`) so "Play again" reflects the new difficulty
   // immediately, without waiting on a round-trip through app-level state.
   const [level, setLevel] = useState(initialLevel);
-  const [state, setState] = useState<CountingState>(() => createGame(systemRng, level));
+  const [state, setState] = useState<CountingState>(() => {
+    // Reading this once at mount, not reactively — see MemoryScreen for why.
+    const lastShown = getFreshness(GAME_ID);
+    return createGame(systemRng, level, typeof lastShown === 'string' ? lastShown : null);
+  });
+  // Guards against persisting the same completed round twice; reset whenever
+  // a new round actually starts. A ref rather than state because it drives
+  // no rendering of its own.
+  const persistedRef = useRef(false);
 
   const onChoose = useCallback(
     (choice: number) => {
@@ -32,9 +42,19 @@ export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }:
   );
 
   const restart = useCallback((atLevel: number, avoidSymbol: string | null) => {
+    persistedRef.current = false;
     setLevel(atLevel);
     setState(createGame(systemRng, atLevel, avoidSymbol));
   }, []);
+
+  useEffect(() => {
+    if (!state.complete || persistedRef.current) return;
+    persistedRef.current = true;
+    // Persisted so the very next time this game is opened — even after
+    // backing out to Home, even after the app is closed and reopened — the
+    // first question still avoids what was just shown.
+    setFreshness(GAME_ID, state.question.symbol);
+  }, [state.complete, state.question.symbol, setFreshness]);
 
   const stars = starsForMistakes(state.mistakes);
   const progress = state.questionIndex / QUESTIONS_PER_ROUND;

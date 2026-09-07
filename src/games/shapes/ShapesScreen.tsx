@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
@@ -11,9 +11,11 @@ import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import {
   createGame,
   currentItem,
+  deserializeHistory,
   historyFrom,
   isMatch,
   place,
+  serializeHistory,
   type Basket,
   type ShapesHistory,
   type ShapesState,
@@ -31,13 +33,21 @@ function basketLabel(state: ShapesState, basket: Basket): string {
   return `Basket for ${word}`;
 }
 
+const GAME_ID = 'shapes';
+
 export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
-  const { settings } = useApp();
+  const { settings, getFreshness, setFreshness } = useApp();
   // The prop only seeds the first round; from here the screen adapts locally
   // each round (via `nextLevel`) so "Play again" reflects the new difficulty
   // immediately, without waiting on a round-trip through app-level state.
   const [level, setLevel] = useState(initialLevel);
-  const [state, setState] = useState<ShapesState>(() => createGame(systemRng, level));
+  const [state, setState] = useState<ShapesState>(() => {
+    // Reading this once at mount, not reactively — see MemoryScreen for why.
+    return createGame(systemRng, level, deserializeHistory(getFreshness(GAME_ID)));
+  });
+  // Guards against persisting the same completed round twice; reset whenever
+  // a new round actually starts.
+  const persistedRef = useRef(false);
 
   const item = currentItem(state);
 
@@ -57,9 +67,19 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
   );
 
   const restart = useCallback((atLevel: number, avoid: ShapesHistory) => {
+    persistedRef.current = false;
     setLevel(atLevel);
     setState(createGame(systemRng, atLevel, avoid));
   }, []);
+
+  useEffect(() => {
+    if (!state.complete || persistedRef.current) return;
+    persistedRef.current = true;
+    // Persisted so the very next time this game is opened — even after
+    // backing out to Home, even after the app is closed and reopened — it
+    // still avoids what was just shown.
+    setFreshness(GAME_ID, serializeHistory(historyFrom(state)));
+  }, [state, setFreshness]);
 
   const stars = starsForMistakes(state.mistakes);
   const progress = state.queue.length ? state.placed / state.queue.length : 0;

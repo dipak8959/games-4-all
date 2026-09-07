@@ -15,13 +15,20 @@ import { createGame, flip, hasPendingPair, resolvePair, type MemoryState } from 
  *  for a young child to register both cards. */
 const PEEK_MS = 1100;
 
+const GAME_ID = 'memory';
+
 export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
-  const { settings } = useApp();
+  const { settings, getFreshness, setFreshness } = useApp();
   // The prop only seeds the first round; from here the screen adapts locally
   // each round (via `nextLevel`) so "Play again" reflects the new difficulty
   // immediately, without waiting on a round-trip through app-level state.
   const [level, setLevel] = useState(initialLevel);
-  const [state, setState] = useState<MemoryState>(() => createGame(systemRng, level));
+  const [state, setState] = useState<MemoryState>(() => {
+    // Reading this once at mount, not reactively, means a parent finishing a
+    // round elsewhere can't retroactively change a round already in progress.
+    const lastShown = getFreshness(GAME_ID);
+    return createGame(systemRng, level, new Set(Array.isArray(lastShown) ? lastShown : []));
+  });
   const [done, setDone] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -51,8 +58,13 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
   }, [state, settings, clearTimer]);
 
   useEffect(() => {
-    if (state.complete && !done) setDone(true);
-  }, [state.complete, done]);
+    if (!state.complete || done) return;
+    setDone(true);
+    // Persisted (not just kept in local state) so the very next time this
+    // game is opened — even after backing out to Home, even after the app
+    // is closed and reopened — it still avoids what was just shown.
+    setFreshness(GAME_ID, state.cards.map((c) => c.symbol));
+  }, [state.complete, done, state.cards, setFreshness]);
 
   const onFlip = useCallback(
     (index: number) => {

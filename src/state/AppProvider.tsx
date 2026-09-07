@@ -21,6 +21,7 @@ import {
 } from '../safety/screenTime';
 import { DEFAULT_SETTINGS, type Settings } from './settings';
 import { EMPTY_PROGRESS, progressFor, recordRound, type Progress } from './progress';
+import { EMPTY_FRESHNESS, freshnessFor, withFreshness, type Freshness } from './freshness';
 
 /**
  * Single source of truth for settings, progress, and screen-time accounting.
@@ -43,6 +44,10 @@ type AppContextValue = {
   /** The level a game should open at: its own adaptive level once it has been
    *  played, or the parent's chosen starting difficulty before that. */
   readonly levelForGame: (gameId: string) => number;
+  /** What a game last showed, so it can avoid repeating it — survives leaving
+   *  the game and reopening the app, not just "Play again" within a session. */
+  readonly getFreshness: (gameId: string) => unknown;
+  readonly setFreshness: (gameId: string, value: unknown) => void;
   readonly startPlaying: () => void;
   readonly stopPlaying: () => void;
   readonly resetEverything: () => Promise<void>;
@@ -55,6 +60,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [progress, setProgress] = useState<Progress>(EMPTY_PROGRESS);
   const [usage, setUsage] = useState<UsageState>(() => emptyUsage(new Date()));
+  const [freshness, setFreshnessState] = useState<Freshness>(EMPTY_FRESHNESS);
 
   /** Whether a game screen is currently mounted and foregrounded. */
   const playingRef = useRef(false);
@@ -64,16 +70,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [loadedSettings, loadedProgress, loadedUsage] = await Promise.all([
+      const [loadedSettings, loadedProgress, loadedUsage, loadedFreshness] = await Promise.all([
         readJson<Settings>(StorageKeys.settings, DEFAULT_SETTINGS),
         readJson<Progress>(StorageKeys.progress, EMPTY_PROGRESS),
         readJson<UsageState>(StorageKeys.usage, emptyUsage(new Date())),
+        readJson<Freshness>(StorageKeys.freshness, EMPTY_FRESHNESS),
       ]);
       if (cancelled) return;
       setSettings(loadedSettings);
       setProgress(loadedProgress);
       // A fresh launch is always a fresh sitting.
       setUsage(endSession(rolloverIfNeeded(loadedUsage, new Date())));
+      setFreshnessState(loadedFreshness);
       setReady(true);
     })();
     return () => {
@@ -177,11 +185,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [progress, settings.difficulty],
   );
 
+  const getFreshness = useCallback((gameId: string) => freshnessFor(freshness, gameId), [freshness]);
+
+  const setFreshness = useCallback((gameId: string, value: unknown) => {
+    setFreshnessState((prev) => {
+      const next = withFreshness(prev, gameId, value);
+      void writeJson(StorageKeys.freshness, next);
+      return next;
+    });
+  }, []);
+
   const resetEverything = useCallback(async () => {
     await eraseAllData();
     setSettings(DEFAULT_SETTINGS);
     setProgress(EMPTY_PROGRESS);
     setUsage(emptyUsage(new Date()));
+    setFreshnessState(EMPTY_FRESHNESS);
   }, []);
 
   const verdict = useMemo(() => evaluate(usage, settings), [usage, settings]);
@@ -196,6 +215,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateSettings,
       finishRound,
       levelForGame,
+      getFreshness,
+      setFreshness,
       startPlaying,
       stopPlaying,
       resetEverything,
@@ -209,6 +230,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateSettings,
       finishRound,
       levelForGame,
+      getFreshness,
+      setFreshness,
       startPlaying,
       stopPlaying,
       resetEverything,

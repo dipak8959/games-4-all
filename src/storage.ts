@@ -16,6 +16,7 @@ export const StorageKeys = {
   settings: `${PREFIX}settings`,
   progress: `${PREFIX}progress`,
   usage: `${PREFIX}usage`,
+  freshness: `${PREFIX}freshness`,
 } as const;
 
 export type StorageKey = (typeof StorageKeys)[keyof typeof StorageKeys];

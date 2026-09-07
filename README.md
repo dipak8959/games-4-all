@@ -48,8 +48,14 @@ This only ever *excludes* recent content, never fails a round: if avoiding
 would leave too few items to fill it (an exhausted pool at a high basket
 count, say), it tops back up from the avoided set rather than breaking. It's
 bounded variety within a fixed, kid-safe content pool, not literally
-unlimited content, and it resets whenever a game is freshly opened from
-Home — the "just used" memory only lives within one continuous play session.
+unlimited content.
+
+What each game last showed is persisted (`g4a:freshness`, via
+`getFreshness`/`setFreshness` on `AppProvider`), so the "just used" memory
+survives backing out to Home and reopening the game, and survives the app
+being closed and reopened entirely — not just "Play again" within one
+sitting. A game's very first-ever round, before anything has been persisted
+for it, is unaffected.
 
 ## Getting started
 

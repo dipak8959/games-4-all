@@ -109,6 +109,31 @@ export const EMPTY_SHAPES_HISTORY: ShapesHistory = {
   colors: new Set(),
 };
 
+/** JSON-safe form of `ShapesHistory`, for persisting it (a `Set` doesn't
+ *  survive `JSON.stringify`). */
+export type SerializedShapesHistory = {
+  readonly sortBy: SortBy | null;
+  readonly shapes: readonly ShapeKind[];
+  readonly colors: readonly ColorKind[];
+};
+
+export function serializeHistory(history: ShapesHistory): SerializedShapesHistory {
+  return { sortBy: history.sortBy, shapes: [...history.shapes], colors: [...history.colors] };
+}
+
+/** Accepts whatever a storage read hands back — including `undefined` for a
+ *  game that has never been played, or a shape that doesn't match if storage
+ *  ever changed format — and always returns a usable history. */
+export function deserializeHistory(data: unknown): ShapesHistory {
+  if (!data || typeof data !== 'object') return EMPTY_SHAPES_HISTORY;
+  const { sortBy, shapes, colors } = data as Partial<SerializedShapesHistory>;
+  return {
+    sortBy: sortBy === 'shape' || sortBy === 'color' || sortBy === 'size' ? sortBy : null,
+    shapes: new Set(Array.isArray(shapes) ? shapes : []),
+    colors: new Set(Array.isArray(colors) ? colors : []),
+  };
+}
+
 export function createGame(rng: Rng, level: number, avoid: ShapesHistory = EMPTY_SHAPES_HISTORY): ShapesState {
   const sortBy = sortRuleForLevel(rng, level, avoid.sortBy);
 

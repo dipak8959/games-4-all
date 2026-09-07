@@ -25,16 +25,21 @@ violation. The rules live in `scripts/check-safety.mjs`.
 
 ## What the app does store
 
-Three keys in the device's own sandboxed storage, listed in `src/storage.ts`:
+Four keys in the device's own sandboxed storage, listed in `src/storage.ts`:
 
 - `g4a:settings` — parent-chosen limits and toggles
-- `g4a:progress` — rounds played and stars earned per game
+- `g4a:progress` — rounds played, stars earned, and the current adaptive
+  level per game
 - `g4a:usage` — today's play time
+- `g4a:freshness` — which pictures, numerals, or sorting rule each game most
+  recently showed, so the next round avoids repeating it (see "Staying fresh
+  round to round" in `README.md`)
 
 No identifiers, no timestamps beyond the current day, no free text, nothing
-about the child. Parent Zone offers **Delete all data**, which removes all
-three. Because the key list is closed and enumerated, that deletion is complete
-by construction.
+about the child — `g4a:freshness` in particular holds nothing but content
+already visible on screen a moment earlier. Parent Zone offers **Delete all
+data**, which removes all four. Because the key list is closed and
+enumerated, that deletion is complete by construction.
 
 ## Screen time
 

@@ -20,10 +20,13 @@ import {
   basketsForLevel,
   createGame as createShapes,
   currentItem,
+  deserializeHistory,
+  EMPTY_SHAPES_HISTORY,
   historyFrom,
   isMatch,
   ITEMS_PER_ROUND,
   place,
+  serializeHistory,
   sortRuleForLevel,
 } from '../src/games/shapes/logic.ts';
 import { starsForMistakes } from '../src/games/types.ts';
@@ -321,6 +324,27 @@ test('sorting every item correctly completes the round', () => {
   assert.equal(state.complete, true);
   assert.equal(state.mistakes, 0);
   assert.equal(currentItem(state), null);
+});
+
+test('shapes history survives a JSON round trip (Sets are not JSON-safe on their own)', () => {
+  for (let seed = 0; seed < 50; seed++) {
+    const state = createShapes(seededRng(seed), 5);
+    const original = historyFrom(state);
+
+    const roundTripped = JSON.parse(JSON.stringify(serializeHistory(original)));
+    const restored = deserializeHistory(roundTripped);
+
+    assert.equal(restored.sortBy, original.sortBy);
+    assert.deepEqual([...restored.shapes].sort(), [...original.shapes].sort());
+    assert.deepEqual([...restored.colors].sort(), [...original.colors].sort());
+  }
+});
+
+test('deserializeHistory tolerates missing, malformed, or absent storage', () => {
+  assert.deepEqual(deserializeHistory(undefined), EMPTY_SHAPES_HISTORY);
+  assert.deepEqual(deserializeHistory(null), EMPTY_SHAPES_HISTORY);
+  assert.deepEqual(deserializeHistory('not an object'), EMPTY_SHAPES_HISTORY);
+  assert.deepEqual(deserializeHistory({ sortBy: 'nonsense', shapes: 'not an array' }), EMPTY_SHAPES_HISTORY);
 });
 
 // --- scoring ----------------------------------------------------------------

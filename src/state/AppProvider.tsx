@@ -181,8 +181,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [persistUsage]);
 
   const levelForGame = useCallback(
-    (gameId: string) => progressFor(progress, gameId).currentLevel ?? settings.difficulty,
-    [progress, settings.difficulty],
+    (gameId: string) => progressFor(progress, gameId).currentLevel ?? settings.ageGroup,
+    [progress, settings.ageGroup],
   );
 
   const getFreshness = useCallback((gameId: string) => freshnessFor(freshness, gameId), [freshness]);

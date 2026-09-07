@@ -5,6 +5,7 @@ import { GradientSurface } from '../components/GradientSurface';
 import { Screen } from '../components/Screen';
 import { GAMES } from '../games/registry';
 import { tap } from '../feedback/feedback';
+import { ageGroupIcon, ageGroupLabel } from '../state/ageGroups';
 import { useApp } from '../state/AppProvider';
 import { progressFor, totalStars } from '../state/progress';
 import {
@@ -43,6 +44,7 @@ export function HomeScreen({
 }) {
   const { progress, settings } = useApp();
   const stars = totalStars(progress);
+  const ageGroup = settings.ageGroup;
 
   return (
     <Screen>
@@ -62,8 +64,22 @@ export function HomeScreen({
           <Text style={styles.title} accessibilityRole="header">
             Games 4 All 👋
           </Text>
-          <View style={styles.starBadge} accessibilityLabel={`${stars} stars collected`}>
-            <Text style={styles.starBadgeText}>⭐ {stars}</Text>
+          <View style={styles.pillRow}>
+            <View style={styles.starBadge} accessibilityLabel={`${stars} stars collected`}>
+              <Text style={styles.starBadgeText}>⭐ {stars}</Text>
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Age group: ${ageGroupLabel(ageGroup)}. Tap to change, grown-ups only.`}
+              onPress={onOpenParentZone}
+              hitSlop={6}
+              style={({ pressed }) => [styles.ageBadge, pressed && styles.pressed]}
+            >
+              <Text style={styles.ageBadgeText}>
+                {ageGroupIcon(ageGroup)} {ageGroupLabel(ageGroup)}
+              </Text>
+            </Pressable>
           </View>
         </View>
 
@@ -124,6 +140,7 @@ const styles = StyleSheet.create({
   sparkle: { position: 'absolute', fontSize: 22, opacity: 0.7 },
   headerText: { flex: 1, gap: space.xs },
   title: { fontSize: font.title, fontWeight: '800', color: palette.ink },
+  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
   starBadge: {
     alignSelf: 'flex-start',
     backgroundColor: palette.sunLight,
@@ -131,6 +148,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.md,
     paddingVertical: space.xs,
   },
+  ageBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: palette.surface,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    borderColor: palette.border,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+  },
+  ageBadgeText: { fontSize: font.body - 3, fontWeight: '800', color: palette.ink },
   starBadgeText: { fontSize: font.body - 3, fontWeight: '800', color: palette.ink },
   parentButton: {
     width: hitTarget,

@@ -7,6 +7,7 @@ import { findGame } from './src/games/registry';
 import type { RoundResult } from './src/games/types';
 import { ParentGateModal } from './src/safety/ParentGateModal';
 import { HomeScreen } from './src/screens/HomeScreen';
+import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { ParentZoneScreen } from './src/screens/ParentZoneScreen';
 import { TimeUpScreen } from './src/screens/TimeUpScreen';
 import { AppProvider, useApp } from './src/state/AppProvider';
@@ -26,7 +27,8 @@ type Route =
   | { readonly name: 'parent' };
 
 function Root() {
-  const { ready, verdict, finishRound, levelForGame, startPlaying, stopPlaying } = useApp();
+  const { ready, settings, updateSettings, verdict, finishRound, levelForGame, startPlaying, stopPlaying } =
+    useApp();
   const [route, setRoute] = useState<Route>({ name: 'home' });
   const [gateOpen, setGateOpen] = useState(false);
 
@@ -56,6 +58,16 @@ function Root() {
       <View style={styles.loading}>
         <ActivityIndicator size="large" color={palette.sky} />
       </View>
+    );
+  }
+
+  // Outranks every other route: nothing else is reachable until a grown-up
+  // has picked an age group or explicitly skipped doing so.
+  if (!settings.onboardingComplete) {
+    return (
+      <OnboardingScreen
+        onDone={(ageGroup) => updateSettings({ ageGroup, onboardingComplete: true })}
+      />
     );
   }
 

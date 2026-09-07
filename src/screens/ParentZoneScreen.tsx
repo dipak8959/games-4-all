@@ -7,6 +7,7 @@ import { Screen } from '../components/Screen';
 import { GAMES } from '../games/registry';
 import { MAX_LEVEL } from '../games/types';
 import { formatMinutes, LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
+import { AGE_GROUPS } from '../state/ageGroups';
 import { useApp } from '../state/AppProvider';
 import { progressFor } from '../state/progress';
 import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
@@ -55,6 +56,23 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
           />
         </Section>
 
+        <Section title="🧒 Age group">
+          <View style={styles.chips}>
+            {AGE_GROUPS.map((group) => (
+              <Chip
+                key={group.level}
+                label={`${group.icon} ${group.label}`}
+                selected={settings.ageGroup === group.level}
+                onPress={() => updateSettings({ ageGroup: group.level })}
+              />
+            ))}
+          </View>
+          <Text style={styles.caption}>
+            Where a new game starts. After that, each game quietly gets a little
+            easier or harder round to round, based on how it's going.
+          </Text>
+        </Section>
+
         <Section title="🎮 Play">
           <Toggle
             label="Sound effects"
@@ -71,22 +89,6 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
             value={settings.reduceMotion}
             onChange={(v) => updateSettings({ reduceMotion: v })}
           />
-
-          <Text style={styles.rowLabel}>Starting difficulty</Text>
-          <View style={styles.chips}>
-            {([1, 2, 3] as const).map((level) => (
-              <Chip
-                key={level}
-                label={['Easy', 'Medium', 'Harder'][level - 1]}
-                selected={settings.difficulty === level}
-                onPress={() => updateSettings({ difficulty: level })}
-              />
-            ))}
-          </View>
-          <Text style={styles.caption}>
-            Where a new game starts. After that, each game quietly gets a little
-            easier or harder round to round, based on how it's going.
-          </Text>
         </Section>
 
         <Section title="🧩 What each game practises">

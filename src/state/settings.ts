@@ -1,4 +1,5 @@
 import { DEFAULT_LIMITS, type ScreenTimeLimits } from '../safety/screenTime';
+import { DEFAULT_AGE_GROUP, type AgeGroupLevel } from './ageGroups';
 
 export type Settings = ScreenTimeLimits & {
   /** Sound effects for correct/incorrect feedback. */
@@ -7,8 +8,14 @@ export type Settings = ScreenTimeLimits & {
   readonly hapticsOn: boolean;
   /** Honours a child who is sensitive to movement; also mirrors the OS setting. */
   readonly reduceMotion: boolean;
-  /** Difficulty floor chosen by a parent, 1-3. Games still adapt within it. */
-  readonly difficulty: 1 | 2 | 3;
+  /** Seeds where each game's adaptive difficulty starts — see `nextLevel` in
+   *  `src/games/types.ts` for how it moves from there. Chosen once at first
+   *  launch (`OnboardingScreen`) and changeable any time after in Parent
+   *  Zone; never gates which games are shown, only their starting level. */
+  readonly ageGroup: AgeGroupLevel;
+  /** Whether the first-launch age-group step has been completed — picked or
+   *  explicitly skipped. Gates `OnboardingScreen` in `App.tsx`. */
+  readonly onboardingComplete: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -16,5 +23,6 @@ export const DEFAULT_SETTINGS: Settings = {
   soundOn: true,
   hapticsOn: true,
   reduceMotion: false,
-  difficulty: 1,
+  ageGroup: DEFAULT_AGE_GROUP,
+  onboardingComplete: false,
 };

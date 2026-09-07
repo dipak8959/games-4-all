@@ -18,17 +18,25 @@ Three learning-basics games for roughly ages 3-7, none of which require reading:
 | 🔺 **Sort It Out** | Sorting by shape, colour, and size |
 
 Plus a **Parent Zone** behind a parent gate, holding screen-time limits, sound
-and motion toggles, a starting difficulty, a plain-language privacy statement,
+and motion toggles, the child's age group, a plain-language privacy statement,
 and a delete-all-data control.
 
-### Adaptive difficulty
+### Age group and adaptive difficulty
 
-Each game's level isn't fixed — it drifts up or down round by round based on
-how the last round went (`nextLevel` in `src/games/types.ts`): a perfect round
-nudges it up one step, a rough one nudges it down one step, never more than
-one step at a time. The parent's "Starting difficulty" in Parent Zone only
-seeds where a game *begins*; after that it adapts on its own, and Parent Zone
-shows the level it's currently sitting at for each game.
+A one-time, first-launch setup step (`OnboardingScreen`, gated behind the
+parent gate — a child shouldn't be the one setting this) asks a grown-up
+which age group the app is for: 3-4, 5-6, or 7+ (`src/state/ageGroups.ts`).
+"Skip for now" is available without the gate and defaults to the middle
+group, so setup never blocks play. The current age group is always visible
+as a pill on Home next to the star count — no need to open Parent Zone just
+to see it — and it's changeable any time after, either by tapping that pill
+or in Parent Zone directly.
+
+Age group is a starting point, not a fixed setting from then on: each game's
+level drifts up or down round by round based on how the last round went
+(`nextLevel` in `src/games/types.ts`) — a perfect round nudges it up one
+step, a rough one nudges it down one step, never more than one step at a
+time. Parent Zone shows the level each game is currently sitting at.
 
 ### Staying fresh round to round
 

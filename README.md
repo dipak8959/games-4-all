@@ -9,15 +9,15 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Five learning-basics games spanning roughly ages 3-7+. The first three need
-no reading at all; the last two are the deliberate exceptions, built for the
-7+ group specifically:
+Five learning-basics games spanning roughly ages 3-7+: three preschool
+fundamentals for the 3-4 and 5-6 groups, and two dedicated 7+ games built
+around skills a preschooler isn't ready for yet:
 
 | Game | Practises | Shown for |
 | --- | --- | --- |
-| 🧠 **Find the Pairs** | Visual memory and concentration | 3-4, 5-6, 7+ |
+| 🧠 **Find the Pairs** | Visual memory and concentration | 3-4, 5-6 |
 | 🔢 **How Many?** | Counting and recognising numerals 1-12 | 3-4, 5-6 |
-| 🔺 **Sort It Out** | Sorting by shape, colour, and size | 3-4, 5-6, 7+ |
+| 🔺 **Sort It Out** | Sorting by shape, colour, and size | 3-4, 5-6 |
 | 🔤 **Spell It!** | Reading and spelling simple words | 7+ |
 | 🧩 **Sudoku** | Logical reasoning and number placement | 7+ |
 
@@ -40,15 +40,15 @@ Age group does two genuinely different things, not one:
 
 1. **Filters the catalogue.** Each game declares a `minAgeGroup`/
    `maxAgeGroup` (`src/games/catalog.ts`), and Home only shows games whose
-   range includes the current group — `gamesForAgeGroup`. Right now that
-   means "How Many?" (counting to 12) steps aside for the 7+ group, since
-   it's squarely a preschool skill by then, while "Spell It!" (reading and
-   spelling) and "Sudoku" (multi-step logical reasoning) do the opposite —
-   they only appear for 7+, since the younger groups either can't read yet
-   or aren't ready to hold a row/column/box rule in mind at once. "Find the
-   Pairs" and "Sort It Out" suit the whole range. Parent Zone's game list is
-   intentionally unfiltered, so a parent can always see the full catalogue
-   and why something isn't showing on Home.
+   range includes the current group — `gamesForAgeGroup`. The three
+   preschool games — "Find the Pairs", "How Many?", and "Sort It Out" — are
+   squarely 3-4/5-6 skills and step aside once a child reaches the 7+ group,
+   which gets its own dedicated pair instead: "Spell It!" (reading and
+   spelling, since the younger groups include children who can't read yet)
+   and "Sudoku" (multi-step logical reasoning across a row/column/box at
+   once, a later-developing skill than either counting or simple sorting).
+   Parent Zone's game list is intentionally unfiltered, so a parent can
+   always see the full catalogue and why something isn't showing on Home.
 2. **Seeds where a shown game's difficulty starts.** From there each game's
    level drifts up or down round by round based on how the last round went
    (`nextLevel` in `src/games/types.ts`) — a perfect round nudges it up one

@@ -43,9 +43,11 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: '🧠',
     color: palette.sky,
     skill: 'Visual memory and concentration',
-    ages: '3-7',
+    ages: '3-6',
     minAgeGroup: 1,
-    maxAgeGroup: 3,
+    // A simple visual match is squarely a preschool challenge; by 7 it's not
+    // enough of a stretch to earn its place next to genuinely 7+ content.
+    maxAgeGroup: 2,
   },
   {
     id: 'counting',
@@ -65,9 +67,11 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: '🔺',
     color: palette.leaf,
     skill: 'Sorting by shape, colour, and size',
-    ages: '3-7',
+    ages: '3-6',
     minAgeGroup: 1,
-    maxAgeGroup: 3,
+    // Sorting by shape/colour/size is a preschool fundamental; the 7+ group
+    // gets its own dedicated content (Spell It!, Sudoku) rather than this.
+    maxAgeGroup: 2,
   },
   {
     id: 'wordbuilder',

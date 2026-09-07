@@ -59,6 +59,19 @@ test('Sudoku requires multi-step logical reasoning, so it is restricted to the 7
   assert.ok(ids(3).includes('sudoku'), 'missing from the 7+ group');
 });
 
+test('Find the Pairs and Sort It Out are preschool fundamentals, not shown to the 7+ group', () => {
+  const ids = (level: 1 | 2 | 3) => gamesForAgeGroup(level).map((g) => g.id);
+  assert.ok(ids(1).includes('memory') && ids(1).includes('shapes'), 'missing from the 3-4 group');
+  assert.ok(ids(2).includes('memory') && ids(2).includes('shapes'), 'missing from the 5-6 group');
+  assert.ok(!ids(3).includes('memory'), 'Find the Pairs shown to the 7+ group');
+  assert.ok(!ids(3).includes('shapes'), 'Sort It Out shown to the 7+ group');
+});
+
+test('the 7+ group is exactly Spell It! and Sudoku', () => {
+  const ids = new Set(gamesForAgeGroup(3).map((g) => g.id));
+  assert.deepEqual(ids, new Set(['wordbuilder', 'sudoku']));
+});
+
 test('How Many? and Spell It! are never both hidden from the same age group', () => {
   // A sanity check on the catalogue as a whole: every group should have a
   // reasonable spread, not accidentally lose most of its games.

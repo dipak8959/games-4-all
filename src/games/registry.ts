@@ -3,6 +3,7 @@ import { CountingScreen } from './counting/CountingScreen';
 import { MemoryScreen } from './memory/MemoryScreen';
 import { ShapesScreen } from './shapes/ShapesScreen';
 import type { GameDefinition } from './types';
+import { WordBuilderScreen } from './wordbuilder/WordBuilderScreen';
 
 /**
  * Attaches each game's screen component to its catalogue metadata.
@@ -16,6 +17,7 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   memory: MemoryScreen,
   counting: CountingScreen,
   shapes: ShapesScreen,
+  wordbuilder: WordBuilderScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

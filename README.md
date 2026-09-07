@@ -9,13 +9,15 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Three learning-basics games for roughly ages 3-7, none of which require reading:
+Four learning-basics games spanning roughly ages 3-7+. The first three need
+no reading at all; the fourth is the deliberate exception, built for readers:
 
 | Game | Practises | Shown for |
 | --- | --- | --- |
 | 🧠 **Find the Pairs** | Visual memory and concentration | 3-4, 5-6, 7+ |
 | 🔢 **How Many?** | Counting and recognising numerals 1-12 | 3-4, 5-6 |
 | 🔺 **Sort It Out** | Sorting by shape, colour, and size | 3-4, 5-6, 7+ |
+| 🔤 **Spell It!** | Reading and spelling simple words | 7+ |
 
 Plus a **Parent Zone** behind a parent gate, holding screen-time limits, sound
 and motion toggles, the child's age group, a plain-language privacy statement,
@@ -38,10 +40,12 @@ Age group does two genuinely different things, not one:
    `maxAgeGroup` (`src/games/catalog.ts`), and Home only shows games whose
    range includes the current group — `gamesForAgeGroup`. Right now that
    means "How Many?" (counting to 12) steps aside for the 7+ group, since
-   it's squarely a preschool skill by then; the other two games suit the
-   whole range. Parent Zone's game list is intentionally unfiltered, so a
-   parent can always see the full catalogue and why something isn't
-   showing on Home.
+   it's squarely a preschool skill by then, while "Spell It!" (reading and
+   spelling) does the opposite — it only appears for 7+, since the younger
+   groups include children who can't read yet. "Find the Pairs" and "Sort
+   It Out" suit the whole range. Parent Zone's game list is intentionally
+   unfiltered, so a parent can always see the full catalogue and why
+   something isn't showing on Home.
 2. **Seeds where a shown game's difficulty starts.** From there each game's
    level drifts up or down round by round based on how the last round went
    (`nextLevel` in `src/games/types.ts`) — a perfect round nudges it up one
@@ -127,7 +131,7 @@ src/
   games/
     catalog.ts              Pure game metadata + age-group filtering (no React)
     registry.ts             Attaches each game's Screen component to the catalogue
-    memory/ counting/ shapes/
+    memory/ counting/ shapes/ wordbuilder/
       logic.ts              Pure, seeded, unit-tested game rules
       *Screen.tsx           Presentation only
   screens/                  Home, Parent Zone, time's-up

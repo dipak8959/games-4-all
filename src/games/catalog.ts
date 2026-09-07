@@ -69,6 +69,20 @@ export const GAMES_META: readonly GameMeta[] = [
     minAgeGroup: 1,
     maxAgeGroup: 3,
   },
+  {
+    id: 'wordbuilder',
+    title: 'Spell It!',
+    icon: '🔤',
+    color: palette.grape,
+    skill: 'Reading and spelling simple words',
+    ages: '7+',
+    // The one game in the catalogue that requires reading, which is why it's
+    // the one game restricted to a single age group rather than spanning the
+    // whole range — the 3-4 and 5-6 groups include children who can't read
+    // yet, and this app never assumes otherwise.
+    minAgeGroup: 3,
+    maxAgeGroup: 3,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

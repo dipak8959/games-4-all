@@ -72,7 +72,9 @@ time limit.
 
 ## Design rules for the games themselves
 
-Safety for this age group is as much about tone as about data:
+Safety for this age range is as much about tone as about data. Every rule
+below holds for every game in the catalogue, including "Spell It!" — the one
+game where reading is the point rather than something to avoid:
 
 - **No losing.** No timers, no lives, no game-over. A round ends when it is
   finished; a wrong answer produces a soft nudge and the child tries again.
@@ -81,7 +83,13 @@ Safety for this age group is as much about tone as about data:
 - **No engagement mechanics.** No streaks, no daily-login rewards, no
   notifications, no "come back tomorrow" pressure. Nothing here is designed to
   maximise time-in-app — the screen-time limits point the other way.
-- **No reading required.** Games are navigated by icon, colour, and shape.
+- **Reading is never required to navigate or play, except where it's the
+  explicit skill.** Home, Parent Zone, and three of the four games are
+  navigated entirely by icon, colour, and shape — no child needs to read
+  anything to use this app. "Spell It!" is the deliberate exception: it
+  teaches reading and spelling, so reading its own picture clue is the task,
+  not a barrier to it. It's restricted to the 7+ age group for exactly this
+  reason — see `src/games/catalog.ts`.
 - **Colour is never the only signal.** The palette is Okabe-Ito derived, and
   anything identified by colour also differs in shape, so the games work for
   colour-blind players.

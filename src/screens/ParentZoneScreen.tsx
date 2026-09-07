@@ -1,7 +1,8 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { BigButton } from '../components/BigButton';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { Screen } from '../components/Screen';
 import { GAMES } from '../games/registry';
 import { MAX_LEVEL } from '../games/types';
@@ -20,22 +21,11 @@ import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens
 export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) {
   const { settings, progress, usage, updateSettings, resetEverything, levelForGame } = useApp();
   const [erased, setErased] = useState(false);
+  const [confirmingErase, setConfirmingErase] = useState(false);
 
-  const confirmErase = useCallback(() => {
-    Alert.alert(
-      'Delete all data?',
-      'This removes play history and settings from this device. It cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            void resetEverything().then(() => setErased(true));
-          },
-        },
-      ],
-    );
+  const eraseNow = useCallback(() => {
+    setConfirmingErase(false);
+    void resetEverything().then(() => setErased(true));
   }, [resetEverything]);
 
   return (
@@ -132,12 +122,23 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
             label={erased ? 'Data deleted' : 'Delete all data'}
             icon={erased ? '✅' : '🗑️'}
             color={palette.berry}
-            onPress={confirmErase}
+            onPress={() => setConfirmingErase(true)}
             disabled={erased}
             style={styles.erase}
           />
         </Section>
       </ScrollView>
+
+      <ConfirmModal
+        visible={confirmingErase}
+        icon="🗑️"
+        title="Delete all data?"
+        body="This removes play history and settings from this device. It cannot be undone."
+        confirmLabel="Delete"
+        confirmColor={palette.berry}
+        onConfirm={eraseNow}
+        onCancel={() => setConfirmingErase(false)}
+      />
     </Screen>
   );
 }

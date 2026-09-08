@@ -143,11 +143,11 @@ export const GAMES_META: readonly GameMeta[] = [
     title: 'Number Crunch',
     icon: '➕',
     color: palette.teal,
-    skill: 'Mental arithmetic',
+    skill: 'Mental arithmetic: addition, subtraction, multiplication, division',
     ages: '6+',
     category: 'numbers',
     minAge: 6,
-    // Scales from single-digit addition up through multiplication, so it
+    // Scales from single-digit addition all the way through division, so it
     // has real headroom rather than topping out at what a young child needs.
     maxAge: 99,
   },

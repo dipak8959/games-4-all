@@ -3,14 +3,23 @@ import { pick, randInt, shuffle, type Rng } from '../../util/random';
 /**
  * Number Crunch.
  *
- * Straightforward mental arithmetic, scaling from single-digit addition up
- * through subtraction and, at the highest levels, multiplication — real
+ * Straightforward mental arithmetic across all four operations — real
  * headroom rather than topping out at what a young child needs, which is
  * what keeps this worth playing well past the age other numeracy games in
  * this app are built for.
+ *
+ * Operators are gated by *level*, not age directly, in the order most
+ * children actually meet them at school: addition, then subtraction, then
+ * multiplication, then division. A profile's age only seeds where a game's
+ * level starts (`DEFAULT_LEVEL`, same as every other game) — from there the
+ * level adapts to how the child is actually doing (`nextLevel`), so a
+ * confident 6-year-old can work up to multiplication and a returning adult
+ * isn't stuck re-proving addition. Division only ever appears once
+ * multiplication is already in play, and is always constructed to divide
+ * evenly — no fractions, no rounding, so an answer is never ambiguous.
  */
 
-export type Operator = '+' | '-' | '×';
+export type Operator = '+' | '-' | '×' | '÷';
 
 export type NumberCrunchQuestion = {
   readonly a: number;
@@ -32,12 +41,14 @@ export type NumberCrunchState = {
 
 export const QUESTIONS_PER_ROUND = 6;
 
-/** Which operators are in play at a level. Addition only at first, then
- *  subtraction joins, then multiplication at the hardest levels. */
+/** Which operators are in play at a level — the school order: addition,
+ *  then subtraction joins, then multiplication, then division once
+ *  multiplication is established. */
 export function operatorsForLevel(level: number): readonly Operator[] {
   if (level <= 2) return ['+'];
-  if (level <= 4) return ['+', '-'];
-  return ['+', '-', '×'];
+  if (level === 3) return ['+', '-'];
+  if (level === 4) return ['+', '-', '×'];
+  return ['+', '-', '×', '÷'];
 }
 
 function questionKey(a: number, operator: Operator, b: number): string {
@@ -73,14 +84,25 @@ export function createQuestion(
       a = randInt(rng, 1, max);
       // b never exceeds a, so the result is never negative.
       b = randInt(rng, 0, a);
+    } else if (operator === '×') {
+      const max = level <= 4 ? 10 : 12;
+      a = randInt(rng, 2, max);
+      b = randInt(rng, 2, max);
     } else {
-      a = randInt(rng, 2, 12);
-      b = randInt(rng, 2, 12);
+      // Division is built from its own answer outward — pick the divisor and
+      // quotient first, then multiply back up to the dividend — so it always
+      // divides evenly. There is never a fraction to round or a remainder to
+      // explain away.
+      const max = level <= 5 ? 10 : 12;
+      b = randInt(rng, 2, max);
+      const quotient = randInt(rng, 1, max);
+      a = b * quotient;
     }
     key = questionKey(a, operator, b);
   } while (key === avoidKey);
 
-  const answer = operator === '+' ? a + b : operator === '-' ? a - b : a * b;
+  const answer =
+    operator === '+' ? a + b : operator === '-' ? a - b : operator === '×' ? a * b : a / b;
 
   const choices = new Set<number>([answer]);
   let spread = 1;

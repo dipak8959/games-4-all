@@ -10,20 +10,21 @@ import {
   QUESTIONS_PER_ROUND,
 } from '../src/games/numbercrunch/logic.ts';
 
-test('addition only at the easiest levels, then subtraction, then multiplication', () => {
+test('operators join in school order: +, then -, then ×, then ÷', () => {
   assert.deepEqual(operatorsForLevel(1), ['+']);
   assert.deepEqual(operatorsForLevel(2), ['+']);
   assert.deepEqual(operatorsForLevel(3), ['+', '-']);
-  assert.deepEqual(operatorsForLevel(4), ['+', '-']);
-  assert.deepEqual(operatorsForLevel(5), ['+', '-', '×']);
-  assert.deepEqual(operatorsForLevel(6), ['+', '-', '×']);
+  assert.deepEqual(operatorsForLevel(4), ['+', '-', '×']);
+  assert.deepEqual(operatorsForLevel(5), ['+', '-', '×', '÷']);
+  assert.deepEqual(operatorsForLevel(6), ['+', '-', '×', '÷']);
 });
 
 test('every question is answered correctly by its own arithmetic', () => {
   for (const level of [1, 2, 3, 4, 5, 6]) {
     for (let seed = 0; seed < 50; seed++) {
       const q = createQuestion(seededRng(seed + level * 1000), level);
-      const expected = q.operator === '+' ? q.a + q.b : q.operator === '-' ? q.a - q.b : q.a * q.b;
+      const expected =
+        q.operator === '+' ? q.a + q.b : q.operator === '-' ? q.a - q.b : q.operator === '×' ? q.a * q.b : q.a / q.b;
       assert.equal(q.answer, expected, `level ${level} seed ${seed}`);
       assert.ok(q.choices.includes(q.answer), `level ${level} seed ${seed}: answer missing from choices`);
     }
@@ -35,6 +36,25 @@ test('subtraction never produces a negative result', () => {
     const q = createQuestion(seededRng(seed), 4);
     if (q.operator !== '-') continue;
     assert.ok(q.answer >= 0, `seed ${seed}: ${q.a} - ${q.b} = ${q.answer}`);
+  }
+});
+
+test('division always divides evenly, with a divisor of at least 2', () => {
+  for (let seed = 0; seed < 300; seed++) {
+    const q = createQuestion(seededRng(seed), 6);
+    if (q.operator !== '÷') continue;
+    assert.ok(q.b >= 2, `seed ${seed}: divisor ${q.b} is too small`);
+    assert.equal(q.a % q.b, 0, `seed ${seed}: ${q.a} ÷ ${q.b} does not divide evenly`);
+    assert.ok(Number.isInteger(q.answer), `seed ${seed}: ${q.a} ÷ ${q.b} = ${q.answer} is not a whole number`);
+  }
+});
+
+test('division never appears before multiplication is introduced', () => {
+  for (const level of [1, 2, 3, 4]) {
+    for (let seed = 0; seed < 100; seed++) {
+      const q = createQuestion(seededRng(seed + level * 1000), level);
+      assert.notEqual(q.operator, '÷', `level ${level} seed ${seed}: division appeared too early`);
+    }
   }
 });
 

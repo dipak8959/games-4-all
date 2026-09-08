@@ -21,7 +21,7 @@ here is built to actually hold up for a grown-up, not just tolerate one:
 | 🔤 **Spell It!** | Reading and spelling simple words | 6-10 |
 | 🧩 **Sudoku** | Logical reasoning and number placement | 7+ |
 | ✨ **Pattern Play** | Sequence memory and concentration | 4+ |
-| ➕ **Number Crunch** | Mental arithmetic | 6+ |
+| ➕ **Number Crunch** | Mental arithmetic: +, −, ×, ÷ | 6+ |
 
 Each also carries a category (Memory, Numbers, Words, Logic, Sorting) shown
 as filter chips on Home, alongside a search box — with seven games and

@@ -3,11 +3,19 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type Dimensio
 
 import { GradientSurface } from '../components/GradientSurface';
 import { Screen } from '../components/Screen';
-import { GAME_CATEGORIES, gamesByCategory, gamesForAge, searchGames, type GameCategory } from '../games/catalog';
+import {
+  GAME_CATEGORIES,
+  gamesByCategory,
+  gamesForAge,
+  searchGames,
+  type GameCategory,
+  type GameMeta,
+} from '../games/catalog';
 import { tap } from '../feedback/feedback';
 import { DEFAULT_AGE } from '../state/profiles';
 import { useApp } from '../state/AppProvider';
 import { progressFor, totalStars } from '../state/progress';
+import { togglePinned } from '../state/settings';
 import {
   font,
   gradientForColor,
@@ -44,7 +52,7 @@ export function HomeScreen({
   readonly onOpenParentZone: () => void;
   readonly onOpenProfiles: () => void;
 }) {
-  const { progress, settings, activeProfile } = useApp();
+  const { progress, settings, activeProfile, updateSettings } = useApp();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<GameCategory | null>(null);
   const stars = totalStars(progress);
@@ -55,6 +63,20 @@ export function HomeScreen({
     const byCategory = gamesByCategory(forAge, category);
     return searchGames(byCategory, query);
   }, [age, category, query]);
+
+  // Browsing (no active search or category filter) is when Favourites gets
+  // its own shortcut row — the whole point of pinning is reaching a game
+  // without going through search, so it would be self-defeating to only
+  // show favourites once a search has already narrowed things down.
+  const isBrowsing = query.trim() === '' && category === null;
+  const pinnedIds = settings.pinnedGameIds;
+  const favoriteGames = isBrowsing
+    ? (pinnedIds.map((id) => games.find((g) => g.id === id)).filter(Boolean) as GameMeta[])
+    : [];
+  const favoriteIdSet = new Set(favoriteGames.map((g) => g.id));
+  const listGames = isBrowsing ? games.filter((g) => !favoriteIdSet.has(g.id)) : games;
+
+  const onTogglePin = (gameId: string) => updateSettings(togglePinned(settings, gameId));
 
   return (
     <Screen>
@@ -164,37 +186,92 @@ export function HomeScreen({
             </Text>
           </View>
         ) : null}
-        {games.map((game) => {
-          const gp = progressFor(progress, game.id);
-          const earnedPips = Math.min(3, Math.ceil(gp.stars / 5));
 
-          return (
-            <Pressable
-              key={game.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${game.title}. ${gp.stars} stars earned.`}
-              onPress={() => {
-                tap(settings);
-                onOpenGame(game.id);
-              }}
-              style={({ pressed }) => [styles.cardOuter, pressed && styles.cardPressed]}
-            >
-              <GradientSurface colors={gradientForColor(game.color)} style={styles.card}>
-                <View style={styles.cardIconWrap}>
-                  <Text style={styles.cardIcon}>{game.icon}</Text>
-                </View>
-                <View style={styles.cardText}>
-                  <Text style={styles.cardTitle}>{game.title}</Text>
-                  <Text style={styles.cardStars} accessibilityElementsHidden importantForAccessibility="no">
-                    {earnedPips > 0 ? '⭐'.repeat(earnedPips) : 'Tap to play 🚀'}
-                  </Text>
-                </View>
-              </GradientSurface>
-            </Pressable>
-          );
-        })}
+        {favoriteGames.length > 0 ? (
+          <>
+            <Text style={styles.sectionHeading}>⭐ Your Favourites</Text>
+            {favoriteGames.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                stars={progressFor(progress, game.id).stars}
+                pinned
+                onPress={() => {
+                  tap(settings);
+                  onOpenGame(game.id);
+                }}
+                onTogglePin={() => onTogglePin(game.id)}
+              />
+            ))}
+            <Text style={styles.sectionHeading}>🎮 All games</Text>
+          </>
+        ) : null}
+
+        {listGames.map((game) => (
+          <GameCard
+            key={game.id}
+            game={game}
+            stars={progressFor(progress, game.id).stars}
+            pinned={pinnedIds.includes(game.id)}
+            onPress={() => {
+              tap(settings);
+              onOpenGame(game.id);
+            }}
+            onTogglePin={() => onTogglePin(game.id)}
+          />
+        ))}
       </ScrollView>
     </Screen>
+  );
+}
+
+function GameCard({
+  game,
+  stars,
+  pinned,
+  onPress,
+  onTogglePin,
+}: {
+  readonly game: GameMeta;
+  readonly stars: number;
+  readonly pinned: boolean;
+  readonly onPress: () => void;
+  readonly onTogglePin: () => void;
+}) {
+  const earnedPips = Math.min(3, Math.ceil(stars / 5));
+
+  return (
+    <View style={styles.cardOuter}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${game.title}. ${stars} stars earned.`}
+        onPress={onPress}
+        style={({ pressed }) => [pressed && styles.cardPressed]}
+      >
+        <GradientSurface colors={gradientForColor(game.color)} style={styles.card}>
+          <View style={styles.cardIconWrap}>
+            <Text style={styles.cardIcon}>{game.icon}</Text>
+          </View>
+          <View style={styles.cardText}>
+            <Text style={styles.cardTitle}>{game.title}</Text>
+            <Text style={styles.cardStars} accessibilityElementsHidden importantForAccessibility="no">
+              {earnedPips > 0 ? '⭐'.repeat(earnedPips) : 'Tap to play 🚀'}
+            </Text>
+          </View>
+        </GradientSurface>
+      </Pressable>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${pinned ? 'Unpin' : 'Pin'} ${game.title}`}
+        accessibilityState={{ selected: pinned }}
+        onPress={onTogglePin}
+        hitSlop={14}
+        style={({ pressed }) => [styles.pinButton, pressed && styles.pinButtonPressed]}
+      >
+        <Text style={styles.pinIcon}>{pinned ? '⭐' : '☆'}</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -305,7 +382,26 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', padding: space.xl, gap: space.sm },
   emptyIcon: { fontSize: 60 },
   emptyText: { fontSize: font.body, color: palette.inkSoft, textAlign: 'center' },
+  sectionHeading: {
+    fontSize: font.body - 2,
+    fontWeight: '800',
+    color: palette.inkSoft,
+    marginTop: space.xs,
+  },
   cardOuter: { borderRadius: radius.xl, ...shadow },
+  pinButton: {
+    position: 'absolute',
+    top: space.sm,
+    right: space.sm,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+  },
+  pinButtonPressed: { transform: [{ scale: 0.9 }] },
+  pinIcon: { fontSize: 24, color: '#FFFFFF' },
   cardPressed: { transform: [{ scale: 0.97 }], opacity: 0.94 },
   card: {
     flexDirection: 'row',

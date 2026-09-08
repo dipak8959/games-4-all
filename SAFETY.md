@@ -121,7 +121,10 @@ game where reading is the point rather than something to avoid:
 - **Big targets.** Nothing tappable is under 72dp, above both platform
   minimums — Sudoku's grid cells are the one deliberate exception (a 9x9
   board cannot fit 72dp cells on a phone screen), and only after selecting a
-  cell does the actual answer get entered on full-sized number buttons.
+  cell does the actual answer get entered on full-sized number buttons. A
+  game card's pin/favourite star is visually smaller (40dp) but carries
+  `hitSlop` out to a 72dp effective touch target, since it's a secondary,
+  fully-reversible action rather than the card's primary "play this" tap.
 - **Always escapable.** Every game has a large back control that exits
   immediately, with no confirmation dialog to read.
 - **Motion is optional.** The OS "reduce motion" setting is honoured
@@ -141,6 +144,41 @@ fixed list, an avatar from a fixed set of emoji, and age from a stepper —
 see "What the app does store" above for why. Removing a profile deletes that
 profile's stars, levels, and settings immediately; it does not touch anyone
 else's.
+
+## Original content, always
+
+Every game concept, name, character, and asset in this catalogue must be
+**original or genuinely public-domain** — never a copy, clone, or reskin of
+someone else's copyrighted or trademarked game. This is a standing rule for
+every game added from here on, not just the ones that exist today:
+
+- **No copying a licensed game's mechanics-plus-presentation.** Building on a
+  *generic, centuries-old or public-domain game type* is fine and is most of
+  this catalogue already — matching-pairs ("Concentration"), sorting, sudoku,
+  arithmetic, and watch-and-repeat sequence games are all public-domain
+  formats with no single owner. Copying a specific *commercial* game's
+  distinctive rules, level design, or visual identity (a falling-blocks game
+  styled after Tetris, a candy-swapping match-3 styled after Candy Crush, a
+  word-guessing grid styled after Wordle) is not — the mechanic being
+  simple or old doesn't make a specific commercial implementation of it fair
+  game to imitate.
+- **No borrowed names or characters.** Nothing here is named after, themed
+  around, or visually referencing an existing franchise, mascot, or branded
+  game — no licensed characters, no trademarked game names repurposed as a
+  game title. (Pattern Play, this catalogue's sequence-memory game, is
+  deliberately not called "Simon" for exactly this reason — the mechanic is
+  a public-domain idea, "Simon" is a trademarked product name.)
+- **No borrowed assets.** Every icon is a standard Unicode emoji (free to
+  use, not anyone's proprietary art) or built from this app's own vector
+  shapes. No copied images, no ripped audio, no fonts without a clear licence
+  already covered by this project's dependencies.
+- **When in doubt, go generic.** A game named for what it teaches ("Number
+  Crunch", "Sort It Out") rather than for a franchise is both safer and more
+  honest about what a parent is getting.
+
+This isn't just a legal precaution — it's consistent with the rest of this
+app's model: no external dependency, no external IP, nothing that ties this
+app's fate to anyone else's rights or brand.
 
 ## Reviewing a change
 

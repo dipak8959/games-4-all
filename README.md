@@ -28,10 +28,20 @@ as filter chips on Home, alongside a search box — with seven games and
 growing, finding the right one shouldn't require scrolling past all the
 others.
 
+Every game card also carries a ⭐ pin toggle — no parent gate needed, since
+it changes nothing about what's available, only how quickly a profile
+reaches what they already chose. Pinned games surface in a **Favourites**
+row at the top of Home (`settings.pinnedGameIds`, per profile), so a
+catalogue that grows toward dozens of games never forces a search just to
+reach the handful someone actually plays. The row only shows while browsing
+unfiltered — an active search or category already narrowed things down, so
+there's nothing left for a shortcut to shortcut.
+
 Plus **Profiles**, so a parent and each child sharing this device get their
-own separate stars, adaptive levels, and settings, and **Parent Zone** behind
-a parent gate, holding screen-time limits, sound and motion toggles, profile
-management, a plain-language privacy statement, and a delete-all-data control.
+own separate stars, adaptive levels, favourites, and settings, and **Parent
+Zone** behind a parent gate, holding screen-time limits, sound and motion
+toggles, profile management, a plain-language privacy statement, and a
+delete-all-data control.
 
 ### Profiles: sharing one device honestly
 
@@ -186,6 +196,10 @@ exactly one basket; every round is completable).
 
 ## Adding a game
 
+0. Pick something **original or genuinely public-domain** — never a clone of
+   a specific commercial game's mechanics-plus-presentation, and never a
+   borrowed name, character, or asset. See "Original content, always" in
+   **[SAFETY.md](SAFETY.md)** before settling on a concept.
 1. Create `src/games/<id>/logic.ts` — pure rules, taking an `Rng` and a `level`.
 2. Add `tests/` coverage asserting the round is always completable and fair.
 3. Create `<id>Screen.tsx` implementing `GameScreenProps`. Seed local level

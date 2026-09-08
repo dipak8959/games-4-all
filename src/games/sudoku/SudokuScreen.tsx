@@ -58,56 +58,78 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
   const stars = starsForMistakes(state.mistakes);
 
   const cellSize = useMemo(() => {
-    const width = Dimensions.get('window').width - space.md * 2;
-    const raw = Math.floor(width / size);
+    const { width, height } = Dimensions.get('window');
+    const widthBudget = width - space.md * 2;
+    // Sizing from width alone works on a typical narrow phone screen (the
+    // grid naturally stays short enough too), but on a wide-but-short
+    // viewport — a tablet in landscape, a resized browser window — width
+    // alone can size cells so large the grid spills past the header/progress
+    // bar above and the number palette below. ~230dp covers that chrome
+    // (see GameFrame's header, the progress track, and the numbers row
+    // below), so reserving it keeps a 9x9 board from ever overlapping them.
+    const heightBudget = height - 230;
+    const budget = Math.min(widthBudget, heightBudget);
+    const raw = Math.floor(budget / size);
     return Math.max(28, Math.min(hitTarget, raw));
   }, [size]);
 
   return (
     <GameFrame title="Sudoku" icon="🧩" onExit={onExit} progress={progress}>
       <View style={styles.stage}>
-        <View style={[styles.grid, { width: cellSize * size, height: cellSize * size }]}>
-          {cells.map((cell, index) => {
-            const row = Math.floor(index / size);
-            const col = index % size;
-            const isSelected = selected === index;
-            const isRightEdge = col !== size - 1 && (col + 1) % boxWidth === 0;
-            const isBottomEdge = row !== size - 1 && (row + 1) % boxHeight === 0;
+        {/* Built as explicit rows rather than one flex-wrapped list of `size *
+            size` cells: relying on wrapping to break every `size`-th cell
+            onto a new line is exact-fit-fragile — a sub-pixel rounding
+            difference between the container's fixed width and the summed
+            cell widths is enough for a browser to wrap one cell early,
+            turning the whole grid into a staircase with the last column
+            missing from every row. An explicit row per row can't wrap
+            wrong: it only ever holds exactly `size` cells. */}
+        <View style={styles.grid}>
+          {Array.from({ length: size }, (_, row) => (
+            <View key={row} style={styles.gridRow}>
+              {Array.from({ length: size }, (_, col) => {
+                const index = row * size + col;
+                const cell = cells[index];
+                const isSelected = selected === index;
+                const isRightEdge = col !== size - 1 && (col + 1) % boxWidth === 0;
+                const isBottomEdge = row !== size - 1 && (row + 1) % boxHeight === 0;
 
-            const cellStyle = [
-              styles.cell,
-              {
-                width: cellSize,
-                height: cellSize,
-                borderRightWidth: isRightEdge ? 3 : 1,
-                borderBottomWidth: isBottomEdge ? 3 : 1,
-              },
-              cell.given && styles.cellGiven,
-              isSelected && styles.cellSelected,
-            ];
+                const cellStyle = [
+                  styles.cell,
+                  {
+                    width: cellSize,
+                    height: cellSize,
+                    borderRightWidth: isRightEdge ? 3 : 1,
+                    borderBottomWidth: isBottomEdge ? 3 : 1,
+                  },
+                  cell.given && styles.cellGiven,
+                  isSelected && styles.cellSelected,
+                ];
 
-            return (
-              <Pressable
-                key={index}
-                accessibilityRole="button"
-                accessibilityLabel={cell.value != null ? `${cell.value}` : 'empty cell'}
-                accessibilityState={{ disabled: cell.given, selected: isSelected }}
-                disabled={cell.given}
-                onPress={() => onSelectCell(index)}
-                style={cellStyle}
-              >
-                <Text
-                  style={[
-                    styles.cellText,
-                    { fontSize: cellSize * 0.48 },
-                    cell.given ? styles.cellTextGiven : styles.cellTextEntered,
-                  ]}
-                >
-                  {cell.value ?? ''}
-                </Text>
-              </Pressable>
-            );
-          })}
+                return (
+                  <Pressable
+                    key={col}
+                    accessibilityRole="button"
+                    accessibilityLabel={cell.value != null ? `${cell.value}` : 'empty cell'}
+                    accessibilityState={{ disabled: cell.given, selected: isSelected }}
+                    disabled={cell.given}
+                    onPress={() => onSelectCell(index)}
+                    style={cellStyle}
+                  >
+                    <Text
+                      style={[
+                        styles.cellText,
+                        { fontSize: cellSize * 0.48 },
+                        cell.given ? styles.cellTextGiven : styles.cellTextEntered,
+                      ]}
+                    >
+                      {cell.value ?? ''}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ))}
         </View>
       </View>
 
@@ -148,14 +170,15 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
 const styles = StyleSheet.create({
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
+    alignSelf: 'center',
     borderWidth: 3,
     borderColor: palette.ink,
     borderRadius: radius.sm,
     overflow: 'hidden',
     backgroundColor: palette.surface,
   },
+  gridRow: { flexDirection: 'row' },
   cell: {
     alignItems: 'center',
     justifyContent: 'center',

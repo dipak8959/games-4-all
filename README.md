@@ -9,56 +9,84 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Five learning-basics games spanning roughly ages 3-7+: three preschool
-fundamentals for the 3-4 and 5-6 groups, and two dedicated 7+ games built
-around skills a preschooler isn't ready for yet:
+Seven games spanning early childhood through adulthood — this is a "whole
+family shares one device" app, not just a kids' app, so the oldest content
+here is built to actually hold up for a grown-up, not just tolerate one:
 
-| Game | Practises | Shown for |
+| Game | Practises | Ages |
 | --- | --- | --- |
-| 🧠 **Find the Pairs** | Visual memory and concentration | 3-4, 5-6 |
-| 🔢 **How Many?** | Counting and recognising numerals 1-12 | 3-4, 5-6 |
-| 🔺 **Sort It Out** | Sorting by shape, colour, and size | 3-4, 5-6 |
-| 🔤 **Spell It!** | Reading and spelling simple words | 7+ |
+| 🧠 **Find the Pairs** | Visual memory and concentration | 3-6 |
+| 🔢 **How Many?** | Counting and recognising numerals 1-12 | 3-6 |
+| 🔺 **Sort It Out** | Sorting by shape, colour, and size | 3-6 |
+| 🔤 **Spell It!** | Reading and spelling simple words | 6-10 |
 | 🧩 **Sudoku** | Logical reasoning and number placement | 7+ |
+| ✨ **Pattern Play** | Sequence memory and concentration | 4+ |
+| ➕ **Number Crunch** | Mental arithmetic | 6+ |
 
-Plus a **Parent Zone** behind a parent gate, holding screen-time limits, sound
-and motion toggles, the child's age group, a plain-language privacy statement,
-and a delete-all-data control.
+Each also carries a category (Memory, Numbers, Words, Logic, Sorting) shown
+as filter chips on Home, alongside a search box — with seven games and
+growing, finding the right one shouldn't require scrolling past all the
+others.
 
-### Age group: which games show, and how hard they start
+Plus **Profiles**, so a parent and each child sharing this device get their
+own separate stars, adaptive levels, and settings, and **Parent Zone** behind
+a parent gate, holding screen-time limits, sound and motion toggles, profile
+management, a plain-language privacy statement, and a delete-all-data control.
+
+### Profiles: sharing one device honestly
 
 A one-time, first-launch setup step (`OnboardingScreen`, gated behind the
-parent gate — a child shouldn't be the one setting this) asks a grown-up
-which age group the app is for: 3-4, 5-6, or 7+ (`src/state/ageGroups.ts`).
-"Skip for now" is available without the gate and defaults to the middle
-group, so setup never blocks play. The current age group is always visible
-as a pill on Home next to the star count — no need to open Parent Zone just
-to see it — and it's changeable any time after, either by tapping that pill
-or in Parent Zone directly.
+parent gate — a child shouldn't be the one setting this) asks a grown-up to
+create the first profile: a name, an avatar, and a real age
+(`src/state/profiles.ts`). "Skip for now" is available without the gate and
+creates a sensible default profile, so setup never blocks play. The current
+profile's avatar is always visible on Home, next to Parent Zone's gear icon —
+tapping it opens **Profiles** (behind the parent gate again, every time) to
+switch to someone else, add a new profile, edit one, or remove one.
 
-Age group does two genuinely different things, not one:
+This is deliberate, not incidental: **switching who's playing always requires
+a grown-up**, the same way opening Parent Zone does. A child should never be
+able to hand themselves an adult's profile, an older sibling's, or spin up a
+new one, without a grown-up saying so.
 
-1. **Filters the catalogue.** Each game declares a `minAgeGroup`/
-   `maxAgeGroup` (`src/games/catalog.ts`), and Home only shows games whose
-   range includes the current group — `gamesForAgeGroup`. The three
-   preschool games — "Find the Pairs", "How Many?", and "Sort It Out" — are
-   squarely 3-4/5-6 skills and step aside once a child reaches the 7+ group,
-   which gets its own dedicated pair instead: "Spell It!" (reading and
-   spelling, since the younger groups include children who can't read yet)
-   and "Sudoku" (multi-step logical reasoning across a row/column/box at
-   once, a later-developing skill than either counting or simple sorting).
-   Parent Zone's game list is intentionally unfiltered, so a parent can
-   always see the full catalogue and why something isn't showing on Home.
-2. **Seeds where a shown game's difficulty starts.** From there each game's
-   level drifts up or down round by round based on how the last round went
-   (`nextLevel` in `src/games/types.ts`) — a perfect round nudges it up one
-   step, a rough one nudges it down one step, never more than one step at a
-   time. Parent Zone shows the level each game is currently sitting at.
+Everything that varies per-person is kept fully separate — stars, each
+game's adaptive level, sound/haptics/reduce-motion preferences, and even
+screen-time usage — so a parent playing Sudoku on their own profile never
+inflates a child's star count, and vice versa (`AppProvider`, which keys all
+of this by profile id under the same four storage keys `SAFETY.md` lists —
+adding profiles never grows what's stored, only reshapes it).
+
+### Age: a real number, not a named group
+
+There is no "3-4 / 5-6 / 7+" bucket any more. Every profile has a real age in
+years, and every game declares a real `minAge`/`maxAge` range
+(`src/games/catalog.ts`) — Home just checks whether the profile's age falls
+inside it (`gamesForAge`). A simple picture-matching game caps out in the
+single digits, honestly, rather than defaulting to "all ages" and quietly
+boring anyone older; a game built to keep scaling (Sudoku's grid size,
+Pattern Play's sequence length, Number Crunch's arithmetic) carries no upper
+cap at all, because it doesn't need one.
+
+Age still does the same two things it always did, just without the group
+label in between:
+
+1. **Filters the catalogue.** A profile only sees games whose range includes
+   their age. Parent Zone's game list is intentionally unfiltered, so a
+   parent can always see the full catalogue and why something isn't showing
+   on Home for a given profile.
+2. **Seeds where a shown game's difficulty starts.** Every profile starts a
+   new game at the same middling level (`DEFAULT_LEVEL` in
+   `src/games/types.ts`), then that level drifts up or down round by round
+   based on how the last round went (`nextLevel`) — a perfect round nudges it
+   up one step, a rough one nudges it down one step, never more than one step
+   at a time. Parent Zone shows the level each game is currently sitting at
+   for the active profile.
 
 Adding a game to the catalogue means picking its age range deliberately
-(what age is this actually appropriate or interesting for?), not defaulting
-to "all ages" — that default is what made every group look identical
-before this existed.
+(what age is this actually appropriate or interesting for, and where does it
+stop being one?), not defaulting to "all ages" — that default is exactly
+what made an 18-year-old's game list identical to a 4-year-old's before this
+model existed.
 
 ### Staying fresh round to round
 
@@ -80,10 +108,11 @@ count, say), it tops back up from the avoided set rather than breaking. It's
 bounded variety within a fixed, kid-safe content pool, not literally
 unlimited content.
 
-**Sudoku** is the one exception, deliberately: every puzzle is generated
-fresh by solving a full grid and digging holes (`src/games/sudoku/logic.ts`),
-so there's no fixed pool to exhaust and nothing to avoid repeating — the
-generator already gives effectively unlimited variety on its own.
+**Sudoku** and **Pattern Play** are the exceptions, deliberately: every
+puzzle and every sequence is procedurally generated (a full-grid solve plus
+hole-digging for Sudoku; a randomised tile sequence for Pattern Play), so
+there's no fixed pool to exhaust and nothing to avoid repeating — both
+already give effectively unlimited variety on their own.
 
 What each game last showed is persisted (`g4a:freshness`, via
 `getFreshness`/`setFreshness` on `AppProvider`), so the "just used" memory
@@ -134,16 +163,17 @@ src/
     screenTime.ts           Session and daily limit rules
     ParentGateModal.tsx     The gate a grown-up passes
   state/
-    AppProvider.tsx         Settings, progress, and usage accounting
-    settings.ts, progress.ts, ageGroups.ts, freshness.ts
+    AppProvider.tsx         Profiles, per-profile settings/progress/usage accounting
+    profiles.ts             Profile list operations (add/update/remove/switch)
+    settings.ts, progress.ts, freshness.ts
   games/
-    catalog.ts              Pure game metadata + age-group filtering (no React)
+    catalog.ts              Pure game metadata + age/category/search filtering (no React)
     registry.ts             Attaches each game's Screen component to the catalogue
-    memory/ counting/ shapes/ wordbuilder/ sudoku/
+    memory/ counting/ shapes/ wordbuilder/ sudoku/ patternplay/ numbercrunch/
       logic.ts              Pure, seeded, unit-tested game rules
       *Screen.tsx           Presentation only
-  screens/                  Home, Parent Zone, time's-up
-  components/               Shared UI (all targets >= 72dp)
+  screens/                  Home, Parent Zone, Profiles, time's-up
+  components/               Shared UI (all targets >= 72dp), incl. ProfileEditor
   theme/tokens.ts           Colour-blind-safe palette, spacing, type scale
 scripts/check-safety.mjs    The build gate
 tests/                      Unit tests for all pure logic
@@ -164,10 +194,10 @@ exactly one basket; every round is completable).
    the pattern. This is what makes the game's difficulty adaptive rather than
    fixed at whatever the parent chose as a starting point.
 4. Add an entry to `GAMES_META` in `src/games/catalog.ts`, including a
-   deliberate `minAgeGroup`/`maxAgeGroup` — don't default to "all ages"
-   without thinking about it; that's what made every age group identical
-   before this field existed. Register the screen component in
-   `src/games/registry.ts`'s `SCREEN_BY_ID`.
+   deliberate `minAge`/`maxAge` and a `category` — don't default to "all
+   ages" without thinking about it; that's what made an adult's game list
+   identical to a young child's before this field existed. Register the
+   screen component in `src/games/registry.ts`'s `SCREEN_BY_ID`.
 
 Home, progress tracking, and the parent-facing skills list all read from the
 catalogue, so a game cannot ship half-wired.

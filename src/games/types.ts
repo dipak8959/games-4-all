@@ -39,6 +39,12 @@ export function starsForMistakes(mistakes: number): number {
 export const MIN_LEVEL = 1;
 export const MAX_LEVEL = 6;
 
+/** Starting level for a game a profile has never played. Age no longer maps
+ *  onto a starting difficulty (there's no age-group bucket to map from any
+ *  more) — every profile just starts at the same middling level and drifts
+ *  from there via `nextLevel`, same as always. */
+export const DEFAULT_LEVEL = 3;
+
 export function clampLevel(level: number): number {
   return Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, level));
 }

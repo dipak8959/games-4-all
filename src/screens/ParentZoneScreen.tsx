@@ -7,7 +7,6 @@ import { Screen } from '../components/Screen';
 import { GAMES_META } from '../games/catalog';
 import { MAX_LEVEL } from '../games/types';
 import { formatMinutes, LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
-import { AGE_GROUPS } from '../state/ageGroups';
 import { useApp } from '../state/AppProvider';
 import { progressFor } from '../state/progress';
 import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
@@ -19,8 +18,14 @@ import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens
  * feedback and difficulty switches, a plain-language statement of what the app
  * does and does not do with data, and the delete-everything control.
  */
-export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) {
-  const { settings, progress, usage, updateSettings, resetEverything, levelForGame } = useApp();
+export function ParentZoneScreen({
+  onClose,
+  onOpenProfiles,
+}: {
+  readonly onClose: () => void;
+  readonly onOpenProfiles: () => void;
+}) {
+  const { settings, progress, usage, activeProfile, updateSettings, resetEverything, levelForGame } = useApp();
   const [erased, setErased] = useState(false);
   const [confirmingErase, setConfirmingErase] = useState(false);
 
@@ -56,20 +61,17 @@ export function ParentZoneScreen({ onClose }: { readonly onClose: () => void }) 
           />
         </Section>
 
-        <Section title="🧒 Age group">
-          <View style={styles.chips}>
-            {AGE_GROUPS.map((group) => (
-              <Chip
-                key={group.level}
-                label={`${group.icon} ${group.label}`}
-                selected={settings.ageGroup === group.level}
-                onPress={() => updateSettings({ ageGroup: group.level })}
-              />
-            ))}
+        <Section title="👤 Profile">
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>
+              {activeProfile ? `${activeProfile.avatar} ${activeProfile.name}, age ${activeProfile.age}` : 'No profile'}
+            </Text>
           </View>
+          <BigButton label="Manage profiles" icon="👤" tone="quiet" onPress={onOpenProfiles} />
           <Text style={styles.caption}>
-            Where a new game starts. After that, each game quietly gets a little
-            easier or harder round to round, based on how it's going.
+            Switch who's playing, add a profile for someone else, or change a profile's age —
+            which decides which games show for them. Every game still adjusts up or down on its
+            own after that, round to round, based on how it's going.
           </Text>
         </Section>
 

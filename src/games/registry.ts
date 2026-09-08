@@ -1,6 +1,8 @@
 import { GAMES_META } from './catalog';
 import { CountingScreen } from './counting/CountingScreen';
 import { MemoryScreen } from './memory/MemoryScreen';
+import { NumberCrunchScreen } from './numbercrunch/NumberCrunchScreen';
+import { PatternPlayScreen } from './patternplay/PatternPlayScreen';
 import { ShapesScreen } from './shapes/ShapesScreen';
 import { SudokuScreen } from './sudoku/SudokuScreen';
 import type { GameDefinition } from './types';
@@ -11,8 +13,8 @@ import { WordBuilderScreen } from './wordbuilder/WordBuilderScreen';
  *
  * Kept separate from `catalog.ts` (which has the actual game data —
  * titles, icons, age ranges) so that anything only needing metadata —
- * `gamesForAgeGroup`, Parent Zone's game list, tests — never has to load
- * React Native screen components just to read a title.
+ * `gamesForAge`, Parent Zone's game list, tests — never has to load React
+ * Native screen components just to read a title.
  */
 const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   memory: MemoryScreen,
@@ -20,6 +22,8 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   shapes: ShapesScreen,
   wordbuilder: WordBuilderScreen,
   sudoku: SudokuScreen,
+  patternplay: PatternPlayScreen,
+  numbercrunch: NumberCrunchScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

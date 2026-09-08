@@ -9,6 +9,7 @@ import { ParentGateModal } from './src/safety/ParentGateModal';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { ParentZoneScreen } from './src/screens/ParentZoneScreen';
+import { ProfilesScreen } from './src/screens/ProfilesScreen';
 import { TimeUpScreen } from './src/screens/TimeUpScreen';
 import { AppProvider, useApp } from './src/state/AppProvider';
 import { palette } from './src/theme/tokens';
@@ -16,21 +17,33 @@ import { palette } from './src/theme/tokens';
 /**
  * Root navigation.
  *
- * Hand-rolled rather than pulled from a router library: the app has four
- * destinations and no deep links, and every dependency added to a children's
- * app is one more thing to audit. If the screen count grows past what this can
- * carry comfortably, swap in a real router then.
+ * Hand-rolled rather than pulled from a router library: the app has a
+ * handful of destinations and no deep links, and every dependency added to a
+ * children's app is one more thing to audit. If the screen count grows past
+ * what this can carry comfortably, swap in a real router then.
  */
 type Route =
   | { readonly name: 'home' }
   | { readonly name: 'game'; readonly gameId: string }
-  | { readonly name: 'parent' };
+  | { readonly name: 'parent' }
+  | { readonly name: 'profiles' };
+
+/** Which gated destination to land on once the parent gate is passed. */
+type GateTarget = 'parent' | 'profiles' | null;
 
 function Root() {
-  const { ready, settings, updateSettings, verdict, finishRound, levelForGame, startPlaying, stopPlaying } =
-    useApp();
+  const {
+    ready,
+    profiles,
+    addProfile,
+    verdict,
+    finishRound,
+    levelForGame,
+    startPlaying,
+    stopPlaying,
+  } = useApp();
   const [route, setRoute] = useState<Route>({ name: 'home' });
-  const [gateOpen, setGateOpen] = useState(false);
+  const [gateTarget, setGateTarget] = useState<GateTarget>(null);
 
   const inGame = route.name === 'game';
   const limitReached = verdict.kind !== 'ok';
@@ -46,7 +59,8 @@ function Root() {
     if (limitReached && inGame) setRoute({ name: 'home' });
   }, [limitReached, inGame]);
 
-  const openParentZone = useCallback(() => setGateOpen(true), []);
+  const openParentZone = useCallback(() => setGateTarget('parent'), []);
+  const openProfiles = useCallback(() => setGateTarget('profiles'), []);
 
   const onRoundComplete = useCallback(
     (gameId: string, result: RoundResult) => finishRound(gameId, result),
@@ -62,22 +76,20 @@ function Root() {
   }
 
   // Outranks every other route: nothing else is reachable until a grown-up
-  // has picked an age group or explicitly skipped doing so.
-  if (!settings.onboardingComplete) {
-    return (
-      <OnboardingScreen
-        onDone={(ageGroup) => updateSettings({ ageGroup, onboardingComplete: true })}
-      />
-    );
+  // has created a profile or explicitly skipped doing so.
+  if (profiles.length === 0) {
+    return <OnboardingScreen onDone={(input) => addProfile(input)} />;
   }
 
   const gate = (
     <ParentGateModal
-      visible={gateOpen}
-      onCancel={() => setGateOpen(false)}
+      visible={gateTarget != null}
+      onCancel={() => setGateTarget(null)}
       onPass={() => {
-        setGateOpen(false);
-        setRoute({ name: 'parent' });
+        const target = gateTarget;
+        setGateTarget(null);
+        if (target === 'parent') setRoute({ name: 'parent' });
+        else if (target === 'profiles') setRoute({ name: 'profiles' });
       }}
     />
   );
@@ -85,7 +97,22 @@ function Root() {
   if (route.name === 'parent') {
     return (
       <>
-        <ParentZoneScreen onClose={() => setRoute({ name: 'home' })} />
+        {/* Already behind the gate to be on this screen at all, so this goes
+            straight to Profiles rather than through `openProfiles` — that one
+            is for Home's avatar button, which isn't gated yet when tapped. */}
+        <ParentZoneScreen
+          onClose={() => setRoute({ name: 'home' })}
+          onOpenProfiles={() => setRoute({ name: 'profiles' })}
+        />
+        {gate}
+      </>
+    );
+  }
+
+  if (route.name === 'profiles') {
+    return (
+      <>
+        <ProfilesScreen onClose={() => setRoute({ name: 'home' })} />
         {gate}
       </>
     );
@@ -127,6 +154,7 @@ function Root() {
       <HomeScreen
         onOpenGame={(gameId) => setRoute({ name: 'game', gameId })}
         onOpenParentZone={openParentZone}
+        onOpenProfiles={openProfiles}
       />
       {gate}
     </>

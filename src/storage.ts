@@ -13,6 +13,7 @@ const PREFIX = 'g4a:';
 /** Every key the app is allowed to persist. Keeping this closed makes the
  *  "delete everything" promise in Parent Zone auditable. */
 export const StorageKeys = {
+  profiles: `${PREFIX}profiles`,
   settings: `${PREFIX}settings`,
   progress: `${PREFIX}progress`,
   usage: `${PREFIX}usage`,

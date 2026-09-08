@@ -36,6 +36,8 @@ export const palette = {
   grapeLight: '#FFA9CE',
   deep: '#5B5A82',
   deepLight: '#8B89C4',
+  teal: '#0E8C7F',
+  tealLight: '#5FD1BF',
 
   success: '#1B7F5A',
   warn: '#B25A00',
@@ -53,6 +55,7 @@ export const gradients = {
   sun: [palette.sunLight, palette.sun] as const,
   grape: [palette.grapeLight, palette.grape] as const,
   deep: [palette.deepLight, palette.deep] as const,
+  teal: [palette.tealLight, palette.teal] as const,
   // Warm page-background wash, used behind hero moments (round complete).
   bg: [palette.bg, palette.bgAlt] as const,
 } as const;

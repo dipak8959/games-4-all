@@ -1,13 +1,31 @@
 import { palette } from '../theme/tokens';
-import type { AgeGroupLevel } from '../state/ageGroups';
 
 /**
  * Pure catalogue metadata — deliberately no `Screen` component reference
  * here, and no React import. Keeping this separate from `registry.ts` (which
  * attaches the actual screen components) means this file, and everything
- * that only needs metadata — filtering, Parent Zone's game list, tests —
- * never has to load React Native screens just to read a title or age range.
+ * that only needs metadata — filtering, search, Parent Zone's game list,
+ * tests — never has to load React Native screens just to read a title.
  */
+
+export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting';
+
+export type GameCategoryDef = {
+  readonly id: GameCategory;
+  readonly label: string;
+  readonly icon: string;
+};
+
+/** Shown as filter chips on Home, alongside search. A game's `category` is
+ *  a discovery aid, not a gate — it never hides a game the way age does. */
+export const GAME_CATEGORIES: readonly GameCategoryDef[] = [
+  { id: 'memory', label: 'Memory', icon: '🧠' },
+  { id: 'numbers', label: 'Numbers', icon: '🔢' },
+  { id: 'words', label: 'Words', icon: '🔤' },
+  { id: 'logic', label: 'Logic', icon: '🧩' },
+  { id: 'sorting', label: 'Sorting', icon: '🔺' },
+];
+
 export type GameMeta = {
   readonly id: string;
   /** Shown to parents. Children navigate by the icon and colour. */
@@ -16,13 +34,22 @@ export type GameMeta = {
   readonly color: string;
   /** Parent-facing: what this game actually practises. */
   readonly skill: string;
-  /** Free-text age range shown to parents (e.g. "3-6"). Keep this in sync
-   *  with `minAgeGroup`/`maxAgeGroup` — it's the human-readable form of the
-   *  same range, not an independent claim. */
+  /** Free-text age range shown to parents (e.g. "3-6" or "7+"). Keep this in
+   *  sync with `minAge`/`maxAge` — it's the human-readable form of the same
+   *  range, not an independent claim. */
   readonly ages: string;
-  /** The age-group range Home actually filters by. Inclusive. */
-  readonly minAgeGroup: AgeGroupLevel;
-  readonly maxAgeGroup: AgeGroupLevel;
+  /** Which filter chip this game shows under on Home. Purely a discovery
+   *  aid — see `GAME_CATEGORIES`. */
+  readonly category: GameCategory;
+  /** The actual age range (in years) Home filters by. Inclusive on both
+   *  ends. There are no named "age groups" any more — every profile has a
+   *  real age, and every game has a real range, compared directly. A game
+   *  that's only fun for a narrow band (a simple picture-matching game, say)
+   *  should say so honestly rather than defaulting to "all ages": an adult
+   *  profile finding a preschool game in their list because nothing capped
+   *  it is a worse experience than not seeing it at all. */
+  readonly minAge: number;
+  readonly maxAge: number;
 };
 
 /**
@@ -30,11 +57,6 @@ export type GameMeta = {
  * its screen in `registry.ts`) — Home, progress tracking, and the parent-
  * facing skill list all read from this one list, so a new game can't ship
  * half-wired.
- *
- * `minAgeGroup`/`maxAgeGroup` decide whether a game shows on Home for the
- * currently selected age group — see `gamesForAgeGroup`. This is a genuine
- * catalogue filter, separate from adaptive difficulty: a game a child's age
- * group excludes doesn't quietly appear easier, it doesn't appear at all.
  */
 export const GAMES_META: readonly GameMeta[] = [
   {
@@ -44,10 +66,13 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.sky,
     skill: 'Visual memory and concentration',
     ages: '3-6',
-    minAgeGroup: 1,
-    // A simple visual match is squarely a preschool challenge; by 7 it's not
-    // enough of a stretch to earn its place next to genuinely 7+ content.
-    maxAgeGroup: 2,
+    category: 'memory',
+    minAge: 3,
+    // A simple picture-matching game is a preschool challenge. It stays
+    // capped rather than "all ages" so an adult profile isn't shown
+    // something that has nothing left to offer them — see Pattern Play for
+    // the sequence-memory game built to actually stay interesting at any age.
+    maxAge: 6,
   },
   {
     id: 'counting',
@@ -56,10 +81,9 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.sun,
     skill: 'Counting and recognising numerals 1-12',
     ages: '3-6',
-    minAgeGroup: 1,
-    // Counting to 12 is squarely a preschool skill; by 7 most children have
-    // it, so this steps aside rather than overstaying as "too easy".
-    maxAgeGroup: 2,
+    category: 'numbers',
+    minAge: 3,
+    maxAge: 6,
   },
   {
     id: 'shapes',
@@ -68,10 +92,9 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.leaf,
     skill: 'Sorting by shape, colour, and size',
     ages: '3-6',
-    minAgeGroup: 1,
-    // Sorting by shape/colour/size is a preschool fundamental; the 7+ group
-    // gets its own dedicated content (Spell It!, Sudoku) rather than this.
-    maxAgeGroup: 2,
+    category: 'sorting',
+    minAge: 3,
+    maxAge: 6,
   },
   {
     id: 'wordbuilder',
@@ -79,13 +102,13 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: '🔤',
     color: palette.grape,
     skill: 'Reading and spelling simple words',
-    ages: '7+',
-    // The one game in the catalogue that requires reading, which is why it's
-    // the one game restricted to a single age group rather than spanning the
-    // whole range — the 3-4 and 5-6 groups include children who can't read
-    // yet, and this app never assumes otherwise.
-    minAgeGroup: 3,
-    maxAgeGroup: 3,
+    ages: '6-10',
+    category: 'words',
+    minAge: 6,
+    // Spelling short, simple words is an early-reading skill. Capped for the
+    // same reason as Find the Pairs: a teenager or adult would find "cat"
+    // and "dog" a chore, not a game.
+    maxAge: 10,
   },
   {
     id: 'sudoku',
@@ -94,13 +117,39 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.berry,
     skill: 'Logical reasoning and number placement',
     ages: '7+',
-    // Restricted to 7+ like Spell It!, but for a different reason: reading
-    // isn't the barrier here, following a grid rule across rows/columns/boxes
-    // at once is. That kind of multi-step logical reasoning is squarely a
-    // 7+ skill even though the youngest tier (4x4) uses only the numbers a
-    // 5-6 year old already knows.
-    minAgeGroup: 3,
-    maxAgeGroup: 3,
+    category: 'logic',
+    minAge: 7,
+    // Unlike the games above, Sudoku's real difficulty grows with grid size
+    // (up to a full 9x9), so it stays genuinely challenging well past
+    // childhood — no upper cap needed.
+    maxAge: 99,
+  },
+  {
+    id: 'patternplay',
+    title: 'Pattern Play',
+    icon: '✨',
+    color: palette.deep,
+    skill: 'Sequence memory and concentration',
+    ages: '4+',
+    category: 'memory',
+    minAge: 4,
+    // A growing sequence to repeat back scales its real difficulty with
+    // length and tile count, so — unlike a fixed picture-matching game —
+    // it keeps being a genuine test of concentration at any age.
+    maxAge: 99,
+  },
+  {
+    id: 'numbercrunch',
+    title: 'Number Crunch',
+    icon: '➕',
+    color: palette.teal,
+    skill: 'Mental arithmetic',
+    ages: '6+',
+    category: 'numbers',
+    minAge: 6,
+    // Scales from single-digit addition up through multiplication, so it
+    // has real headroom rather than topping out at what a young child needs.
+    maxAge: 99,
   },
 ];
 
@@ -108,8 +157,30 @@ export function findGameMeta(id: string): GameMeta | undefined {
   return GAMES_META.find((g) => g.id === id);
 }
 
-/** Games Home should show for a given age group — the actual catalogue
- *  filter, not just a difficulty seed. */
-export function gamesForAgeGroup(ageGroup: AgeGroupLevel): readonly GameMeta[] {
-  return GAMES_META.filter((g) => g.minAgeGroup <= ageGroup && ageGroup <= g.maxAgeGroup);
+/** Games a profile of this age should see — the actual catalogue filter.
+ *  Compares a real age against a real range; there is no "age group" layer
+ *  in between. */
+export function gamesForAge(age: number): readonly GameMeta[] {
+  return GAMES_META.filter((g) => g.minAge <= age && age <= g.maxAge);
+}
+
+/** Case-insensitive substring match against title and skill, so "spell" and
+ *  "reading" both find Spell It!. An empty or whitespace-only query matches
+ *  everything, so a cleared search box always restores the full list. */
+export function searchGames(games: readonly GameMeta[], query: string): readonly GameMeta[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return games;
+  return games.filter(
+    (g) => g.title.toLowerCase().includes(q) || g.skill.toLowerCase().includes(q),
+  );
+}
+
+/** `null` means "every category" — the default, unfiltered state of the
+ *  category chips on Home. */
+export function gamesByCategory(
+  games: readonly GameMeta[],
+  category: GameCategory | null,
+): readonly GameMeta[] {
+  if (!category) return games;
+  return games.filter((g) => g.category === category);
 }

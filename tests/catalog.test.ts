@@ -1,37 +1,69 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { GAMES_META, findGameMeta, gamesForAgeGroup } from '../src/games/catalog.ts';
+import {
+  findGameMeta,
+  GAME_CATEGORIES,
+  GAMES_META,
+  gamesByCategory,
+  gamesForAge,
+  searchGames,
+} from '../src/games/catalog.ts';
 
-test('every game declares a valid, non-empty age-group range', () => {
+test('every game declares a valid, non-empty age range', () => {
   for (const game of GAMES_META) {
-    assert.ok(game.minAgeGroup >= 1 && game.minAgeGroup <= 3, `${game.id} minAgeGroup out of range`);
-    assert.ok(game.maxAgeGroup >= 1 && game.maxAgeGroup <= 3, `${game.id} maxAgeGroup out of range`);
-    assert.ok(game.minAgeGroup <= game.maxAgeGroup, `${game.id} has min > max`);
+    assert.ok(game.minAge >= 1 && game.minAge <= 99, `${game.id} minAge out of range`);
+    assert.ok(game.maxAge >= 1 && game.maxAge <= 99, `${game.id} maxAge out of range`);
+    assert.ok(game.minAge <= game.maxAge, `${game.id} has min > max`);
   }
 });
 
-test('every age group has at least one game', () => {
-  for (const level of [1, 2, 3] as const) {
-    assert.ok(gamesForAgeGroup(level).length > 0, `age group ${level} has no games`);
+test('every game belongs to one of the known categories', () => {
+  const ids = new Set(GAME_CATEGORIES.map((c) => c.id));
+  for (const game of GAMES_META) {
+    assert.ok(ids.has(game.category), `${game.id} has an unknown category "${game.category}"`);
   }
 });
 
-test('gamesForAgeGroup only returns games whose range includes that level', () => {
-  for (const level of [1, 2, 3] as const) {
-    for (const game of gamesForAgeGroup(level)) {
-      assert.ok(game.minAgeGroup <= level && level <= game.maxAgeGroup, `${game.id} shown outside its range`);
+test('gamesForAge only returns games whose range includes that age', () => {
+  for (const age of [3, 6, 7, 10, 12, 30, 70]) {
+    for (const game of gamesForAge(age)) {
+      assert.ok(game.minAge <= age && age <= game.maxAge, `${game.id} shown outside its range at age ${age}`);
     }
   }
 });
 
-test('gamesForAgeGroup excludes games whose range does not include that level', () => {
-  for (const level of [1, 2, 3] as const) {
-    const shown = new Set(gamesForAgeGroup(level).map((g) => g.id));
+test('gamesForAge excludes games whose range does not include that age', () => {
+  for (const age of [3, 6, 7, 10, 12, 30, 70]) {
+    const shown = new Set(gamesForAge(age).map((g) => g.id));
     for (const game of GAMES_META) {
-      const inRange = game.minAgeGroup <= level && level <= game.maxAgeGroup;
-      assert.equal(shown.has(game.id), inRange, `${game.id} at level ${level}`);
+      const inRange = game.minAge <= age && age <= game.maxAge;
+      assert.equal(shown.has(game.id), inRange, `${game.id} at age ${age}`);
     }
+  }
+});
+
+test('a young child sees exactly the preschool-appropriate games', () => {
+  const ids = gamesForAge(4).map((g) => g.id).sort();
+  assert.deepEqual(ids, ['counting', 'memory', 'patternplay', 'shapes'].sort());
+});
+
+test('an adult profile is never shown a game built only for young children', () => {
+  const ids = new Set(gamesForAge(35).map((g) => g.id));
+  assert.ok(!ids.has('memory'), 'Find the Pairs shown to an adult');
+  assert.ok(!ids.has('counting'), 'How Many? shown to an adult');
+  assert.ok(!ids.has('shapes'), 'Sort It Out shown to an adult');
+  assert.ok(!ids.has('wordbuilder'), 'Spell It! shown to an adult');
+  // But an adult isn't left with nothing: games built to hold up at any age
+  // still show.
+  assert.ok(ids.has('sudoku'), 'Sudoku missing for an adult');
+  assert.ok(ids.has('patternplay'), 'Pattern Play missing for an adult');
+  assert.ok(ids.has('numbercrunch'), 'Number Crunch missing for an adult');
+});
+
+test('every age from 3 to 90 sees at least one game', () => {
+  for (let age = 3; age <= 90; age++) {
+    assert.ok(gamesForAge(age).length > 0, `age ${age} has no games`);
   }
 });
 
@@ -45,37 +77,37 @@ test('findGameMeta returns undefined for an unknown id', () => {
   assert.equal(findGameMeta('does-not-exist'), undefined);
 });
 
-test('Spell It! requires reading, so it is restricted to the 7+ group only', () => {
-  const ids = (level: 1 | 2 | 3) => gamesForAgeGroup(level).map((g) => g.id);
-  assert.ok(!ids(1).includes('wordbuilder'), 'shown to the 3-4 group');
-  assert.ok(!ids(2).includes('wordbuilder'), 'shown to the 5-6 group');
-  assert.ok(ids(3).includes('wordbuilder'), 'missing from the 7+ group');
+test('searchGames matches title or skill, case-insensitively', () => {
+  const results = searchGames(GAMES_META, 'SPELL');
+  assert.deepEqual(results.map((g) => g.id), ['wordbuilder']);
+
+  const bySkill = searchGames(GAMES_META, 'arithmetic');
+  assert.deepEqual(bySkill.map((g) => g.id), ['numbercrunch']);
 });
 
-test('Sudoku requires multi-step logical reasoning, so it is restricted to the 7+ group only', () => {
-  const ids = (level: 1 | 2 | 3) => gamesForAgeGroup(level).map((g) => g.id);
-  assert.ok(!ids(1).includes('sudoku'), 'shown to the 3-4 group');
-  assert.ok(!ids(2).includes('sudoku'), 'shown to the 5-6 group');
-  assert.ok(ids(3).includes('sudoku'), 'missing from the 7+ group');
+test('searchGames with an empty or whitespace query returns everything unfiltered', () => {
+  assert.deepEqual(searchGames(GAMES_META, ''), GAMES_META);
+  assert.deepEqual(searchGames(GAMES_META, '   '), GAMES_META);
 });
 
-test('Find the Pairs and Sort It Out are preschool fundamentals, not shown to the 7+ group', () => {
-  const ids = (level: 1 | 2 | 3) => gamesForAgeGroup(level).map((g) => g.id);
-  assert.ok(ids(1).includes('memory') && ids(1).includes('shapes'), 'missing from the 3-4 group');
-  assert.ok(ids(2).includes('memory') && ids(2).includes('shapes'), 'missing from the 5-6 group');
-  assert.ok(!ids(3).includes('memory'), 'Find the Pairs shown to the 7+ group');
-  assert.ok(!ids(3).includes('shapes'), 'Sort It Out shown to the 7+ group');
+test('searchGames with no match returns an empty list', () => {
+  assert.deepEqual(searchGames(GAMES_META, 'zzz-not-a-game'), []);
 });
 
-test('the 7+ group is exactly Spell It! and Sudoku', () => {
-  const ids = new Set(gamesForAgeGroup(3).map((g) => g.id));
-  assert.deepEqual(ids, new Set(['wordbuilder', 'sudoku']));
+test('gamesByCategory with null returns everything unfiltered', () => {
+  assert.deepEqual(gamesByCategory(GAMES_META, null), GAMES_META);
 });
 
-test('How Many? and Spell It! are never both hidden from the same age group', () => {
-  // A sanity check on the catalogue as a whole: every group should have a
-  // reasonable spread, not accidentally lose most of its games.
-  for (const level of [1, 2, 3] as const) {
-    assert.ok(gamesForAgeGroup(level).length >= 2, `age group ${level} has fewer than 2 games`);
+test('gamesByCategory only returns games in that category', () => {
+  for (const c of GAME_CATEGORIES) {
+    for (const game of gamesByCategory(GAMES_META, c.id)) {
+      assert.equal(game.category, c.id);
+    }
+  }
+});
+
+test('every category has at least one game', () => {
+  for (const c of GAME_CATEGORIES) {
+    assert.ok(gamesByCategory(GAMES_META, c.id).length > 0, `category ${c.id} has no games`);
   }
 });

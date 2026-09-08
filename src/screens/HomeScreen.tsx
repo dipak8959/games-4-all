@@ -1,11 +1,11 @@
-import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, type DimensionValue } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type DimensionValue } from 'react-native';
 
 import { GradientSurface } from '../components/GradientSurface';
 import { Screen } from '../components/Screen';
-import { gamesForAgeGroup } from '../games/catalog';
+import { GAME_CATEGORIES, gamesByCategory, gamesForAge, searchGames, type GameCategory } from '../games/catalog';
 import { tap } from '../feedback/feedback';
-import { ageGroupIcon, ageGroupLabel } from '../state/ageGroups';
+import { DEFAULT_AGE } from '../state/profiles';
 import { useApp } from '../state/AppProvider';
 import { progressFor, totalStars } from '../state/progress';
 import {
@@ -38,14 +38,23 @@ const SPARKLES: readonly { readonly emoji: string; readonly top: number; readonl
 export function HomeScreen({
   onOpenGame,
   onOpenParentZone,
+  onOpenProfiles,
 }: {
   readonly onOpenGame: (gameId: string) => void;
   readonly onOpenParentZone: () => void;
+  readonly onOpenProfiles: () => void;
 }) {
-  const { progress, settings } = useApp();
+  const { progress, settings, activeProfile } = useApp();
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState<GameCategory | null>(null);
   const stars = totalStars(progress);
-  const ageGroup = settings.ageGroup;
-  const games = gamesForAgeGroup(ageGroup);
+  const age = activeProfile?.age ?? DEFAULT_AGE;
+
+  const games = useMemo(() => {
+    const forAge = gamesForAge(age);
+    const byCategory = gamesByCategory(forAge, category);
+    return searchGames(byCategory, query);
+  }, [age, category, query]);
 
   return (
     <Screen>
@@ -69,20 +78,18 @@ export function HomeScreen({
             <View style={styles.starBadge} accessibilityLabel={`${stars} stars collected`}>
               <Text style={styles.starBadgeText}>⭐ {stars}</Text>
             </View>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Age group: ${ageGroupLabel(ageGroup)}. Tap to change, grown-ups only.`}
-              onPress={onOpenParentZone}
-              hitSlop={6}
-              style={({ pressed }) => [styles.ageBadge, pressed && styles.pressed]}
-            >
-              <Text style={styles.ageBadgeText}>
-                {ageGroupIcon(ageGroup)} {ageGroupLabel(ageGroup)}
-              </Text>
-            </Pressable>
           </View>
         </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${activeProfile?.name ?? 'Profile'}, age ${age}. Tap to switch profile, grown-ups only.`}
+          onPress={onOpenProfiles}
+          hitSlop={6}
+          style={({ pressed }) => [styles.profileButton, pressed && styles.pressed]}
+        >
+          <Text style={styles.profileAvatar}>{activeProfile?.avatar ?? '🧒'}</Text>
+        </Pressable>
 
         <Pressable
           accessibilityRole="button"
@@ -95,6 +102,55 @@ export function HomeScreen({
         </Pressable>
       </View>
 
+      <View style={styles.searchRow}>
+        <Text style={styles.searchIcon} accessibilityElementsHidden importantForAccessibility="no">
+          🔍
+        </Text>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search games…"
+          placeholderTextColor={palette.inkSoft}
+          style={styles.searchInput}
+          accessibilityLabel="Search games"
+          returnKeyType="search"
+          autoCorrect={false}
+        />
+        {query.length > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+            onPress={() => setQuery('')}
+            hitSlop={8}
+            style={styles.clearButton}
+          >
+            <Text style={styles.clearIcon}>✕</Text>
+          </Pressable>
+        ) : null}
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoryRow}
+      >
+        <CategoryChip
+          label="All"
+          icon="🎲"
+          selected={category === null}
+          onPress={() => setCategory(null)}
+        />
+        {GAME_CATEGORIES.map((c) => (
+          <CategoryChip
+            key={c.id}
+            label={c.label}
+            icon={c.icon}
+            selected={category === c.id}
+            onPress={() => setCategory((prev) => (prev === c.id ? null : c.id))}
+          />
+        ))}
+      </ScrollView>
+
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {games.length === 0 ? (
           <View style={styles.empty}>
@@ -102,7 +158,9 @@ export function HomeScreen({
               🌱
             </Text>
             <Text style={styles.emptyText}>
-              More games are on the way for this age group. Try changing it in Parent Zone.
+              {query || category
+                ? "No games match that search — try clearing it."
+                : 'More games are on the way for this age.'}
             </Text>
           </View>
         ) : null}
@@ -140,6 +198,31 @@ export function HomeScreen({
   );
 }
 
+function CategoryChip({
+  label,
+  icon,
+  selected,
+  onPress,
+}: {
+  readonly label: string;
+  readonly icon: string;
+  readonly selected: boolean;
+  readonly onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      accessibilityLabel={`${label} games${selected ? ', selected' : ''}`}
+      onPress={onPress}
+      style={[styles.categoryChip, selected && styles.categoryChipSelected]}
+    >
+      <Text style={styles.categoryIcon}>{icon}</Text>
+      <Text style={[styles.categoryLabel, selected && styles.categoryLabelSelected]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -147,6 +230,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     minHeight: 100,
     marginBottom: space.xs,
+    gap: space.xs,
   },
   sparkle: { position: 'absolute', fontSize: 22, opacity: 0.7 },
   headerText: { flex: 1, gap: space.xs },
@@ -159,17 +243,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.md,
     paddingVertical: space.xs,
   },
-  ageBadge: {
-    alignSelf: 'flex-start',
+  starBadgeText: { fontSize: font.body - 3, fontWeight: '800', color: palette.ink },
+  profileButton: {
+    width: hitTarget,
+    height: hitTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.md,
     backgroundColor: palette.surface,
-    borderRadius: radius.pill,
     borderWidth: 2,
     borderColor: palette.border,
-    paddingHorizontal: space.md,
-    paddingVertical: space.xs,
+    ...shadow,
   },
-  ageBadgeText: { fontSize: font.body - 3, fontWeight: '800', color: palette.ink },
-  starBadgeText: { fontSize: font.body - 3, fontWeight: '800', color: palette.ink },
+  profileAvatar: { fontSize: 34 },
   parentButton: {
     width: hitTarget,
     height: hitTarget,
@@ -183,6 +269,38 @@ const styles = StyleSheet.create({
   },
   parentIcon: { fontSize: 30 },
   pressed: { opacity: 0.6 },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    backgroundColor: palette.surface,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    borderColor: palette.border,
+    paddingHorizontal: space.md,
+    minHeight: 52,
+    marginBottom: space.sm,
+  },
+  searchIcon: { fontSize: 20 },
+  searchInput: { flex: 1, fontSize: font.body, color: palette.ink, paddingVertical: space.xs },
+  clearButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  clearIcon: { fontSize: 18, color: palette.inkSoft, fontWeight: '800' },
+  categoryRow: { gap: space.sm, paddingBottom: space.sm },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+    minHeight: 44,
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    borderColor: palette.border,
+    backgroundColor: palette.surfaceAlt,
+  },
+  categoryChipSelected: { backgroundColor: palette.sky, borderColor: palette.sky },
+  categoryIcon: { fontSize: 16 },
+  categoryLabel: { fontSize: font.body - 4, fontWeight: '700', color: palette.ink },
+  categoryLabelSelected: { color: '#FFFFFF' },
   list: { gap: space.md, paddingBottom: space.xl },
   empty: { alignItems: 'center', padding: space.xl, gap: space.sm },
   emptyIcon: { fontSize: 60 },

@@ -98,6 +98,29 @@ label in between:
    an adult who'd rather take it gently drops below theirs. Parent Zone shows
    the level each game is currently sitting at for the active profile.
 
+Those age bands aren't guesses. They track two well-documented curves that
+happen to run together: arithmetic milestones (add and subtract within 20
+around 6-7, within 100 around 7-8, times tables and division within 100
+around 8-9, fluent by ~11) and short-term memory span (roughly 3 items at
+age 4, 6 by 10-12, levelling off at 7-8 by about 16). **Number Crunch**
+follows that ladder most literally — see `src/games/numbercrunch/logic.ts`,
+where each of the six levels is annotated with the milestone it is anchored
+to, and where three further findings shape the questions themselves:
+
+- **The problem-size effect** — large single-digit facts (8 × 7) resist
+  direct retrieval in a way small ones (2 × 3) don't — so higher levels
+  raise the *floor* on factors, not just the ceiling. An adult is never
+  handed 2 × 3.
+- **Error structure** — around 88% of adults' multiplication mistakes are
+  "operand-related", landing on a number from one of the operands' own
+  tables (7 × 4 → 24). The wrong answers offered are built from those real
+  confusions plus carry and place-value slips, so 8 × 7 is offered against
+  48 and 63 rather than 55 and 57. Decoys no times table can reach turn a
+  question into a formatting exercise.
+- **Cognitive aging** — processing *speed* declines with age while
+  arithmetic knowledge holds up, and nothing here is timed, so content is
+  never softened for older players.
+
 Adding a game to the catalogue means picking its age range deliberately
 (what age is this actually appropriate or interesting for, and where does it
 stop being one?), not defaulting to "all ages" — that default is exactly

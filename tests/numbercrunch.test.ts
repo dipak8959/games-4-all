@@ -13,11 +13,127 @@ import {
 
 test('operators join in school order: +, then -, then ×, then ÷', () => {
   assert.deepEqual(operatorsForLevel(1), ['+']);
-  assert.deepEqual(operatorsForLevel(2), ['+']);
+  assert.deepEqual(operatorsForLevel(2), ['+', '-']);
   assert.deepEqual(operatorsForLevel(3), ['+', '-']);
   assert.deepEqual(operatorsForLevel(4), ['+', '-', '×']);
   assert.deepEqual(operatorsForLevel(5), ['+', '-', '×', '÷']);
   assert.deepEqual(operatorsForLevel(6), ['+', '-', '×', '÷']);
+});
+
+test('an out-of-range level is clamped rather than crashing', () => {
+  assert.deepEqual(operatorsForLevel(0), operatorsForLevel(1));
+  assert.deepEqual(operatorsForLevel(99), operatorsForLevel(6));
+});
+
+// --- magnitudes match arithmetic milestones ----------------------------------
+
+test('level 1 keeps sums within 10, the first addition children meet', () => {
+  for (let seed = 0; seed < 200; seed++) {
+    const q = createQuestion(seededRng(seed), 1);
+    assert.equal(q.operator, '+');
+    assert.ok(q.answer <= 10, `seed ${seed}: ${q.a} + ${q.b} = ${q.answer} exceeds 10`);
+  }
+});
+
+test('level 2 keeps addition and subtraction within 20 (the Grade 1 benchmark)', () => {
+  for (let seed = 0; seed < 300; seed++) {
+    const q = createQuestion(seededRng(seed), 2);
+    assert.ok(q.a <= 20 && q.b <= 20, `seed ${seed}: terms above 20`);
+    assert.ok(q.answer <= 20, `seed ${seed}: ${q.a} ${q.operator} ${q.b} = ${q.answer} exceeds 20`);
+  }
+});
+
+test('level 3 introduces two-digit work within 100, without multiplication yet', () => {
+  let sawTwoDigit = false;
+  for (let seed = 0; seed < 300; seed++) {
+    const q = createQuestion(seededRng(seed), 3);
+    assert.ok(q.operator === '+' || q.operator === '-', `seed ${seed}: unexpected ${q.operator}`);
+    assert.ok(q.answer <= 100, `seed ${seed}: ${q.answer} exceeds 100`);
+    if (q.a >= 10 || q.b >= 10) sawTwoDigit = true;
+  }
+  assert.ok(sawTwoDigit, 'level 3 never produced a two-digit term');
+});
+
+test('the top level draws only large, hard-to-retrieve facts for × and ÷', () => {
+  // The problem-size effect: 2 × 3 is retrieved instantly and is not a
+  // question for an adult, so the factor floor rises with level.
+  for (let seed = 0; seed < 400; seed++) {
+    const q = createQuestion(seededRng(seed), 6);
+    if (q.operator === '×') {
+      assert.ok(q.a >= 6 && q.b >= 6, `seed ${seed}: ${q.a} × ${q.b} is below the top-level floor`);
+    }
+    if (q.operator === '÷') {
+      assert.ok(q.b >= 6, `seed ${seed}: divisor ${q.b} is below the top-level floor`);
+      assert.ok(q.answer >= 6, `seed ${seed}: quotient ${q.answer} is below the top-level floor`);
+    }
+  }
+});
+
+test('subtraction draws a minuend worth subtracting from, not just the smallest', () => {
+  let sawLarge = false;
+  for (let seed = 0; seed < 300; seed++) {
+    const q = createQuestion(seededRng(seed), 6);
+    if (q.operator === '-' && q.a >= 50) sawLarge = true;
+  }
+  assert.ok(sawLarge, 'top-level subtraction never used a large minuend');
+});
+
+// --- wrong answers mirror real error patterns --------------------------------
+
+test('multiplication decoys come from an operand\'s own times table', () => {
+  // ~88% of adults' multiplication errors are operand-related, so a decoy
+  // should be a number that a real confusion could land on — not a value no
+  // times table ever reaches.
+  let checked = 0;
+  for (let seed = 0; seed < 400 && checked < 40; seed++) {
+    const q = createQuestion(seededRng(seed), 6);
+    if (q.operator !== '×') continue;
+    checked++;
+    for (const choice of q.choices) {
+      if (choice === q.answer) continue;
+      const inATable = choice % q.a === 0 || choice % q.b === 0 || choice === q.a + q.b;
+      assert.ok(
+        inATable,
+        `seed ${seed}: ${choice} is not related to either operand of ${q.a} × ${q.b}`,
+      );
+    }
+  }
+  assert.ok(checked > 0, 'no multiplication questions were sampled');
+});
+
+test('adult-level decoys never include the beginner "wrong operation" slip', () => {
+  // "6 × 7 -> 13" is a real learner error but an adult eliminates it on
+  // sight, which wastes one of only two decoy slots and hands back a free
+  // question. It belongs at the lower levels only.
+  for (let seed = 0; seed < 400; seed++) {
+    const q = createQuestion(seededRng(seed), 6);
+    if (q.operator !== '×') continue;
+    assert.ok(
+      !q.choices.includes(q.a + q.b) || q.a + q.b === q.answer,
+      `seed ${seed}: ${q.a} × ${q.b} offered ${q.a + q.b}, the sum`,
+    );
+  }
+});
+
+test('multi-digit addition decoys include a carry-sized slip, not just off-by-one', () => {
+  let sawTenAway = false;
+  for (let seed = 0; seed < 400; seed++) {
+    const q = createQuestion(seededRng(seed), 6);
+    if (q.operator !== '+') continue;
+    if (q.choices.some((c) => Math.abs(c - q.answer) === 10)) sawTenAway = true;
+  }
+  assert.ok(sawTenAway, 'two-digit addition never offered a dropped-carry decoy');
+});
+
+test('no question ever offers the same number twice or a negative one', () => {
+  for (const level of [1, 2, 3, 4, 5, 6]) {
+    for (let seed = 0; seed < 200; seed++) {
+      const q = createQuestion(seededRng(seed + level * 1000), level);
+      assert.equal(new Set(q.choices).size, q.choices.length, `level ${level} seed ${seed}: duplicate choice`);
+      assert.ok(q.choices.every((c) => c >= 0), `level ${level} seed ${seed}: negative choice`);
+      assert.ok(q.choices.includes(q.answer), `level ${level} seed ${seed}: answer missing`);
+    }
+  }
 });
 
 test("an adult's very first question already uses the full operator set", () => {
@@ -26,8 +142,14 @@ test("an adult's very first question already uses the full operator set", () => 
   const adultLevel = startingLevelForAge(41);
   assert.deepEqual(operatorsForLevel(adultLevel), ['+', '-', '×', '÷']);
 
-  // And a young child's first question is still addition only.
-  assert.deepEqual(operatorsForLevel(startingLevelForAge(6)), ['+']);
+  // A six-year-old gets add and subtract within 20 — the Grade 1 benchmark —
+  // and no multiplication or division, which they haven't met yet.
+  assert.deepEqual(operatorsForLevel(startingLevelForAge(6)), ['+', '-']);
+
+  // Times tables arrive around 8-9, division shortly after.
+  assert.ok(operatorsForLevel(startingLevelForAge(9)).includes('×'));
+  assert.ok(!operatorsForLevel(startingLevelForAge(7)).includes('×'));
+  assert.ok(operatorsForLevel(startingLevelForAge(12)).includes('÷'));
 });
 
 test('every question is answered correctly by its own arithmetic', () => {

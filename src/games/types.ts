@@ -55,6 +55,14 @@ export function clampLevel(level: number): number {
  * warm up on "6 + 7" for several rounds before the game offers anything
  * worth their time.
  *
+ * The bands follow two well-established developmental curves that happen to
+ * run together: arithmetic milestones (add/subtract within 20 around 6-7,
+ * within 100 around 7-8, times tables and division around 8-9, fluent by
+ * ~11) and short-term memory span (about 3 items at 4, 6 by 10-12, levelling
+ * off at 7-8 by around 16). Levels 1-6 are spread across that, which is why
+ * the top band opens at 14 rather than at adulthood — by then both curves
+ * are essentially at their plateau.
+ *
  * This is only a *starting point* — not an age-to-difficulty rule. From the
  * first completed round onward the level is driven purely by how the player
  * actually did (`nextLevel`), so a confident young player climbs past this
@@ -64,8 +72,8 @@ export function startingLevelForAge(age: number): number {
   if (age <= 4) return 1;
   if (age <= 6) return 2;
   if (age <= 8) return 3;
-  if (age <= 11) return 4;
-  if (age <= 15) return 5;
+  if (age <= 10) return 4;
+  if (age <= 13) return 5;
   return MAX_LEVEL;
 }
 

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { seededRng } from '../src/util/random.ts';
+import { startingLevelForAge } from '../src/games/types.ts';
 import {
   answer,
   createGame,
@@ -17,6 +18,16 @@ test('operators join in school order: +, then -, then ×, then ÷', () => {
   assert.deepEqual(operatorsForLevel(4), ['+', '-', '×']);
   assert.deepEqual(operatorsForLevel(5), ['+', '-', '×', '÷']);
   assert.deepEqual(operatorsForLevel(6), ['+', '-', '×', '÷']);
+});
+
+test("an adult's very first question already uses the full operator set", () => {
+  // The complaint this guards against: a 41-year-old opening the game and
+  // being asked "6 + 7" for several rounds before it offers anything harder.
+  const adultLevel = startingLevelForAge(41);
+  assert.deepEqual(operatorsForLevel(adultLevel), ['+', '-', '×', '÷']);
+
+  // And a young child's first question is still addition only.
+  assert.deepEqual(operatorsForLevel(startingLevelForAge(6)), ['+']);
 });
 
 test('every question is answered correctly by its own arithmetic', () => {

@@ -84,13 +84,19 @@ label in between:
    their age. Parent Zone's game list is intentionally unfiltered, so a
    parent can always see the full catalogue and why something isn't showing
    on Home for a given profile.
-2. **Seeds where a shown game's difficulty starts.** Every profile starts a
-   new game at the same middling level (`DEFAULT_LEVEL` in
-   `src/games/types.ts`), then that level drifts up or down round by round
-   based on how the last round went (`nextLevel`) — a perfect round nudges it
-   up one step, a rough one nudges it down one step, never more than one step
-   at a time. Parent Zone shows the level each game is currently sitting at
-   for the active profile.
+2. **Seeds where a shown game's difficulty starts.** A profile's age picks
+   the level a never-played game opens at (`startingLevelForAge` in
+   `src/games/types.ts`) — this matters because a single game's range can
+   span decades, and starting everyone in the middle is wrong at both ends:
+   it hands a six-year-old something too hard, and asks a forty-one-year-old
+   to warm up on "6 + 7" for several rounds before Number Crunch offers
+   anything worth their time. From the first completed round onward, age
+   stops mattering entirely: the level drifts up or down based on how the
+   last round actually went (`nextLevel`) — a perfect round nudges it up one
+   step, a rough one nudges it down one step, never more than one step at a
+   time — so a confident young player climbs past their starting point and
+   an adult who'd rather take it gently drops below theirs. Parent Zone shows
+   the level each game is currently sitting at for the active profile.
 
 Adding a game to the catalogue means picking its age range deliberately
 (what age is this actually appropriate or interesting for, and where does it

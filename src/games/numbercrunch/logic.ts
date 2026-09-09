@@ -10,13 +10,14 @@ import { pick, randInt, shuffle, type Rng } from '../../util/random';
  *
  * Operators are gated by *level*, not age directly, in the order most
  * children actually meet them at school: addition, then subtraction, then
- * multiplication, then division. A profile's age only seeds where a game's
- * level starts (`DEFAULT_LEVEL`, same as every other game) — from there the
- * level adapts to how the child is actually doing (`nextLevel`), so a
- * confident 6-year-old can work up to multiplication and a returning adult
- * isn't stuck re-proving addition. Division only ever appears once
- * multiplication is already in play, and is always constructed to divide
- * evenly — no fractions, no rounding, so an answer is never ambiguous.
+ * multiplication, then division. A profile's age seeds where the level
+ * starts (`startingLevelForAge`) — so a grown-up opens straight into all
+ * four operations rather than warming up on "6 + 7" — and from there the
+ * level adapts to how the player is actually doing (`nextLevel`), so a
+ * confident young player can climb and an adult who'd rather take it gently
+ * can drop back. Division only ever appears once multiplication is already
+ * in play, and is always constructed to divide evenly — no fractions, no
+ * rounding, so an answer is never ambiguous.
  */
 
 export type Operator = '+' | '-' | '×' | '÷';

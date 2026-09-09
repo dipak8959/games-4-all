@@ -33,7 +33,7 @@ import {
   type ProfileInput,
   type ProfilesState,
 } from './profiles';
-import { DEFAULT_LEVEL } from '../games/types';
+import { DEFAULT_LEVEL, startingLevelForAge } from '../games/types';
 
 /**
  * Single source of truth for profiles, settings, progress, and screen-time
@@ -254,8 +254,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [persistUsage]);
 
   const levelForGame = useCallback(
-    (gameId: string) => progressFor(progress, gameId).currentLevel ?? DEFAULT_LEVEL,
-    [progress],
+    (gameId: string) =>
+      progressFor(progress, gameId).currentLevel ??
+      (activeProfile ? startingLevelForAge(activeProfile.age) : DEFAULT_LEVEL),
+    [progress, activeProfile],
   );
 
   const getFreshness = useCallback((gameId: string) => freshnessFor(freshness, gameId), [freshness]);

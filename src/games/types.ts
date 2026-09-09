@@ -39,14 +39,34 @@ export function starsForMistakes(mistakes: number): number {
 export const MIN_LEVEL = 1;
 export const MAX_LEVEL = 6;
 
-/** Starting level for a game a profile has never played. Age no longer maps
- *  onto a starting difficulty (there's no age-group bucket to map from any
- *  more) — every profile just starts at the same middling level and drifts
- *  from there via `nextLevel`, same as always. */
+/** Fallback starting level when there's no profile age to go on at all. */
 export const DEFAULT_LEVEL = 3;
 
 export function clampLevel(level: number): number {
   return Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, level));
+}
+
+/**
+ * Where a profile starts a game it has never played.
+ *
+ * A game's allowed age range can span decades (Number Crunch runs 6-99), so
+ * starting everyone at the same middling level is wrong at both ends: it
+ * hands a six-year-old something too hard and asks a forty-one-year-old to
+ * warm up on "6 + 7" for several rounds before the game offers anything
+ * worth their time.
+ *
+ * This is only a *starting point* — not an age-to-difficulty rule. From the
+ * first completed round onward the level is driven purely by how the player
+ * actually did (`nextLevel`), so a confident young player climbs past this
+ * and an adult who'd rather take it gently drops below it.
+ */
+export function startingLevelForAge(age: number): number {
+  if (age <= 4) return 1;
+  if (age <= 6) return 2;
+  if (age <= 8) return 3;
+  if (age <= 11) return 4;
+  if (age <= 15) return 5;
+  return MAX_LEVEL;
 }
 
 /**

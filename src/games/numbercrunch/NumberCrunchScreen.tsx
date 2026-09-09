@@ -6,6 +6,7 @@ import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { font, hitTarget, palette, space } from '../../theme/tokens';
+import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { answer, createGame, QUESTIONS_PER_ROUND, type NumberCrunchState } from './logic';
@@ -126,7 +127,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surface,
     padding: space.md,
   },
-  sum: { fontSize: font.playHero, fontWeight: '800', color: palette.ink },
+  sum: { fontFamily: fonts.heavy, fontSize: font.playHero, color: palette.ink },
   choices: { flexDirection: 'row', justifyContent: 'center', gap: space.md, paddingBottom: space.md },
   choiceOuter: { minWidth: hitTarget + 16, minHeight: hitTarget + 16 },
   choiceInner: {
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  choiceText: { fontSize: font.playTitle + 8, fontWeight: '800', color: '#FFFFFF' },
+  choiceText: { fontFamily: fonts.heavy, fontSize: font.playTitle + 8, color: '#FFFFFF' },
   ruledOut: { backgroundColor: palette.surfaceAlt },
   ruledOutText: { color: palette.inkSoft },
   pressed: { transform: [{ scale: 0.95 }] },

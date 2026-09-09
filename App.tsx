@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
 
 import { findGame } from './src/games/registry';
 import type { RoundResult } from './src/games/types';
@@ -180,6 +181,25 @@ function Root() {
 }
 
 export default function App() {
+  // Archivo ships in the bundle rather than being fetched — the design calls
+  // for it, and this app makes no network requests at all, so a webfont was
+  // never an option. Each weight is registered as its own family: a custom
+  // font on Android does not switch faces on `fontWeight`, so the face has
+  // to be named directly (see `src/theme/type.ts`).
+  const [fontsLoaded, fontError] = useFonts({
+    Archivo: require('./assets/fonts/Archivo-Regular.ttf'),
+    ArchivoExtraBold: require('./assets/fonts/Archivo-ExtraBold.ttf'),
+  });
+
+  // Holding the first frame until the faces are in avoids the flash of
+  // system type at the wrong weight that made this look off in the first
+  // place. It is reading two local files, so it is not a wait anyone sees.
+  // A face that fails to load is a worse look, not a broken app: fall through
+  // to the platform's own type rather than holding a blank screen forever.
+  if (!fontsLoaded && !fontError) {
+    return <View style={styles.loading} />;
+  }
+
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />

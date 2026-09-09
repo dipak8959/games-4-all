@@ -6,6 +6,7 @@ import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { font, gutter, hitTarget, palette, space } from '../../theme/tokens';
+import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, enterNumber, filledCount, selectCell, type SudokuState } from './logic';
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
   },
   cellGiven: { backgroundColor: palette.surfaceAlt },
   cellSelected: { backgroundColor: palette.accentTint },
-  cellText: { fontWeight: '800' },
+  cellText: { fontFamily: fonts.heavy },
   cellTextGiven: { color: palette.ink },
   cellTextEntered: { color: palette.berry },
   numbers: {
@@ -203,6 +204,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  numberText: { fontSize: font.playTitle, fontWeight: '800', color: '#FFFFFF' },
+  numberText: { fontFamily: fonts.heavy, fontSize: font.playTitle, color: '#FFFFFF' },
   pressed: { transform: [{ scale: 0.95 }] },
 });

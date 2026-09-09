@@ -21,7 +21,7 @@ import { useApp } from '../state/AppProvider';
 import { progressFor } from '../state/progress';
 import { togglePinned } from '../state/settings';
 import { font, gutter, hitTarget, palette, playColor, rule, space } from '../theme/tokens';
-import { type } from '../theme/type';
+import { fonts, type } from '../theme/type';
 
 /**
  * Home — the `Games Hub` handoff's first screen, built for real.
@@ -139,7 +139,7 @@ export function HomeScreen({
           </View>
         </View>
 
-        <SectionHeader label="WHO IS PLAYING" meta="TAP TO SWITCH" />
+        <SectionHeader label="WHO IS PLAYING" meta="TAP TO SWITCH" tone="quiet" />
         <CellGrid
           columns={profiles.length > 3 ? 4 : Math.max(profiles.length, 1)}
           items={profiles}
@@ -154,7 +154,7 @@ export function HomeScreen({
         />
         <Rule weight="major" />
 
-        <SectionHeader label="WHAT KIND OF GAME" />
+        <SectionHeader label="WHAT KIND OF GAME" tone="quiet" />
         <CellGrid
           columns={3}
           items={[{ id: null, label: 'All', icon: 'all' as IconName }, ...GAME_CATEGORIES]}
@@ -414,7 +414,7 @@ function FavouriteRow({ game, onPress }: { readonly game: GameMeta; readonly onP
         <Icon name={game.icon} size={24} color={palette.ink} />
       </View>
       <View style={styles.favText}>
-        <Text style={type.h5}>{game.title}</Text>
+        <Text style={type.rowTitle}>{game.title}</Text>
         <Text style={type.meta}>{game.skill}</Text>
       </View>
       <View style={styles.favStart}>
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     borderWidth: rule.major,
     borderColor: palette.ink,
   },
-  kidChipText: { color: palette.ink, fontWeight: '700' },
+  kidChipText: { color: palette.ink },
   offlineRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     borderColor: palette.border,
   },
   cellSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
-  cellLabel: { fontSize: font.body, fontWeight: '600', color: palette.ink },
+  cellLabel: { fontFamily: fonts.heavy, fontSize: font.body, color: palette.ink },
   onAccent: { color: palette.bg },
   onAccentSub: { color: palette.accentTint },
   profileDot: { width: 14, height: 14 },
@@ -526,14 +526,14 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surfaceAlt,
   },
   gameTitle: {
-    fontSize: font.h5,
-    fontWeight: '600',
+    fontFamily: fonts.heavy,
+    fontSize: font.secondary,
     color: palette.ink,
     // Two lines' worth of height whether the title needs one line or two,
     // so a long name ("Number Crunch") and a short one ("Sudoku") leave
     // their cells the same height and the grid rows stay aligned.
-    lineHeight: 21,
-    minHeight: 42,
+    lineHeight: 16,
+    minHeight: 32,
   },
   pin: { position: 'absolute', top: space.xs, right: space.xs, padding: space.xs },
 

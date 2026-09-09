@@ -6,6 +6,7 @@ import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { font, hitTarget, palette, space } from '../../theme/tokens';
+import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { answer, createGame, QUESTIONS_PER_ROUND, type CountingState } from './logic';
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  choiceText: { fontSize: font.playTitle + 8, fontWeight: '800', color: '#FFFFFF' },
+  choiceText: { fontFamily: fonts.heavy, fontSize: font.playTitle + 8, color: '#FFFFFF' },
   ruledOut: { backgroundColor: palette.surfaceAlt },
   ruledOutText: { color: palette.inkSoft },
   pressed: { transform: [{ scale: 0.95 }] },

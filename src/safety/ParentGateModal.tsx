@@ -5,7 +5,7 @@ import { BigButton } from '../components/BigButton';
 import { Icon } from '../components/Icon';
 import { Rule } from '../components/Rule';
 import { font, hitTarget, palette, rule, space } from '../theme/tokens';
-import { type } from '../theme/type';
+import { fonts, type } from '../theme/type';
 import { systemRng } from '../util/random';
 import { createChallenge, isCorrect } from './parentGate';
 
@@ -124,5 +124,5 @@ const styles = StyleSheet.create({
     borderColor: palette.border,
   },
   choicePressed: { backgroundColor: palette.accent },
-  choiceText: { fontSize: font.h3, fontWeight: '800', color: palette.ink },
+  choiceText: { fontFamily: fonts.heavy, fontSize: font.h3, color: palette.ink },
 });

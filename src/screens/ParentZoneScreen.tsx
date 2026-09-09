@@ -108,7 +108,7 @@ export function ParentZoneScreen({
             <>
               <Avatar name={activeProfile.name} color={activeProfile.avatar} size={40} />
               <View style={styles.profileText}>
-                <Text style={type.h5}>{activeProfile.name}</Text>
+                <Text style={type.rowTitle}>{activeProfile.name}</Text>
                 <Text style={type.meta}>
                   Age {activeProfile.age} — decides which games show, and where each one starts
                 </Text>
@@ -169,7 +169,7 @@ export function ParentZoneScreen({
                 <Icon name={game.icon} size={24} color={palette.ink} />
               </View>
               <View style={styles.gameText}>
-                <Text style={type.h5}>{game.title}</Text>
+                <Text style={type.rowTitle}>{game.title}</Text>
                 <Text style={type.meta}>{game.skill}</Text>
                 <Text style={type.monoSm}>
                   AGES {game.ages} · {gp.rounds} {gp.rounds === 1 ? 'ROUND' : 'ROUNDS'} · LEVEL{' '}
@@ -232,7 +232,7 @@ function Toggle({
 }) {
   return (
     <View style={styles.row}>
-      <Text style={type.h5}>{label}</Text>
+      <Text style={type.rowTitle}>{label}</Text>
       <Switch
         value={value}
         onValueChange={onChange}
@@ -272,7 +272,7 @@ function LimitPicker({
                 pressed && !selected && styles.pressedTint,
               ]}
             >
-              <Text style={[type.h5, selected && styles.onAccent]}>
+              <Text style={[type.rowTitle, selected && styles.onAccent]}>
                 {minutes == null ? 'None' : `${minutes}m`}
               </Text>
             </Pressable>

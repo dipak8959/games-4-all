@@ -154,7 +154,7 @@ function ProfileRow({
       >
         <Avatar name={profile.name} color={profile.avatar} size={44} />
         <View style={styles.rowText}>
-          <Text style={type.h5}>{profile.name}</Text>
+          <Text style={type.rowTitle}>{profile.name}</Text>
           <Text style={type.monoSm}>
             {profile.age} YRS{isActive ? ' · PLAYING NOW' : ''}
           </Text>

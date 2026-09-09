@@ -158,17 +158,40 @@ parents should know" rows and the play-time meter are all there. `TIME` is
 the one new destination, and the one tab that isn't gated: how long you have
 played is your own information, and reading it changes nothing.
 
-Five things deliberately depart from the handoff, all of them documented at
-the call site:
+Four things deliberately depart from the handoff, all of them documented at
+the call site — and the type is **not** one of them any more. The scale, the
+two weights, and Archivo itself are the handoff's, exactly (see "Type" below):
 
 | The handoff | This app | Why |
 | --- | --- | --- |
 | Rows ≥44px, CTA ~52px | Everything tappable ≥72dp | The app's own floor is higher (SAFETY.md, "Big targets"). It only ever disagrees in the safe direction. |
-| Archivo, bundled locally | The platform grotesque at the handoff's weights and tracking | This repository ships no asset files at all — no images, no fonts, nothing to license or audit. |
-| Body 15 / secondary 13 / meta 12 / mono 10-9, headings at 800 | Headline sizes exactly as drawn; everything at reading size one step larger (17/15/13/11-10), and weight 800 kept for headings rather than spent on every row | The handoff's reading scale is drawn for an adult reading an editorial layout at desk distance. This app is held at arm's length by someone who may be six — and a screen where every line is at maximum weight has no hierarchy left to spend. `tests/theme.test.ts` holds the floor so the small end can't creep back. |
-| Grayscale key art in every image slot | The game's own drawn mark on a flat field | Same reason: there are no bitmaps here, so the icon *is* the art. |
+| Grayscale key art in every image slot | The game's own drawn mark on a flat field | There are no bitmaps in this repository, so the icon *is* the art. |
 | Age bands (`Kids 6-12`, `Teen 13-17`, …) | `WHO IS PLAYING` picks a person, and their real age filters the shelf | This app dropped named age groups a while ago — see "Age: a real number, not a named group" above. |
 | A PIN for the parent gate | The existing two-digit multiplication question | The gate is a speed bump, not authentication, and deliberately guards nothing whose disclosure would matter. A PIN would be a real secret to store, forget, and reset. |
+
+#### Type
+
+Archivo 400 and 800 ship in `assets/fonts/` under the SIL Open Font License
+and load at startup (`App.tsx`) — the design system names them, and this app
+cannot fetch a webfont, so bundling is the only way to have the design at
+all. Substituting the platform grotesque, which is what this did at first,
+quietly broke two things at once: Archivo's x-height runs taller than any
+system stack, so every size rendered smaller than drawn, and no system stack
+has a real extra-bold, so the weights came out either synthesised or flat.
+
+The system has **two weights and no others** — 400 and 800 — and weight is
+carried by *which face is set*, never by `fontWeight`. A custom family on
+Android does not switch faces on weight at all, and on web asking 800 of an
+already-extra-bold face makes the browser synthesise a second bolding on
+top. `tests/theme.test.ts` asserts that `fontWeight` appears nowhere in
+`src/`.
+
+Section headers come in the two registers the design actually uses, and
+mixing them up is what flattened the interface on the first attempt: a
+**strong** header is 16px extra-bold ink, uppercase and opened out
+(`ON THIS DEVICE`, `WHAT PARENTS SHOULD KNOW`), and a **quiet** one is the
+small grey monospace label reserved for a picker row (`WHO IS PLAYING`).
+Setting every header in quiet grey mono leaves nothing anchoring a screen.
 
 Colour survives the flattening in exactly two places, and both are about
 recognition rather than decoration: a profile keeps its own colour, and the
@@ -286,7 +309,8 @@ src/
     PlayTimeMeter.tsx       Today's play time as a track and two labels
   theme/
     tokens.ts               Modernist tokens: palette, rules, spacing, type scale
-    type.ts                 Heading and machine-label styles built from them
+    type.ts                 Archivo faces, and the text styles built from them
+assets/fonts/               Archivo 400/800 (SIL OFL) + its licence
 scripts/check-safety.mjs    The build gate
 tests/                      Unit tests for all pure logic
 ```

@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { gutter, palette, rule, space } from '../theme/tokens';
-import { type } from '../theme/type';
+import { fonts, type } from '../theme/type';
 
 export type Fact = {
   readonly value: string;
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'stretch' },
   divider: { width: rule.hair, backgroundColor: palette.border },
   cell: { flex: 1, paddingHorizontal: gutter, paddingVertical: space.lg, gap: space.xs },
-  value: { fontSize: 22, fontWeight: '800', color: palette.ink },
+  value: { fontFamily: fonts.heavy, fontSize: 20, color: palette.ink },
   numbered: {
     flexDirection: 'row',
     gap: space.md,

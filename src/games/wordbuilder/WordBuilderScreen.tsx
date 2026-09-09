@@ -6,6 +6,7 @@ import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { font, hitTarget, palette, space } from '../../theme/tokens';
+import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, tapTile, WORDS_PER_ROUND, type WordBuilderState } from './logic';
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   blankFilled: { borderStyle: 'solid', borderColor: palette.grape, backgroundColor: palette.surfaceAlt },
-  blankText: { fontSize: font.playTitle - 4, fontWeight: '800', color: palette.ink },
+  blankText: { fontFamily: fonts.heavy, fontSize: font.playTitle - 4, color: palette.ink },
   tiles: { flexDirection: 'row', justifyContent: 'center', gap: space.sm, paddingBottom: space.md, flexWrap: 'wrap' },
   tileOuter: { minWidth: hitTarget, minHeight: hitTarget },
   tileInner: {
@@ -158,6 +159,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   tileUsed: { backgroundColor: palette.surfaceAlt },
-  tileText: { fontSize: font.playTitle, fontWeight: '800', color: '#FFFFFF' },
+  tileText: { fontFamily: fonts.heavy, fontSize: font.playTitle, color: '#FFFFFF' },
   pressed: { transform: [{ scale: 0.95 }] },
 });

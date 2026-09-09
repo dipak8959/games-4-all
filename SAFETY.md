@@ -189,11 +189,19 @@ every game added from here on, not just the ones that exist today:
   from plain views — rectangles, circles and triangles (`Icon.tsx`) — and
   every game shape is drawn the same way (`Shape.tsx`). There are no image
   files in this repository at all, no icon font, and no icon library
-  dependency to audit. No copied images, no ripped audio, no fonts without a
-  clear licence already covered by this project's dependencies. This is also
-  why the design handoff's grayscale key art became a drawn mark and its
-  Archivo became the platform grotesque: shipping either would mean shipping
-  the first asset file this project has ever had.
+  dependency to audit. This is why the design handoff's grayscale key art
+  became a drawn mark rather than a shipped bitmap.
+
+  The one asset this project ships is a typeface: **Archivo 400 and 800**
+  (`assets/fonts/`), which the design system specifies. It is used under the
+  **SIL Open Font License 1.1** — a licence that explicitly permits bundling
+  and redistribution — and its full text ships beside it in
+  `assets/fonts/OFL.txt`, as that licence requires. It is bundled rather than
+  fetched, because this app makes no network requests at all: a webfont was
+  never an option here, and the handoff asks for it to be local anyway.
+  `tests/theme.test.ts` fails if either face or the licence goes missing.
+  No copied images, no ripped audio, and no font without a licence that
+  plainly allows this.
 - **When in doubt, go generic.** A game named for what it teaches ("Number
   Crunch", "Sort It Out") rather than for a franchise is both safer and more
   honest about what a parent is getting.

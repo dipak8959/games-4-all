@@ -44,7 +44,7 @@ export function GameFrame({
 
         <View style={styles.titleWrap}>
           <Icon name={icon} size={18} color={palette.ink} />
-          <Text style={type.h5} numberOfLines={1}>
+          <Text style={type.rowTitle} numberOfLines={1}>
             {title}
           </Text>
         </View>

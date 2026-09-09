@@ -53,40 +53,54 @@ test('spacing is the handoff\'s 4/8/12/16/24/32, on a 16px gutter', () => {
   assert.equal(gutter, 16);
 });
 
-test('headline sizes are the handoff\'s, exactly', () => {
+test('the type scale is the handoff\'s, exactly', () => {
+  // Every one of these is a size the wireframe actually sets. Substituting
+  // a scale of my own here is what made the design stop looking like the
+  // design, so it is asserted the same way the palette is.
   assert.equal(font.display, 42);
   assert.equal(font.h2, 32);
   assert.equal(font.h3, 25);
+  assert.equal(font.h5, 16);
+  assert.equal(font.body, 15);
+  assert.equal(font.secondary, 13);
+  assert.equal(font.meta, 12);
+  assert.equal(font.monoLg, 11);
+  assert.equal(font.mono, 10);
+  assert.equal(font.monoSm, 9);
 });
 
-test('reading sizes sit one step above the handoff, and never drift back down', () => {
-  // The handoff's reading scale (body 15, secondary 13, meta 12, mono 10/9)
-  // is drawn for an adult reading an editorial layout at desk distance.
-  // This app is held at arm's length by someone who may be six, so every
-  // size at reading scale is a step larger. The floors below are the point
-  // of this test: the sizes may grow, but nothing here may shrink back to
-  // the handoff's own small end.
-  assert.ok(font.h5 >= 18, `h5 is ${font.h5}`);
-  assert.ok(font.body >= 17, `body is ${font.body}`);
-  assert.ok(font.secondary >= 15, `secondary is ${font.secondary}`);
-  assert.ok(font.meta >= 13, `meta is ${font.meta}`);
-  assert.ok(font.mono >= 11, `mono is ${font.mono}`);
-  assert.ok(font.monoSm >= 10, `monoSm is ${font.monoSm}`);
-});
-
-test('the scale still steps — each size is smaller than the one above it', () => {
-  const scale = [font.display, font.h2, font.h3, font.h5, font.body, font.secondary, font.meta];
-  for (let i = 1; i < scale.length; i += 1) {
-    assert.ok(scale[i] < scale[i - 1], `${scale[i]} does not sit below ${scale[i - 1]}`);
+test('Archivo ships in the repository, both weights, with its licence', () => {
+  // The handoff asks for Archivo bundled locally rather than fetched, and
+  // this app cannot fetch anything at all — so the files have to be here.
+  for (const file of ['Archivo-Regular.ttf', 'Archivo-ExtraBold.ttf', 'OFL.txt']) {
+    assert.ok(statSync(join('assets/fonts', file)).size > 0, `assets/fonts/${file} is missing`);
   }
+  const licence = readFileSync('assets/fonts/OFL.txt', 'utf8');
+  assert.match(licence, /SIL Open Font License/, 'the bundled font must carry its licence');
 });
 
-test('weight 800 is reserved for headings, not spent on every row', () => {
-  // A screen where every line is at maximum weight has no hierarchy left to
-  // spend. Row titles (`type.h5`) carry 600; the headings keep 800.
-  const source = readFileSync('src/theme/type.ts', 'utf8');
-  const h5 = source.slice(source.indexOf('  h5: {'), source.indexOf('  body: {'));
-  assert.ok(/fontWeight: '600'/.test(h5), 'row titles should not be at heading weight');
+test('weight comes from the face, never from fontWeight', () => {
+  // The design has two weights, 400 and 800, and nothing in between. On
+  // Android a custom family does not switch faces on `fontWeight` at all,
+  // and on web asking 800 of an already-extra-bold face makes the browser
+  // synthesise a second bolding — which is what "too bold in places, too
+  // light in others" actually was. So the face is named directly and
+  // `fontWeight` appears nowhere in the app's styles.
+  const offenders = sourceFiles('src').filter((path) =>
+    /fontWeight:/.test(readFileSync(path, 'utf8')),
+  );
+  assert.deepEqual(offenders, [], `fontWeight found in: ${offenders.join(', ')}`);
+});
+
+test('only the two faces the design defines are ever set', () => {
+  const declared = new Set<string>();
+  for (const path of sourceFiles('src')) {
+    for (const match of readFileSync(path, 'utf8').matchAll(/fonts\.(\w+)/g)) {
+      declared.add(match[1]);
+    }
+  }
+  declared.delete('mono'); // machine labels, set in the platform monospace
+  assert.deepEqual([...declared].sort(), ['heavy', 'regular']);
 });
 
 test('touch targets stay at 72dp — larger than the handoff draws them, never smaller', () => {

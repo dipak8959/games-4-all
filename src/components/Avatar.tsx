@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { monogramFor } from '../state/profiles';
 import { palette, playColor } from '../theme/tokens';
+import { fonts } from '../theme/type';
 
 /**
  * A profile, drawn as its initial on its own colour.
@@ -36,5 +37,5 @@ export function Avatar({
 
 const styles = StyleSheet.create({
   tile: { alignItems: 'center', justifyContent: 'center' },
-  letter: { fontWeight: '800', color: palette.bg },
+  letter: { fontFamily: fonts.heavy, color: palette.bg },
 });

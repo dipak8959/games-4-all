@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BigButton } from './BigButton';
 import { AVATAR_CHOICES, clampAge, monogramFor, NAME_CHOICES, type ProfileInput } from '../state/profiles';
 import { font, hitTarget, palette, playColor, rule, space } from '../theme/tokens';
-import { type } from '../theme/type';
+import { fonts, type } from '../theme/type';
 
 /**
  * The form behind both "create your first profile" (`OnboardingScreen`) and
@@ -61,7 +61,7 @@ export function ProfileEditor({
             onPress={() => setName(choice)}
             style={[styles.chip, name === choice && styles.chipSelected]}
           >
-            <Text style={[type.h5, name === choice && styles.textOnAccent]}>{choice}</Text>
+            <Text style={[type.rowTitle, name === choice && styles.textOnAccent]}>{choice}</Text>
           </Pressable>
         ))}
       </View>
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   label: { marginTop: space.md },
   swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: rule.hair },
   swatch: { width: 56, height: 56, alignItems: 'center', justifyContent: 'center' },
-  swatchLetter: { fontSize: 22, fontWeight: '800', color: palette.bg },
+  swatchLetter: { fontFamily: fonts.heavy, fontSize: 22, color: palette.bg },
   selectedEdge: { borderWidth: rule.major, borderColor: palette.ink },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: rule.hair },
   chip: {
@@ -130,10 +130,10 @@ const styles = StyleSheet.create({
     borderWidth: rule.hair,
     borderColor: palette.border,
   },
-  stepButtonText: { fontSize: font.h2, fontWeight: '800', color: palette.ink },
+  stepButtonText: { fontFamily: fonts.heavy, fontSize: font.h2, color: palette.ink },
   ageValue: {
     fontSize: font.h2,
-    fontWeight: '800',
+    fontFamily: fonts.heavy,
     color: palette.ink,
     minWidth: 72,
     textAlign: 'center',

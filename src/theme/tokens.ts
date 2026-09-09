@@ -101,28 +101,29 @@ export const radius = 0;
 export const rule = { major: 2, hair: 1 } as const;
 
 export const font = {
-  // The handoff's scale, stepped up one notch below the headings.
+  // The handoff's scale, used as drawn.
   //
-  // Its headline sizes are used as drawn — they are the design's signature.
-  // Everything at reading size is a size larger than the handoff draws it
-  // (body 15→17, secondary 13→15, meta 12→13, the mono labels 10/9→11/10),
-  // because that scale is drawn for an adult reading an editorial layout at
-  // desk distance, and this app is held at arm's length by someone who may
-  // be six. The proportions between the steps are unchanged, so the rhythm
-  // is still the handoff's — only the floor moved up off the small end.
+  // Every one of these is a size the wireframe actually sets. It is a
+  // small-type system on purpose: the design carries emphasis with weight
+  // and rules rather than with size, so a row title is 13px extra-bold
+  // rather than 18px medium. Read it in Archivo, which is what these sizes
+  // were drawn for — its x-height runs noticeably taller than a system
+  // grotesque, so the same number is a visibly larger letter.
   display: 42,
   h2: 32,
   h3: 25,
-  h5: 18,
-  body: 17,
-  secondary: 15,
-  meta: 13,
-  mono: 11,
-  monoSm: 10,
+  h5: 16,
+  body: 15,
+  secondary: 13,
+  meta: 12,
+  monoLg: 11,
+  mono: 10,
+  monoSm: 9,
 
   // Play surfaces keep generous type: a game's own numbers, letters and
   // answer buttons are read by a five-year-old at arm's length, which is a
-  // different job from a section header.
+  // different job from a section header, and the handoff has nothing to say
+  // about what happens inside a game.
   play: 20,
   playLabel: 24,
   playTitle: 34,

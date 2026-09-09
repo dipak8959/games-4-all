@@ -7,6 +7,7 @@ import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { font, hitTarget, palette, rule, space } from '../../theme/tokens';
+import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import {
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.xs,
     marginBottom: space.sm,
   },
-  rule: { fontSize: font.play, fontWeight: '800', color: palette.ink },
+  rule: { fontFamily: fonts.heavy, fontSize: font.play, color: palette.ink },
   stageOuter: { flex: 1, marginBottom: space.md },
   stageInner: {
     flex: 1,

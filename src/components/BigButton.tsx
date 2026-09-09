@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native'
 
 import { Icon, type IconName } from './Icon';
 import { font, hitTarget, palette, rule, space, tracking } from '../theme/tokens';
-import { monoFamily } from '../theme/type';
+import { fonts, monoFamily } from '../theme/type';
 
 type Props = {
   readonly label: string;
@@ -85,7 +85,12 @@ const styles = StyleSheet.create({
   quietPressed: { backgroundColor: 'rgba(32,30,29,0.10)' },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   text: { flex: 1, gap: 2 },
-  label: { fontSize: font.h5, fontWeight: '700' },
+  label: {
+    fontFamily: fonts.heavy,
+    fontSize: font.h5,
+    letterSpacing: tracking.label,
+    textTransform: 'uppercase',
+  },
   note: {
     fontFamily: monoFamily,
     fontSize: font.mono,

@@ -6,6 +6,7 @@ import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { font, hitTarget, palette, rule, space } from '../../theme/tokens';
+import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, startInput, tapTile, type PatternPlayState } from './logic';
@@ -142,7 +143,12 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
 
 const styles = StyleSheet.create({
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg },
-  hint: { fontSize: font.playLabel, fontWeight: '700', color: palette.inkSoft, textAlign: 'center' },
+  hint: {
+    fontFamily: fonts.heavy,
+    fontSize: font.playLabel,
+    color: palette.inkSoft,
+    textAlign: 'center',
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

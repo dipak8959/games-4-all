@@ -164,7 +164,8 @@ the call site:
 | The handoff | This app | Why |
 | --- | --- | --- |
 | Rows ≥44px, CTA ~52px | Everything tappable ≥72dp | The app's own floor is higher (SAFETY.md, "Big targets"). It only ever disagrees in the safe direction. |
-| Archivo, bundled locally | The platform grotesque at the handoff's weights, sizes and tracking | This repository ships no asset files at all — no images, no fonts, nothing to license or audit. |
+| Archivo, bundled locally | The platform grotesque at the handoff's weights and tracking | This repository ships no asset files at all — no images, no fonts, nothing to license or audit. |
+| Body 15 / secondary 13 / meta 12 / mono 10-9, headings at 800 | Headline sizes exactly as drawn; everything at reading size one step larger (17/15/13/11-10), and weight 800 kept for headings rather than spent on every row | The handoff's reading scale is drawn for an adult reading an editorial layout at desk distance. This app is held at arm's length by someone who may be six — and a screen where every line is at maximum weight has no hierarchy left to spend. `tests/theme.test.ts` holds the floor so the small end can't creep back. |
 | Grayscale key art in every image slot | The game's own drawn mark on a flat field | Same reason: there are no bitmaps here, so the icon *is* the art. |
 | Age bands (`Kids 6-12`, `Teen 13-17`, …) | `WHO IS PLAYING` picks a person, and their real age filters the shelf | This app dropped named age groups a while ago — see "Age: a real number, not a named group" above. |
 | A PIN for the parent gate | The existing two-digit multiplication question | The gate is a speed bump, not authentication, and deliberately guards nothing whose disclosure would matter. A PIN would be a real secret to store, forget, and reset. |

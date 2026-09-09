@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   quietPressed: { backgroundColor: 'rgba(32,30,29,0.10)' },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   text: { flex: 1, gap: 2 },
-  label: { fontSize: font.h5, fontWeight: '800' },
+  label: { fontSize: font.h5, fontWeight: '700' },
   note: {
     fontFamily: monoFamily,
     fontSize: font.mono,

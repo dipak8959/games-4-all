@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     borderWidth: rule.major,
     borderColor: palette.ink,
   },
-  kidChipText: { color: palette.ink, fontWeight: '800' },
+  kidChipText: { color: palette.ink, fontWeight: '700' },
   offlineRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     borderColor: palette.border,
   },
   cellSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
-  cellLabel: { fontSize: font.body, fontWeight: '800', color: palette.ink },
+  cellLabel: { fontSize: font.body, fontWeight: '600', color: palette.ink },
   onAccent: { color: palette.bg },
   onAccentSub: { color: palette.accentTint },
   profileDot: { width: 14, height: 14 },
@@ -525,7 +525,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: palette.surfaceAlt,
   },
-  gameTitle: { fontSize: font.secondary, fontWeight: '800', color: palette.ink },
+  gameTitle: {
+    fontSize: font.h5,
+    fontWeight: '600',
+    color: palette.ink,
+    // Two lines' worth of height whether the title needs one line or two,
+    // so a long name ("Number Crunch") and a short one ("Sudoku") leave
+    // their cells the same height and the grid rows stay aligned.
+    lineHeight: 21,
+    minHeight: 42,
+  },
   pin: { position: 'absolute', top: space.xs, right: space.xs, padding: space.xs },
 
   favRow: {

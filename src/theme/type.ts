@@ -46,10 +46,15 @@ export const type = StyleSheet.create({
     letterSpacing: tracking.heading,
     lineHeight: font.h3 * 1.12,
   },
-  /** Button labels and row titles. */
+  /**
+   * Row titles. Weight 600, not 800: the handoff puts 800 on headings and
+   * section labels, and a screen where every line of text is at maximum
+   * weight has no hierarchy left to spend — everything shouts and nothing
+   * leads.
+   */
   h5: {
     fontSize: font.h5,
-    fontWeight: '800',
+    fontWeight: '600',
     color: palette.ink,
   },
   body: { fontSize: font.body, color: palette.ink, lineHeight: font.body * 1.55 },
@@ -74,7 +79,7 @@ export const type = StyleSheet.create({
   /** Machine label carrying emphasis — a count, a percentage, a state. */
   monoStrong: {
     fontFamily: monoFamily,
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: tracking.mono,
     color: palette.ink,
     textTransform: 'uppercase',

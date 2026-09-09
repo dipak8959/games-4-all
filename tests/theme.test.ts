@@ -53,16 +53,40 @@ test('spacing is the handoff\'s 4/8/12/16/24/32, on a 16px gutter', () => {
   assert.equal(gutter, 16);
 });
 
-test('the type scale is the handoff\'s', () => {
+test('headline sizes are the handoff\'s, exactly', () => {
   assert.equal(font.display, 42);
   assert.equal(font.h2, 32);
   assert.equal(font.h3, 25);
-  assert.equal(font.h5, 16);
-  assert.equal(font.body, 15);
-  assert.equal(font.secondary, 13);
-  assert.equal(font.meta, 12);
-  assert.equal(font.mono, 10);
-  assert.equal(font.monoSm, 9);
+});
+
+test('reading sizes sit one step above the handoff, and never drift back down', () => {
+  // The handoff's reading scale (body 15, secondary 13, meta 12, mono 10/9)
+  // is drawn for an adult reading an editorial layout at desk distance.
+  // This app is held at arm's length by someone who may be six, so every
+  // size at reading scale is a step larger. The floors below are the point
+  // of this test: the sizes may grow, but nothing here may shrink back to
+  // the handoff's own small end.
+  assert.ok(font.h5 >= 18, `h5 is ${font.h5}`);
+  assert.ok(font.body >= 17, `body is ${font.body}`);
+  assert.ok(font.secondary >= 15, `secondary is ${font.secondary}`);
+  assert.ok(font.meta >= 13, `meta is ${font.meta}`);
+  assert.ok(font.mono >= 11, `mono is ${font.mono}`);
+  assert.ok(font.monoSm >= 10, `monoSm is ${font.monoSm}`);
+});
+
+test('the scale still steps — each size is smaller than the one above it', () => {
+  const scale = [font.display, font.h2, font.h3, font.h5, font.body, font.secondary, font.meta];
+  for (let i = 1; i < scale.length; i += 1) {
+    assert.ok(scale[i] < scale[i - 1], `${scale[i]} does not sit below ${scale[i - 1]}`);
+  }
+});
+
+test('weight 800 is reserved for headings, not spent on every row', () => {
+  // A screen where every line is at maximum weight has no hierarchy left to
+  // spend. Row titles (`type.h5`) carry 600; the headings keep 800.
+  const source = readFileSync('src/theme/type.ts', 'utf8');
+  const h5 = source.slice(source.indexOf('  h5: {'), source.indexOf('  body: {'));
+  assert.ok(/fontWeight: '600'/.test(h5), 'row titles should not be at heading weight');
 });
 
 test('touch targets stay at 72dp — larger than the handoff draws them, never smaller', () => {

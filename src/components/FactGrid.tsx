@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'stretch' },
   divider: { width: rule.hair, backgroundColor: palette.border },
   cell: { flex: 1, paddingHorizontal: gutter, paddingVertical: space.lg, gap: space.xs },
-  value: { fontSize: 20, fontWeight: '800', color: palette.ink },
+  value: { fontSize: 22, fontWeight: '800', color: palette.ink },
   numbered: {
     flexDirection: 'row',
     gap: space.md,

@@ -101,16 +101,24 @@ export const radius = 0;
 export const rule = { major: 2, hair: 1 } as const;
 
 export const font = {
-  // Modernist scale — the chrome.
+  // The handoff's scale, stepped up one notch below the headings.
+  //
+  // Its headline sizes are used as drawn — they are the design's signature.
+  // Everything at reading size is a size larger than the handoff draws it
+  // (body 15→17, secondary 13→15, meta 12→13, the mono labels 10/9→11/10),
+  // because that scale is drawn for an adult reading an editorial layout at
+  // desk distance, and this app is held at arm's length by someone who may
+  // be six. The proportions between the steps are unchanged, so the rhythm
+  // is still the handoff's — only the floor moved up off the small end.
   display: 42,
   h2: 32,
   h3: 25,
-  h5: 16,
-  body: 15,
-  secondary: 13,
-  meta: 12,
-  mono: 10,
-  monoSm: 9,
+  h5: 18,
+  body: 17,
+  secondary: 15,
+  meta: 13,
+  mono: 11,
+  monoSm: 10,
 
   // Play surfaces keep generous type: a game's own numbers, letters and
   // answer buttons are read by a five-year-old at arm's length, which is a

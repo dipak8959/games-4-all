@@ -2,11 +2,12 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { GradientSurface } from './GradientSurface';
+import { Icon, type IconName } from './Icon';
 import { font, gradientForColor, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
 
 type Props = {
   readonly label: string;
-  readonly icon?: string;
+  readonly icon?: IconName;
   readonly onPress: () => void;
   readonly color?: string;
   readonly tone?: 'solid' | 'quiet';
@@ -56,7 +57,7 @@ export function BigButton({
       <View style={[styles.inner, solid ? undefined : styles.quiet]}>
         {solid ? <GradientSurface colors={gradientForColor(color)} style={StyleSheet.absoluteFill} /> : null}
         <View style={styles.row}>
-          {icon ? <Text style={styles.icon}>{icon}</Text> : null}
+          {icon ? <Icon name={icon} size={font.label} color={solid ? '#FFFFFF' : palette.ink} /> : null}
           <Text style={[styles.label, solid ? styles.labelSolid : { color: palette.ink }]}>
             {label}
           </Text>

@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '../components/BigButton';
 import { GradientSurface } from '../components/GradientSurface';
+import { Icon } from '../components/Icon';
 import { font, gradients, hitTarget, palette, radius, shadow, shadowFloating, space } from '../theme/tokens';
 import { systemRng } from '../util/random';
 import { createChallenge, isCorrect } from './parentGate';
@@ -43,9 +44,12 @@ export function ParentGateModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title} accessibilityRole="header">
-            🔒 Grown-ups only
-          </Text>
+          <View style={styles.titleRow}>
+            <Icon name="lock" size={26} color={palette.ink} />
+            <Text style={styles.title} accessibilityRole="header">
+              Grown-ups only
+            </Text>
+          </View>
           <Text style={styles.body}>Answer to continue.</Text>
 
           <Text style={styles.prompt} accessibilityLabel={`What is ${challenge.prompt}?`}>
@@ -54,7 +58,7 @@ export function ParentGateModal({
 
           {wrong ? (
             <Text style={styles.wrong} accessibilityLiveRegion="polite">
-              🤔 Not quite — here is a new one.
+              Not quite — here is a new one.
             </Text>
           ) : null}
 
@@ -97,6 +101,7 @@ const styles = StyleSheet.create({
     padding: space.lg,
     ...shadowFloating,
   },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm },
   title: { fontSize: font.title, fontWeight: '800', color: palette.ink, textAlign: 'center' },
   body: { fontSize: font.body, color: palette.inkSoft, textAlign: 'center', marginTop: space.xs },
   prompt: {

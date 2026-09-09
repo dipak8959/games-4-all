@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GradientSurface } from './GradientSurface';
+import { Icon, type IconName } from './Icon';
 import { Screen } from './Screen';
 import { font, gradients, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
 
@@ -20,7 +21,7 @@ export function GameFrame({
   children,
 }: {
   readonly title: string;
-  readonly icon: string;
+  readonly icon: IconName;
   readonly onExit: () => void;
   /** 0-1, drives the progress bar. */
   readonly progress: number;
@@ -38,11 +39,11 @@ export function GameFrame({
           style={({ pressed }) => [styles.back, pressed && styles.pressed]}
           hitSlop={12}
         >
-          <Text style={styles.backIcon}>←</Text>
+          <Icon name="back" size={30} color={palette.ink} />
         </Pressable>
 
         <View style={styles.titleBadge}>
-          <Text style={styles.titleIcon}>{icon}</Text>
+          <Icon name={icon} size={font.label} color={palette.ink} />
           <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>

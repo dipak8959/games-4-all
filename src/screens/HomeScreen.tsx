@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type DimensionValue } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { Avatar } from '../components/Avatar';
 import { GradientSurface } from '../components/GradientSurface';
+import { Icon, type IconName } from '../components/Icon';
 import { Screen } from '../components/Screen';
 import {
   GAME_CATEGORIES,
@@ -25,15 +27,6 @@ import {
   shadow,
   space,
 } from '../theme/tokens';
-
-/** Fixed, decorative-only positions for the floating sparkles behind the
- *  header. Fixed rather than random so the layout never jumps between
- *  renders. */
-const SPARKLES: readonly { readonly emoji: string; readonly top: number; readonly left: DimensionValue }[] = [
-  { emoji: '✨', top: 2, left: '78%' },
-  { emoji: '🌟', top: 46, left: '90%' },
-  { emoji: '🎈', top: 70, left: '8%' },
-];
 
 /**
  * The child's home.
@@ -81,24 +74,14 @@ export function HomeScreen({
   return (
     <Screen>
       <View style={styles.header}>
-        {SPARKLES.map((s, i) => (
-          <Text
-            key={i}
-            style={[styles.sparkle, { top: s.top, left: s.left }]}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          >
-            {s.emoji}
-          </Text>
-        ))}
-
         <View style={styles.headerText}>
           <Text style={styles.title} accessibilityRole="header">
-            Games 4 All 👋
+            Games 4 All
           </Text>
           <View style={styles.pillRow}>
             <View style={styles.starBadge} accessibilityLabel={`${stars} stars collected`}>
-              <Text style={styles.starBadgeText}>⭐ {stars}</Text>
+              <Icon name="star" size={16} color={palette.ink} />
+              <Text style={styles.starBadgeText}>{stars}</Text>
             </View>
           </View>
         </View>
@@ -110,7 +93,7 @@ export function HomeScreen({
           hitSlop={6}
           style={({ pressed }) => [styles.profileButton, pressed && styles.pressed]}
         >
-          <Text style={styles.profileAvatar}>{activeProfile?.avatar ?? '🧒'}</Text>
+          <Avatar name={activeProfile?.name ?? 'Player'} color={activeProfile?.avatar ?? 'sky'} size={44} />
         </Pressable>
 
         <Pressable
@@ -120,14 +103,12 @@ export function HomeScreen({
           hitSlop={10}
           style={({ pressed }) => [styles.parentButton, pressed && styles.pressed]}
         >
-          <Text style={styles.parentIcon}>⚙️</Text>
+          <Icon name="settings" size={30} color={palette.ink} />
         </Pressable>
       </View>
 
       <View style={styles.searchRow}>
-        <Text style={styles.searchIcon} accessibilityElementsHidden importantForAccessibility="no">
-          🔍
-        </Text>
+        <Icon name="search" size={20} color={palette.inkSoft} />
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -146,7 +127,7 @@ export function HomeScreen({
             hitSlop={8}
             style={styles.clearButton}
           >
-            <Text style={styles.clearIcon}>✕</Text>
+            <Icon name="close" size={16} color={palette.inkSoft} />
           </Pressable>
         ) : null}
       </View>
@@ -158,7 +139,7 @@ export function HomeScreen({
       >
         <CategoryChip
           label="All"
-          icon="🎲"
+          icon="all"
           selected={category === null}
           onPress={() => setCategory(null)}
         />
@@ -176,9 +157,6 @@ export function HomeScreen({
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {games.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon} accessibilityElementsHidden importantForAccessibility="no">
-              🌱
-            </Text>
             <Text style={styles.emptyText}>
               {query || category
                 ? "No games match that search — try clearing it."
@@ -189,7 +167,7 @@ export function HomeScreen({
 
         {favoriteGames.length > 0 ? (
           <>
-            <Text style={styles.sectionHeading}>⭐ Your Favourites</Text>
+            <Text style={styles.sectionHeading}>Your favourites</Text>
             {favoriteGames.map((game) => (
               <GameCard
                 key={game.id}
@@ -203,7 +181,7 @@ export function HomeScreen({
                 onTogglePin={() => onTogglePin(game.id)}
               />
             ))}
-            <Text style={styles.sectionHeading}>🎮 All games</Text>
+            <Text style={styles.sectionHeading}>All games</Text>
           </>
         ) : null}
 
@@ -250,12 +228,12 @@ function GameCard({
       >
         <GradientSurface colors={gradientForColor(game.color)} style={styles.card}>
           <View style={styles.cardIconWrap}>
-            <Text style={styles.cardIcon}>{game.icon}</Text>
+            <Icon name={game.icon} size={44} color="#FFFFFF" />
           </View>
           <View style={styles.cardText}>
             <Text style={styles.cardTitle}>{game.title}</Text>
             <Text style={styles.cardStars} accessibilityElementsHidden importantForAccessibility="no">
-              {earnedPips > 0 ? '⭐'.repeat(earnedPips) : 'Tap to play 🚀'}
+              {earnedPips > 0 ? '★'.repeat(earnedPips) : 'Tap to play'}
             </Text>
           </View>
         </GradientSurface>
@@ -269,7 +247,7 @@ function GameCard({
         hitSlop={14}
         style={({ pressed }) => [styles.pinButton, pressed && styles.pinButtonPressed]}
       >
-        <Text style={styles.pinIcon}>{pinned ? '⭐' : '☆'}</Text>
+        <Icon name="star" size={22} color={pinned ? '#FFFFFF' : 'rgba(255,255,255,0.5)'} />
       </Pressable>
     </View>
   );
@@ -282,7 +260,7 @@ function CategoryChip({
   onPress,
 }: {
   readonly label: string;
-  readonly icon: string;
+  readonly icon: IconName;
   readonly selected: boolean;
   readonly onPress: () => void;
 }) {
@@ -294,7 +272,7 @@ function CategoryChip({
       onPress={onPress}
       style={[styles.categoryChip, selected && styles.categoryChipSelected]}
     >
-      <Text style={styles.categoryIcon}>{icon}</Text>
+      <Icon name={icon} size={16} color={selected ? '#FFFFFF' : palette.ink} />
       <Text style={[styles.categoryLabel, selected && styles.categoryLabelSelected]}>{label}</Text>
     </Pressable>
   );
@@ -309,11 +287,13 @@ const styles = StyleSheet.create({
     marginBottom: space.xs,
     gap: space.xs,
   },
-  sparkle: { position: 'absolute', fontSize: 22, opacity: 0.7 },
   headerText: { flex: 1, gap: space.xs },
   title: { fontSize: font.title, fontWeight: '800', color: palette.ink },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
   starBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
     alignSelf: 'flex-start',
     backgroundColor: palette.sunLight,
     borderRadius: radius.pill,
@@ -332,7 +312,6 @@ const styles = StyleSheet.create({
     borderColor: palette.border,
     ...shadow,
   },
-  profileAvatar: { fontSize: 34 },
   parentButton: {
     width: hitTarget,
     height: hitTarget,
@@ -344,7 +323,6 @@ const styles = StyleSheet.create({
     borderColor: palette.border,
     ...shadow,
   },
-  parentIcon: { fontSize: 30 },
   pressed: { opacity: 0.6 },
   searchRow: {
     flexDirection: 'row',
@@ -358,10 +336,8 @@ const styles = StyleSheet.create({
     minHeight: 52,
     marginBottom: space.sm,
   },
-  searchIcon: { fontSize: 20 },
   searchInput: { flex: 1, fontSize: font.body, color: palette.ink, paddingVertical: space.xs },
   clearButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  clearIcon: { fontSize: 18, color: palette.inkSoft, fontWeight: '800' },
   categoryRow: { gap: space.sm, paddingBottom: space.sm },
   categoryChip: {
     flexDirection: 'row',
@@ -375,12 +351,10 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surfaceAlt,
   },
   categoryChipSelected: { backgroundColor: palette.sky, borderColor: palette.sky },
-  categoryIcon: { fontSize: 16 },
   categoryLabel: { fontSize: font.body - 4, fontWeight: '700', color: palette.ink },
   categoryLabelSelected: { color: '#FFFFFF' },
   list: { gap: space.md, paddingBottom: space.xl },
   empty: { alignItems: 'center', padding: space.xl, gap: space.sm },
-  emptyIcon: { fontSize: 60 },
   emptyText: { fontSize: font.body, color: palette.inkSoft, textAlign: 'center' },
   sectionHeading: {
     fontSize: font.body - 2,
@@ -401,7 +375,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.35)',
   },
   pinButtonPressed: { transform: [{ scale: 0.9 }] },
-  pinIcon: { fontSize: 24, color: '#FFFFFF' },
   cardPressed: { transform: [{ scale: 0.97 }], opacity: 0.94 },
   card: {
     flexDirection: 'row',
@@ -419,7 +392,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardIcon: { fontSize: 46 },
   cardText: { flex: 1, gap: space.xs },
   cardTitle: { fontSize: font.title - 4, fontWeight: '800', color: '#FFFFFF' },
   cardStars: { fontSize: font.body - 2, fontWeight: '700', color: 'rgba(255,255,255,0.92)' },

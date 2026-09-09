@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '../components/BigButton';
 import { GradientSurface } from '../components/GradientSurface';
+import { Icon } from '../components/Icon';
 import { Screen } from '../components/Screen';
 import { font, gradients, palette, radius, shadowFloating, space } from '../theme/tokens';
 
@@ -28,23 +29,8 @@ export function TimeUpScreen({
   return (
     <Screen>
       <GradientSurface colors={gradients.bg} style={styles.root}>
-        <Text
-          style={styles.floatLeft}
-          accessibilityElementsHidden
-          importantForAccessibility="no"
-        >
-          💤
-        </Text>
-        <Text
-          style={styles.floatRight}
-          accessibilityElementsHidden
-          importantForAccessibility="no"
-        >
-          ⭐
-        </Text>
-
         <View style={styles.iconBadge}>
-          <Text style={styles.icon}>🌙</Text>
+          <Icon name="clock" size={72} color={palette.inkSoft} />
         </View>
 
         <Text style={styles.title} accessibilityRole="header">
@@ -54,7 +40,7 @@ export function TimeUpScreen({
 
         <BigButton
           label="Grown-up settings"
-          icon="⚙️"
+          icon="settings"
           tone="quiet"
           onPress={onOpenParentZone}
           style={styles.button}
@@ -74,8 +60,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...shadowFloating,
   },
-  floatLeft: { position: 'absolute', top: '12%', left: '10%', fontSize: 34, opacity: 0.6 },
-  floatRight: { position: 'absolute', bottom: '15%', right: '12%', fontSize: 30, opacity: 0.6 },
   iconBadge: {
     width: 128,
     height: 128,
@@ -85,7 +69,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: space.md,
   },
-  icon: { fontSize: 72 },
   title: { fontSize: font.title, fontWeight: '800', color: palette.ink, textAlign: 'center' },
   body: {
     fontSize: font.body,

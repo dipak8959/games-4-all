@@ -71,7 +71,7 @@ export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }:
   }, [state.question.count]);
 
   return (
-    <GameFrame title="How Many?" icon="🔢" onExit={onExit} progress={progress}>
+    <GameFrame title="How Many?" icon="count" onExit={onExit} progress={progress}>
       <View style={styles.stageOuter}>
         <View style={styles.stageInner}>
           <View style={styles.objects} accessibilityLabel={`${state.question.count} objects to count`}>

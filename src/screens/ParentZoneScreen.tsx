@@ -1,8 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { Avatar } from '../components/Avatar';
 import { BigButton } from '../components/BigButton';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { Icon } from '../components/Icon';
 import { Screen } from '../components/Screen';
 import { GAMES_META } from '../games/catalog';
 import { MAX_LEVEL } from '../games/types';
@@ -38,13 +40,13 @@ export function ParentZoneScreen({
     <Screen>
       <View style={styles.header}>
         <Text style={styles.title} accessibilityRole="header" numberOfLines={1} ellipsizeMode="tail">
-          🛠️ Parent Zone
+          Parent Zone
         </Text>
         <BigButton label="Done" onPress={onClose} tone="quiet" style={styles.done} />
       </View>
 
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-        <Section title="⏰ Screen time">
+        <Section title="Screen time">
           <Text style={styles.caption}>
             Played today: {formatMinutes(usage.playedTodayMs)}
           </Text>
@@ -61,13 +63,20 @@ export function ParentZoneScreen({
           />
         </Section>
 
-        <Section title="👤 Profile">
+        <Section title="Profile">
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>
-              {activeProfile ? `${activeProfile.avatar} ${activeProfile.name}, age ${activeProfile.age}` : 'No profile'}
-            </Text>
+            {activeProfile ? (
+              <View style={styles.profileRow}>
+                <Avatar name={activeProfile.name} color={activeProfile.avatar} size={36} />
+                <Text style={styles.rowLabel}>
+                  {activeProfile.name}, age {activeProfile.age}
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.rowLabel}>No profile</Text>
+            )}
           </View>
-          <BigButton label="Manage profiles" icon="👤" tone="quiet" onPress={onOpenProfiles} />
+          <BigButton label="Manage profiles" icon="user" tone="quiet" onPress={onOpenProfiles} />
           <Text style={styles.caption}>
             Switch who's playing, add a profile for someone else, or change a profile's age —
             which decides which games show for them. Every game still adjusts up or down on its
@@ -75,7 +84,7 @@ export function ParentZoneScreen({
           </Text>
         </Section>
 
-        <Section title="🎮 Play">
+        <Section title="Play">
           <Toggle
             label="Sound effects"
             value={settings.soundOn}
@@ -93,12 +102,14 @@ export function ParentZoneScreen({
           />
         </Section>
 
-        <Section title="🧩 What each game practises">
+        <Section title="What each game practises">
           {GAMES_META.map((game) => {
             const gp = progressFor(progress, game.id);
             return (
               <View key={game.id} style={styles.gameRow}>
-                <Text style={styles.gameIcon}>{game.icon}</Text>
+                <View style={styles.gameIcon}>
+                  <Icon name={game.icon} size={30} color={game.color} />
+                </View>
                 <View style={styles.gameText}>
                   <Text style={styles.gameTitle}>{game.title}</Text>
                   <Text style={styles.caption}>
@@ -114,7 +125,7 @@ export function ParentZoneScreen({
           })}
         </Section>
 
-        <Section title="🔐 Privacy">
+        <Section title="Privacy">
           <Text style={styles.privacy}>
             This app works entirely offline. It has no ads, no in-app purchases, no accounts,
             no analytics, and no third-party trackers. It does not ask for any device
@@ -124,7 +135,7 @@ export function ParentZoneScreen({
 
           <BigButton
             label={erased ? 'Data deleted' : 'Delete all data'}
-            icon={erased ? '✅' : '🗑️'}
+            icon={erased ? 'check' : 'trash'}
             color={palette.berry}
             onPress={() => setConfirmingErase(true)}
             disabled={erased}
@@ -135,7 +146,6 @@ export function ParentZoneScreen({
 
       <ConfirmModal
         visible={confirmingErase}
-        icon="🗑️"
         title="Delete all data?"
         body="This removes play history and settings from this device. It cannot be undone."
         confirmLabel="Delete"
@@ -274,7 +284,8 @@ const styles = StyleSheet.create({
   chipText: { fontSize: font.body - 2, fontWeight: '700', color: palette.ink },
   chipTextSelected: { color: '#FFFFFF' },
   gameRow: { flexDirection: 'row', gap: space.md, alignItems: 'center', minHeight: hitTarget },
-  gameIcon: { fontSize: 38 },
+  gameIcon: { width: 38, alignItems: 'center' },
+  profileRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   gameText: { flex: 1, gap: 2 },
   gameTitle: { fontSize: font.body, fontWeight: '700', color: palette.ink },
   privacy: { fontSize: font.body - 3, color: palette.inkSoft, lineHeight: 24 },

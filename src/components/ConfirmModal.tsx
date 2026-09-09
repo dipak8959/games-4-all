@@ -16,7 +16,6 @@ import { font, palette, radius, shadowFloating, space } from '../theme/tokens';
  */
 export function ConfirmModal({
   visible,
-  icon,
   title,
   body,
   confirmLabel,
@@ -25,7 +24,6 @@ export function ConfirmModal({
   onCancel,
 }: {
   readonly visible: boolean;
-  readonly icon: string;
   readonly title: string;
   readonly body: string;
   readonly confirmLabel: string;
@@ -38,7 +36,7 @@ export function ConfirmModal({
       <View style={styles.overlay}>
         <View style={styles.card}>
           <Text style={styles.title} accessibilityRole="header">
-            {icon} {title}
+            {title}
           </Text>
           <Text style={styles.body}>{body}</Text>
 

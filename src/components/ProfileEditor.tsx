@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from './BigButton';
-import { AVATAR_CHOICES, clampAge, NAME_CHOICES, type ProfileInput } from '../state/profiles';
+import { AVATAR_CHOICES, clampAge, monogramFor, NAME_CHOICES, type ProfileInput } from '../state/profiles';
+import { gradients, type GradientKey } from '../theme/tokens';
+import { GradientSurface } from './GradientSurface';
 import { font, hitTarget, palette, radius, space } from '../theme/tokens';
 
 /**
@@ -33,18 +35,20 @@ export function ProfileEditor({
 
   return (
     <View style={styles.root}>
-      <Text style={styles.label}>Pick an avatar</Text>
+      <Text style={styles.label}>Pick a colour</Text>
       <View style={styles.chips}>
         {AVATAR_CHOICES.map((choice) => (
           <Pressable
             key={choice}
             accessibilityRole="radio"
-            accessibilityLabel={`Avatar ${choice}`}
+            accessibilityLabel={`${choice} colour`}
             accessibilityState={{ selected: avatar === choice }}
             onPress={() => setAvatar(choice)}
             style={[styles.avatarChip, avatar === choice && styles.chipSelected]}
           >
-            <Text style={styles.avatarGlyph}>{choice}</Text>
+            <GradientSurface colors={gradients[choice as GradientKey]} style={styles.swatch}>
+              <Text style={styles.swatchLetter}>{monogramFor(name)}</Text>
+            </GradientSurface>
           </Pressable>
         ))}
       </View>
@@ -90,7 +94,7 @@ export function ProfileEditor({
 
       <BigButton
         label={saveLabel}
-        icon={avatar}
+        icon="check"
         onPress={() => onSave({ name, avatar, age: clampAge(age) })}
         style={styles.gap}
       />
@@ -106,14 +110,13 @@ const styles = StyleSheet.create({
   avatarChip: {
     width: 56,
     height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
     borderRadius: radius.md,
     borderWidth: 2,
     borderColor: palette.border,
-    backgroundColor: palette.surfaceAlt,
+    overflow: 'hidden',
   },
-  avatarGlyph: { fontSize: 28 },
+  swatch: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  swatchLetter: { fontSize: 22, fontWeight: '800', color: palette.surface },
   nameChip: {
     minHeight: 52,
     minWidth: 68,

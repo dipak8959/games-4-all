@@ -86,7 +86,7 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
   const progress = state.revealing ? 0 : state.inputIndex / state.sequence.length;
 
   return (
-    <GameFrame title="Pattern Play" icon="✨" onExit={onExit} progress={progress}>
+    <GameFrame title="Pattern Play" icon="sequence" onExit={onExit} progress={progress}>
       <View style={styles.stage}>
         <Text style={styles.hint} accessibilityLiveRegion="polite">
           {state.revealing ? 'Watch the pattern…' : 'Now repeat it back!'}

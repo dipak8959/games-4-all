@@ -1,3 +1,4 @@
+import type { IconName } from '../components/Icon';
 import { palette } from '../theme/tokens';
 
 /**
@@ -13,24 +14,26 @@ export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting';
 export type GameCategoryDef = {
   readonly id: GameCategory;
   readonly label: string;
-  readonly icon: string;
+  readonly icon: IconName;
 };
 
 /** Shown as filter chips on Home, alongside search. A game's `category` is
  *  a discovery aid, not a gate — it never hides a game the way age does. */
 export const GAME_CATEGORIES: readonly GameCategoryDef[] = [
-  { id: 'memory', label: 'Memory', icon: '🧠' },
-  { id: 'numbers', label: 'Numbers', icon: '🔢' },
-  { id: 'words', label: 'Words', icon: '🔤' },
-  { id: 'logic', label: 'Logic', icon: '🧩' },
-  { id: 'sorting', label: 'Sorting', icon: '🔺' },
+  { id: 'memory', label: 'Memory', icon: 'pairs' },
+  { id: 'numbers', label: 'Numbers', icon: 'count' },
+  { id: 'words', label: 'Words', icon: 'letters' },
+  { id: 'logic', label: 'Logic', icon: 'grid' },
+  { id: 'sorting', label: 'Sorting', icon: 'shapes' },
 ];
 
 export type GameMeta = {
   readonly id: string;
   /** Shown to parents. Children navigate by the icon and colour. */
   readonly title: string;
-  readonly icon: string;
+  /** A mark from the app's own icon set — geometry the app draws, never an
+   *  image or an emoji. See `src/components/Icon.tsx`. */
+  readonly icon: IconName;
   readonly color: string;
   /** Parent-facing: what this game actually practises. */
   readonly skill: string;
@@ -62,7 +65,7 @@ export const GAMES_META: readonly GameMeta[] = [
   {
     id: 'memory',
     title: 'Find the Pairs',
-    icon: '🧠',
+    icon: 'pairs',
     color: palette.sky,
     skill: 'Visual memory and concentration',
     ages: '3-6',
@@ -77,7 +80,7 @@ export const GAMES_META: readonly GameMeta[] = [
   {
     id: 'counting',
     title: 'How Many?',
-    icon: '🔢',
+    icon: 'count',
     color: palette.sun,
     skill: 'Counting and recognising numerals 1-12',
     ages: '3-6',
@@ -88,7 +91,7 @@ export const GAMES_META: readonly GameMeta[] = [
   {
     id: 'shapes',
     title: 'Sort It Out',
-    icon: '🔺',
+    icon: 'shapes',
     color: palette.leaf,
     skill: 'Sorting by shape, colour, and size',
     ages: '3-6',
@@ -99,7 +102,7 @@ export const GAMES_META: readonly GameMeta[] = [
   {
     id: 'wordbuilder',
     title: 'Spell It!',
-    icon: '🔤',
+    icon: 'letters',
     color: palette.grape,
     skill: 'Reading and spelling simple words',
     ages: '6-10',
@@ -113,7 +116,7 @@ export const GAMES_META: readonly GameMeta[] = [
   {
     id: 'sudoku',
     title: 'Sudoku',
-    icon: '🧩',
+    icon: 'grid',
     color: palette.berry,
     skill: 'Logical reasoning and number placement',
     ages: '7+',
@@ -127,7 +130,7 @@ export const GAMES_META: readonly GameMeta[] = [
   {
     id: 'patternplay',
     title: 'Pattern Play',
-    icon: '✨',
+    icon: 'sequence',
     color: palette.deep,
     skill: 'Sequence memory and concentration',
     ages: '4+',
@@ -141,7 +144,7 @@ export const GAMES_META: readonly GameMeta[] = [
   {
     id: 'numbercrunch',
     title: 'Number Crunch',
-    icon: '➕',
+    icon: 'math',
     color: palette.teal,
     skill: 'Mental arithmetic: addition, subtraction, multiplication, division',
     ages: '6+',

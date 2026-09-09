@@ -31,7 +31,7 @@ violation. The rules live in `scripts/check-safety.mjs`.
 
 Five keys in the device's own sandboxed storage, listed in `src/storage.ts`:
 
-- `g4a:profiles` — each profile's name, avatar, and age
+- `g4a:profiles` — each profile's name, colour, and age
 - `g4a:settings` — each profile's chosen limits and toggles
 - `g4a:progress` — each profile's rounds played, stars earned, and current
   adaptive level per game
@@ -140,7 +140,8 @@ currently active: a child's own profile being open does not relax the gate
 for switching to someone else's.
 
 Profile identification never involves typed text: a name is chosen from a
-fixed list, an avatar from a fixed set of emoji, and age from a stepper —
+fixed list, a colour from the palette, and age from a stepper — a profile
+shows as its own initial on that colour (`Avatar.tsx`) —
 see "What the app does store" above for why. Removing a profile deletes that
 profile's stars, levels, and settings immediately; it does not touch anyone
 else's.
@@ -168,10 +169,12 @@ every game added from here on, not just the ones that exist today:
   game title. (Pattern Play, this catalogue's sequence-memory game, is
   deliberately not called "Simon" for exactly this reason — the mechanic is
   a public-domain idea, "Simon" is a trademarked product name.)
-- **No borrowed assets.** Every icon is a standard Unicode emoji (free to
-  use, not anyone's proprietary art) or built from this app's own vector
-  shapes. No copied images, no ripped audio, no fonts without a clear licence
-  already covered by this project's dependencies.
+- **No borrowed assets.** Every icon is geometry the app draws at runtime
+  from plain views — rectangles, circles and triangles (`Icon.tsx`) — and
+  every game shape is drawn the same way (`Shape.tsx`). There are no image
+  files in this repository at all, no icon font, and no icon library
+  dependency to audit. No copied images, no ripped audio, no fonts without a
+  clear licence already covered by this project's dependencies.
 - **When in doubt, go generic.** A game named for what it teaches ("Number
   Crunch", "Sort It Out") rather than for a franchise is both safer and more
   honest about what a parent is getting.

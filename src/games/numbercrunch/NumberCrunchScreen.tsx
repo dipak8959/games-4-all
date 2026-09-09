@@ -61,7 +61,7 @@ export function NumberCrunchScreen({ level: initialLevel, onRoundComplete, onExi
   const progress = state.questionIndex / QUESTIONS_PER_ROUND;
 
   return (
-    <GameFrame title="Number Crunch" icon="➕" onExit={onExit} progress={progress}>
+    <GameFrame title="Number Crunch" icon="math" onExit={onExit} progress={progress}>
       <View style={styles.stageOuter}>
         <View style={styles.stageInner}>
           <Text style={styles.sum} accessibilityLabel={`${state.question.a} ${state.question.operator} ${state.question.b}`}>

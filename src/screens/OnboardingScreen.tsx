@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '../components/BigButton';
+import { Icon } from '../components/Icon';
 import { ProfileEditor } from '../components/ProfileEditor';
 import { Screen } from '../components/Screen';
 import { ParentGateModal } from '../safety/ParentGateModal';
@@ -26,9 +27,9 @@ export function OnboardingScreen({ onDone }: { readonly onDone: (input: ProfileI
     <Screen>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.root}>
-          <Text style={styles.hero} accessibilityElementsHidden importantForAccessibility="no">
-            👋
-          </Text>
+          <View style={styles.hero} accessibilityElementsHidden importantForAccessibility="no">
+            <Icon name="user" size={64} color={palette.inkSoft} />
+          </View>
           <Text style={styles.title} accessibilityRole="header">
             Welcome!
           </Text>
@@ -41,7 +42,7 @@ export function OnboardingScreen({ onDone }: { readonly onDone: (input: ProfileI
               </Text>
               <BigButton
                 label="Let's set this up"
-                icon="🔒"
+                icon="lock"
                 onPress={() => setGateOpen(true)}
                 style={styles.gap}
               />
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     ...shadow,
   },
-  hero: { fontSize: font.hero, textAlign: 'center', marginBottom: space.sm },
+  hero: { alignItems: 'center', marginBottom: space.sm },
   title: { fontSize: font.title, fontWeight: '800', color: palette.ink, textAlign: 'center' },
   body: {
     fontSize: font.body,

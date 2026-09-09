@@ -61,7 +61,7 @@ export function WordBuilderScreen({ level: initialLevel, onRoundComplete, onExit
   const progress = state.wordIndex / WORDS_PER_ROUND;
 
   return (
-    <GameFrame title="Spell It!" icon="🔤" onExit={onExit} progress={progress}>
+    <GameFrame title="Spell It!" icon="letters" onExit={onExit} progress={progress}>
       <View style={styles.stageOuter}>
         <View style={styles.stageInner}>
           <Text style={styles.emoji} accessibilityLabel={state.puzzle.word}>

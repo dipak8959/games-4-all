@@ -119,6 +119,3 @@ export const playColors = [
   palette.deep,
 ] as const;
 
-/** Decorative-only emoji sprinkled behind headers/empty space. Never used to
- *  convey information, so they carry no accessibility label. */
-export const decorativeEmoji = ['✨', '🌟', '🎈', '🎉', '🧸', '🌈'] as const;

@@ -2,34 +2,13 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View, type DimensionValue } from 'react-native';
 
 import { BigButton } from './BigButton';
+import { Icon } from './Icon';
 import { GradientSurface } from './GradientSurface';
 import { font, gradients, palette, radius, shadowFloating, space } from '../theme/tokens';
 
 /** Praise scales with effort, never with failure — even one star gets a warm
  *  headline, since finishing a round is always worth celebrating. */
-const PRAISE: readonly { readonly hero: string; readonly text: string }[] = [
-  { hero: '👍', text: 'Nice try!' },
-  { hero: '🎉', text: 'Great job!' },
-  { hero: '🎉', text: 'Great job!' },
-  { hero: '🏆', text: 'Amazing!' },
-];
-
-/** Decorative confetti around the card. Fixed positions, not random, so the
- *  layout is stable across renders and re-renders don't jitter. */
-const CONFETTI: readonly {
-  readonly emoji: string;
-  readonly left: DimensionValue;
-  readonly top?: DimensionValue;
-  readonly bottom?: DimensionValue;
-}[] = [
-  { emoji: '✨', top: '-3%', left: '8%' },
-  { emoji: '🎈', top: '-4%', left: '80%' },
-  // Anchored from the bottom edge rather than a top percentage, so these sit
-  // just outside the card instead of drifting over the button row as the
-  // card's height changes with content.
-  { emoji: '🌟', bottom: '-3%', left: '4%' },
-  { emoji: '🎊', bottom: '-4%', left: '84%' },
-];
+const PRAISE: readonly string[] = ['Nice try!', 'Great job!', 'Great job!', 'Amazing!'];
 
 /**
  * End-of-round celebration.
@@ -51,7 +30,7 @@ export function RoundComplete({
   readonly reduceMotion: boolean;
 }) {
   const pop = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
-  const { hero, text } = PRAISE[Math.max(0, Math.min(PRAISE.length - 1, stars))];
+  const text = PRAISE[Math.max(0, Math.min(PRAISE.length - 1, stars))];
 
   useEffect(() => {
     if (reduceMotion) {
@@ -64,36 +43,22 @@ export function RoundComplete({
   return (
     <View style={styles.overlay}>
       <Animated.View style={[styles.cardOuter, { transform: [{ scale: pop }] }]}>
-        {!reduceMotion &&
-          CONFETTI.map((c, i) => (
-            <Text
-              key={i}
-              style={[styles.confetti, { top: c.top, bottom: c.bottom, left: c.left }]}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            >
-              {c.emoji}
-            </Text>
-          ))}
-
         <GradientSurface colors={gradients.bg} style={styles.card}>
-          <Text style={styles.hero} accessibilityElementsHidden importantForAccessibility="no">
-            {hero}
-          </Text>
-
           <Text style={styles.praise} accessibilityRole="header">
             {text}
           </Text>
 
-          <Text
+          <View
             style={styles.stars}
             accessibilityLabel={`You earned ${stars} ${stars === 1 ? 'star' : 'stars'}`}
           >
-            {'⭐'.repeat(stars)}
-          </Text>
+            {Array.from({ length: stars }, (_, i) => (
+              <Icon key={i} name="star" size={44} color={palette.sun} />
+            ))}
+          </View>
 
-          <BigButton label="Play again" icon="🔁" onPress={onPlayAgain} color={palette.leaf} />
-          <BigButton label="Back to games" icon="🏠" onPress={onExit} tone="quiet" style={styles.gap} />
+          <BigButton label="Play again" icon="replay" onPress={onPlayAgain} color={palette.leaf} />
+          <BigButton label="Back to games" icon="home" onPress={onExit} tone="quiet" style={styles.gap} />
         </GradientSurface>
       </Animated.View>
     </View>
@@ -118,14 +83,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     ...shadowFloating,
   },
-  confetti: { position: 'absolute', fontSize: 30, zIndex: 1 },
   card: {
     borderRadius: radius.xl,
     padding: space.lg,
     alignItems: 'stretch',
     overflow: 'hidden',
   },
-  hero: { fontSize: font.hero, textAlign: 'center' },
   praise: {
     fontSize: font.title,
     fontWeight: '800',
@@ -133,6 +96,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: space.xs,
   },
-  stars: { fontSize: 40, textAlign: 'center', marginBottom: space.lg },
+  stars: { flexDirection: 'row', justifyContent: 'center', gap: space.xs, marginBottom: space.lg },
   gap: { marginTop: space.sm },
 });

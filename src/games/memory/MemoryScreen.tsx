@@ -94,7 +94,7 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
   }, [columns]);
 
   return (
-    <GameFrame title="Find the Pairs" icon="🧠" onExit={onExit} progress={progress}>
+    <GameFrame title="Find the Pairs" icon="pairs" onExit={onExit} progress={progress}>
       <View style={[styles.grid, { maxWidth: columns * (size + space.sm) }]}>
         {state.cards.map((card, index) => {
           const visible = card.faceUp || card.matched;
@@ -121,7 +121,7 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
                   <GradientSurface colors={gradients.sky} style={StyleSheet.absoluteFill} />
                 )}
                 <Text style={[styles.symbol, { fontSize: size * 0.5 }]}>
-                  {visible ? card.symbol : '❓'}
+                  {visible ? card.symbol : '?'}
                 </Text>
               </View>
             </Pressable>

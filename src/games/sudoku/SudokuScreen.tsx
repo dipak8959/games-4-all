@@ -74,7 +74,7 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
   }, [size]);
 
   return (
-    <GameFrame title="Sudoku" icon="🧩" onExit={onExit} progress={progress}>
+    <GameFrame title="Sudoku" icon="grid" onExit={onExit} progress={progress}>
       <View style={styles.stage}>
         {/* Built as explicit rows rather than one flex-wrapped list of `size *
             size` cells: relying on wrapping to break every `size`-th cell

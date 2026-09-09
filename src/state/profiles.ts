@@ -42,23 +42,33 @@ export const NAME_CHOICES: readonly string[] = [
   'Robin',
 ];
 
+/**
+ * A profile's colour, not a picture.
+ *
+ * These are keys into the theme palette (`src/theme/tokens.ts`); a profile
+ * renders as the first letter of its name on its own colour (see
+ * `Avatar.tsx`). Picking a colour keeps the "which one is mine?" choice a
+ * child cares about, while the app ships no character art of any kind —
+ * nothing to license, nothing that renders differently per platform.
+ */
 export const AVATAR_CHOICES: readonly string[] = [
-  '🧒',
-  '👦',
-  '👧',
-  '🧑',
-  '👩',
-  '👨',
-  '🧓',
-  '😀',
-  '🐱',
-  '🦁',
-  '🦄',
-  '🌟',
+  'sky',
+  'berry',
+  'leaf',
+  'sun',
+  'grape',
+  'deep',
+  'teal',
 ];
 
 export const DEFAULT_NAME: string = NAME_CHOICES[0];
 export const DEFAULT_AVATAR: string = AVATAR_CHOICES[0];
+
+/** The letter shown on a profile's tile. Falls back to a neutral mark for a
+ *  name that somehow has no letters in it, so a tile is never blank. */
+export function monogramFor(name: string): string {
+  return name.trim().charAt(0).toUpperCase() || '?';
+}
 
 export function clampAge(age: number): number {
   return Math.max(MIN_AGE, Math.min(MAX_AGE, Math.round(age)));

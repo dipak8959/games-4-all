@@ -15,20 +15,20 @@ here is built to actually hold up for a grown-up, not just tolerate one:
 
 | Game | Practises | Ages |
 | --- | --- | --- |
-| 🧠 **Find the Pairs** | Visual memory and concentration | 3-6 |
-| 🔢 **How Many?** | Counting and recognising numerals 1-12 | 3-6 |
-| 🔺 **Sort It Out** | Sorting by shape, colour, and size | 3-6 |
-| 🔤 **Spell It!** | Reading and spelling simple words | 6-10 |
-| 🧩 **Sudoku** | Logical reasoning and number placement | 7+ |
-| ✨ **Pattern Play** | Sequence memory and concentration | 4+ |
-| ➕ **Number Crunch** | Mental arithmetic: +, −, ×, ÷ | 6+ |
+| **Find the Pairs** | Visual memory and concentration | 3-6 |
+| **How Many?** | Counting and recognising numerals 1-12 | 3-6 |
+| **Sort It Out** | Sorting by shape, colour, and size | 3-6 |
+| **Spell It!** | Reading and spelling simple words | 6-10 |
+| **Sudoku** | Logical reasoning and number placement | 7+ |
+| **Pattern Play** | Sequence memory and concentration | 4+ |
+| **Number Crunch** | Mental arithmetic: +, −, ×, ÷ | 6+ |
 
 Each also carries a category (Memory, Numbers, Words, Logic, Sorting) shown
 as filter chips on Home, alongside a search box — with seven games and
 growing, finding the right one shouldn't require scrolling past all the
 others.
 
-Every game card also carries a ⭐ pin toggle — no parent gate needed, since
+Every game card also carries a star pin toggle — no parent gate needed, since
 it changes nothing about what's available, only how quickly a profile
 reaches what they already chose. Pinned games surface in a **Favourites**
 row at the top of Home (`settings.pinnedGameIds`, per profile), so a
@@ -47,12 +47,13 @@ delete-all-data control.
 
 A one-time, first-launch setup step (`OnboardingScreen`, gated behind the
 parent gate — a child shouldn't be the one setting this) asks a grown-up to
-create the first profile: a name, an avatar, and a real age
+create the first profile: a name, a colour, and a real age
 (`src/state/profiles.ts`). "Skip for now" is available without the gate and
-creates a sensible default profile, so setup never blocks play. The current
-profile's avatar is always visible on Home, next to Parent Zone's gear icon —
-tapping it opens **Profiles** (behind the parent gate again, every time) to
-switch to someone else, add a new profile, edit one, or remove one.
+creates a sensible default profile, so setup never blocks play. A profile
+shows as its own initial on its colour, always visible on Home next to the
+Parent Zone control — tapping it opens **Profiles** (behind the parent gate
+again, every time) to switch to someone else, add a new profile, edit one,
+or remove one.
 
 This is deliberate, not incidental: **switching who's playing always requires
 a grown-up**, the same way opening Parent Zone does. A child should never be
@@ -126,6 +127,21 @@ Adding a game to the catalogue means picking its age range deliberately
 stop being one?), not defaulting to "all ages" — that default is exactly
 what made an 18-year-old's game list identical to a 4-year-old's before this
 model existed.
+
+### No emoji in the interface
+
+Every icon is geometry the app draws from plain views — rectangles, circles
+and triangles (`src/components/Icon.tsx`) — and a profile is its own initial
+on its own colour (`Avatar.tsx`). There are no image files in the repository,
+no icon font, and no icon-library dependency, so an icon can't render as a
+missing-glyph box on one platform and a cartoon on another.
+
+Four games are the deliberate exception, because there the emoji *are* the
+playable material rather than decoration: the symbols you match in Find the
+Pairs, the objects you count in How Many?, the tiles you repeat in Pattern
+Play, and the picture clue you spell in Spell It!. `tests/chrome.test.ts`
+enforces the split — it fails if an emoji appears anywhere outside those four
+files, and equally if one of them stops needing its exemption.
 
 ### Staying fresh round to round
 
@@ -212,7 +228,9 @@ src/
       logic.ts              Pure, seeded, unit-tested game rules
       *Screen.tsx           Presentation only
   screens/                  Home, Parent Zone, Profiles, time's-up
-  components/               Shared UI (all targets >= 72dp), incl. ProfileEditor
+  components/               Shared UI (all targets >= 72dp)
+    Icon.tsx                Every icon, drawn from plain views — no assets, no library
+    Avatar.tsx              A profile as its initial on its colour
   theme/tokens.ts           Colour-blind-safe palette, spacing, type scale
 scripts/check-safety.mjs    The build gate
 tests/                      Unit tests for all pure logic

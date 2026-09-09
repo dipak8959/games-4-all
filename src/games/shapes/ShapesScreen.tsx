@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
+import { Icon, type IconName } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
@@ -85,7 +86,7 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
   const progress = state.queue.length ? state.placed / state.queue.length : 0;
   const rule =
     state.sortBy === 'shape' ? 'Match the shape' : state.sortBy === 'color' ? 'Match the colour' : 'Match the size';
-  const ruleIcon = state.sortBy === 'shape' ? '🔺' : state.sortBy === 'color' ? '🎨' : '📏';
+  const ruleIcon: IconName = state.sortBy === 'shape' ? 'shapes' : state.sortBy === 'color' ? 'all' : 'sequence';
 
   // The item on stage is drawn at its own size only when size is the rule —
   // otherwise size is one of the irrelevant, randomised attributes and every
@@ -98,9 +99,9 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
     : '';
 
   return (
-    <GameFrame title="Sort It Out" icon="🔺" onExit={onExit} progress={progress}>
+    <GameFrame title="Sort It Out" icon="shapes" onExit={onExit} progress={progress}>
       <View style={styles.ruleBadge}>
-        <Text style={styles.ruleIcon}>{ruleIcon}</Text>
+        <Icon name={ruleIcon} size={font.body} color={palette.ink} />
         <Text style={styles.rule} accessibilityRole="header">
           {rule}
         </Text>
@@ -108,9 +109,6 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
 
       <View style={styles.stageOuter}>
         <View style={styles.stageInner}>
-          <Text style={styles.stageRing} accessibilityElementsHidden importantForAccessibility="no">
-            ⭕
-          </Text>
           {item ? (
             <View accessibilityLabel={itemLabel}>
               <Shape shape={item.shape} color={item.color} size={itemDisplaySize} />
@@ -139,9 +137,6 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
               ]}
             >
               <View style={styles.basketInner}>
-                <Text style={styles.basketGlyph} accessibilityElementsHidden importantForAccessibility="no">
-                  🧺
-                </Text>
                 <Shape shape={basket.shape} color={basket.color} size={box * 0.48} />
               </View>
             </Pressable>
@@ -181,7 +176,6 @@ const styles = StyleSheet.create({
     marginBottom: space.sm,
     ...shadow,
   },
-  ruleIcon: { fontSize: font.body },
   rule: { fontSize: font.body, fontWeight: '800', color: palette.ink },
   stageOuter: { flex: 1, borderRadius: radius.lg, marginBottom: space.md, ...shadow },
   stageInner: {
@@ -192,7 +186,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     overflow: 'hidden',
   },
-  stageRing: { position: 'absolute', fontSize: 220, opacity: 0.05 },
   baskets: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -216,6 +209,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.md - 2,
     overflow: 'hidden',
   },
-  basketGlyph: { position: 'absolute', fontSize: 70, opacity: 0.12 },
   pressed: { transform: [{ scale: 0.94 }] },
 });

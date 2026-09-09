@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Avatar } from '../components/Avatar';
 import { BigButton } from '../components/BigButton';
+import { Icon } from '../components/Icon';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { ProfileEditor } from '../components/ProfileEditor';
 import { Screen } from '../components/Screen';
@@ -31,7 +33,7 @@ export function ProfilesScreen({ onClose }: { readonly onClose: () => void }) {
     <Screen>
       <View style={styles.header}>
         <Text style={styles.title} accessibilityRole="header" numberOfLines={1} ellipsizeMode="tail">
-          👤 Profiles
+          Profiles
         </Text>
         <BigButton label="Done" onPress={onClose} tone="quiet" style={styles.done} />
       </View>
@@ -76,13 +78,12 @@ export function ProfilesScreen({ onClose }: { readonly onClose: () => void }) {
             />
           </View>
         ) : (
-          <BigButton label="Add profile" icon="➕" tone="quiet" onPress={() => setAdding(true)} />
+          <BigButton label="Add profile" icon="plus" tone="quiet" onPress={() => setAdding(true)} />
         )}
       </ScrollView>
 
       <ConfirmModal
         visible={removing != null}
-        icon="🗑️"
         title={removing ? `Remove ${removing.name}?` : ''}
         body="Their stars, levels, and settings on this device will be deleted. This cannot be undone."
         confirmLabel="Remove"
@@ -119,7 +120,7 @@ function ProfileRow({
         onPress={onSwitch}
         style={styles.rowMain}
       >
-        <Text style={styles.avatar}>{profile.avatar}</Text>
+        <Avatar name={profile.name} color={profile.avatar} size={44} />
         <View style={styles.rowText}>
           <Text style={styles.name}>{profile.name}</Text>
           <Text style={styles.caption}>Age {profile.age}</Text>
@@ -135,7 +136,7 @@ function ProfileRow({
           hitSlop={8}
           style={styles.actionButton}
         >
-          <Text style={styles.actionIcon}>✏️</Text>
+          <Icon name="pencil" size={20} color={palette.ink} />
         </Pressable>
         {onRemove ? (
           <Pressable
@@ -145,7 +146,7 @@ function ProfileRow({
             hitSlop={8}
             style={styles.actionButton}
           >
-            <Text style={styles.actionIcon}>🗑️</Text>
+            <Icon name="trash" size={20} color={palette.ink} />
           </Pressable>
         ) : null}
       </View>
@@ -176,7 +177,6 @@ const styles = StyleSheet.create({
   },
   rowActive: { borderColor: palette.sky },
   rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: hitTarget },
-  avatar: { fontSize: 40 },
   rowText: { flex: 1, gap: 2 },
   name: { fontSize: font.body, fontWeight: '800', color: palette.ink },
   caption: { fontSize: font.body - 3, color: palette.inkSoft },
@@ -199,7 +199,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     backgroundColor: palette.surfaceAlt,
   },
-  actionIcon: { fontSize: 20 },
   card: {
     backgroundColor: palette.surface,
     borderRadius: radius.xl,

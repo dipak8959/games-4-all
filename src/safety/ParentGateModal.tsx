@@ -2,9 +2,10 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from '../components/BigButton';
-import { GradientSurface } from '../components/GradientSurface';
 import { Icon } from '../components/Icon';
-import { font, gradients, hitTarget, palette, radius, shadow, shadowFloating, space } from '../theme/tokens';
+import { Rule } from '../components/Rule';
+import { font, hitTarget, palette, rule, space } from '../theme/tokens';
+import { type } from '../theme/type';
 import { systemRng } from '../util/random';
 import { createChallenge, isCorrect } from './parentGate';
 
@@ -13,6 +14,11 @@ import { createChallenge, isCorrect } from './parentGate';
  *
  * A wrong answer re-rolls the question rather than allowing repeated guesses at
  * the same one, which is what makes trial-and-error impractical for a child.
+ *
+ * The handoff calls for a PIN here instead. A PIN would be a real secret to
+ * store, forget, and reset, and this gate deliberately guards nothing whose
+ * disclosure would matter — see "Parent gate" in SAFETY.md. The question
+ * stays; the chrome around it is the handoff's.
  */
 export function ParentGateModal({
   visible,
@@ -45,19 +51,20 @@ export function ParentGateModal({
       <View style={styles.overlay}>
         <View style={styles.card}>
           <View style={styles.titleRow}>
-            <Icon name="lock" size={26} color={palette.ink} />
-            <Text style={styles.title} accessibilityRole="header">
-              Grown-ups only
-            </Text>
+            <Icon name="lock" size={18} color={palette.ink} />
+            <Text style={type.mono}>GROWN-UPS ONLY</Text>
           </View>
-          <Text style={styles.body}>Answer to continue.</Text>
+          <Rule weight="major" />
 
-          <Text style={styles.prompt} accessibilityLabel={`What is ${challenge.prompt}?`}>
-            {challenge.prompt}
-          </Text>
+          <View style={styles.prompt}>
+            <Text style={type.h2} accessibilityLabel={`What is ${challenge.prompt}?`}>
+              {challenge.prompt}
+            </Text>
+            <Text style={[type.meta, styles.hint]}>Answer to continue.</Text>
+          </View>
 
           {wrong ? (
-            <Text style={styles.wrong} accessibilityLiveRegion="polite">
+            <Text style={[type.secondary, styles.wrong]} accessibilityLiveRegion="polite">
               Not quite — here is a new one.
             </Text>
           ) : null}
@@ -69,11 +76,9 @@ export function ParentGateModal({
                 accessibilityRole="button"
                 accessibilityLabel={`${choice}`}
                 onPress={() => choose(choice)}
-                style={({ pressed }) => [styles.choiceOuter, pressed && styles.pressed]}
+                style={({ pressed }) => [styles.choice, pressed && styles.choicePressed]}
               >
-                <GradientSurface colors={gradients.deep} style={styles.choice}>
-                  <Text style={styles.choiceText}>{choice}</Text>
-                </GradientSurface>
+                <Text style={styles.choiceText}>{choice}</Text>
               </Pressable>
             ))}
           </View>
@@ -88,7 +93,7 @@ export function ParentGateModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(42, 33, 24, 0.5)',
+    backgroundColor: 'rgba(32,30,29,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.lg,
@@ -96,38 +101,28 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: palette.surface,
-    borderRadius: radius.xl,
+    backgroundColor: palette.bg,
+    borderWidth: rule.major,
+    borderColor: palette.ink,
     padding: space.lg,
-    ...shadowFloating,
+    gap: space.md,
   },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm },
-  title: { fontSize: font.title, fontWeight: '800', color: palette.ink, textAlign: 'center' },
-  body: { fontSize: font.body, color: palette.inkSoft, textAlign: 'center', marginTop: space.xs },
-  prompt: {
-    fontSize: font.hero - 8,
-    fontWeight: '800',
-    color: palette.ink,
-    textAlign: 'center',
-    marginVertical: space.md,
-  },
-  wrong: { fontSize: font.body, color: palette.warn, textAlign: 'center', marginBottom: space.sm },
-  choices: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: space.sm,
-    marginBottom: space.md,
-  },
-  choiceOuter: { borderRadius: radius.md, ...shadow },
-  pressed: { transform: [{ scale: 0.95 }], opacity: 0.92 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  prompt: { gap: space.xs },
+  hint: {},
+  wrong: { color: palette.accentText },
+  choices: { flexDirection: 'row', flexWrap: 'wrap', gap: rule.hair },
   choice: {
-    minWidth: hitTarget + 24,
+    minWidth: hitTarget + 16,
     minHeight: hitTarget,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: space.md,
-    borderRadius: radius.md,
+    paddingHorizontal: space.lg,
+    backgroundColor: palette.surface,
+    borderWidth: rule.hair,
+    borderColor: palette.border,
   },
-  choiceText: { fontSize: font.title, fontWeight: '800', color: '#FFFFFF' },
+  choicePressed: { backgroundColor: palette.accent },
+  choiceText: { fontSize: font.h3, fontWeight: '800', color: palette.ink },
 });

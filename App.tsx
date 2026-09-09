@@ -9,6 +9,7 @@ import { ParentGateModal } from './src/safety/ParentGateModal';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { ParentZoneScreen } from './src/screens/ParentZoneScreen';
+import { PlayTimeScreen } from './src/screens/PlayTimeScreen';
 import { ProfilesScreen } from './src/screens/ProfilesScreen';
 import { TimeUpScreen } from './src/screens/TimeUpScreen';
 import { AppProvider, useApp } from './src/state/AppProvider';
@@ -26,7 +27,8 @@ type Route =
   | { readonly name: 'home' }
   | { readonly name: 'game'; readonly gameId: string }
   | { readonly name: 'parent' }
-  | { readonly name: 'profiles' };
+  | { readonly name: 'profiles' }
+  | { readonly name: 'playtime' };
 
 /** Which gated destination to land on once the parent gate is passed. */
 type GateTarget = 'parent' | 'profiles' | null;
@@ -70,7 +72,7 @@ function Root() {
   if (!ready) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color={palette.sky} />
+        <ActivityIndicator size="large" color={palette.accent} />
       </View>
     );
   }
@@ -103,6 +105,21 @@ function Root() {
         <ParentZoneScreen
           onClose={() => setRoute({ name: 'home' })}
           onOpenProfiles={() => setRoute({ name: 'profiles' })}
+        />
+        {gate}
+      </>
+    );
+  }
+
+  // The `TIME` tab. Not gated: reading how long you have played changes
+  // nothing, and only Parent Zone can move a limit.
+  if (route.name === 'playtime' && !limitReached) {
+    return (
+      <>
+        <PlayTimeScreen
+          onClose={() => setRoute({ name: 'home' })}
+          onOpenParentZone={openParentZone}
+          onOpenProfiles={openProfiles}
         />
         {gate}
       </>
@@ -155,6 +172,7 @@ function Root() {
         onOpenGame={(gameId) => setRoute({ name: 'game', gameId })}
         onOpenParentZone={openParentZone}
         onOpenProfiles={openProfiles}
+        onOpenPlayTime={() => setRoute({ name: 'playtime' })}
       />
       {gate}
     </>

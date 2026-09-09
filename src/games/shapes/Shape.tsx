@@ -51,7 +51,7 @@ export function Shape({
       return <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: fill }} />;
 
     case 'square':
-      return <View style={{ width: size, height: size, borderRadius: size * 0.14, backgroundColor: fill }} />;
+      return <View style={{ width: size, height: size, backgroundColor: fill }} />;
 
     case 'diamond': {
       // A square rotated 45°, sized so its diagonal matches the other shapes'
@@ -63,7 +63,6 @@ export function Shape({
           style={{
             width: edge,
             height: edge,
-            borderRadius: edge * 0.14,
             backgroundColor: fill,
             transform: [{ rotate: '45deg' }],
           }}

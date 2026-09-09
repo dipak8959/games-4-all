@@ -4,21 +4,32 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { Avatar } from '../components/Avatar';
 import { BigButton } from '../components/BigButton';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { FactGrid, NumberedRow } from '../components/FactGrid';
 import { Icon } from '../components/Icon';
+import { PlayTimeMeter } from '../components/PlayTimeMeter';
+import { Rule } from '../components/Rule';
 import { Screen } from '../components/Screen';
+import { SectionHeader } from '../components/SectionHeader';
 import { GAMES_META } from '../games/catalog';
 import { MAX_LEVEL } from '../games/types';
-import { formatMinutes, LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
+import { LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
 import { useApp } from '../state/AppProvider';
 import { progressFor } from '../state/progress';
-import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
+import { gutter, hitTarget, palette, rule, space } from '../theme/tokens';
+import { type } from '../theme/type';
 
 /**
  * Parent Zone.
  *
  * Reached only through the parent gate. Holds the screen-time limits, the
- * feedback and difficulty switches, a plain-language statement of what the app
- * does and does not do with data, and the delete-everything control.
+ * feedback and difficulty switches, a plain-language statement of what the
+ * app does and does not do with data, and the delete-everything control.
+ *
+ * This is where the handoff's second screen ended up. Its job — "let a
+ * parent approve a game in seconds" — is a parent's job, so the safety tag
+ * row, the fact grid, the numbered "what parents should know" rows and the
+ * play-time meter live here rather than on a detail screen between a child
+ * and the game they just tapped.
  */
 export function ParentZoneScreen({
   onClose,
@@ -37,111 +48,155 @@ export function ParentZoneScreen({
   }, [resetEverything]);
 
   return (
-    <Screen>
+    <Screen padded={false}>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header" numberOfLines={1} ellipsizeMode="tail">
-          Parent Zone
-        </Text>
-        <BigButton label="Done" onPress={onClose} tone="quiet" style={styles.done} />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-        <Section title="Screen time">
-          <Text style={styles.caption}>
-            Played today: {formatMinutes(usage.playedTodayMs)}
+        <View style={styles.headerText}>
+          <Text style={type.mono}>GROWN-UPS ONLY</Text>
+          <Text style={type.h3} accessibilityRole="header">
+            PARENT ZONE
           </Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Done"
+          onPress={onClose}
+          style={({ pressed }) => [styles.done, pressed && styles.pressedTint]}
+        >
+          <Text style={type.monoStrong}>DONE</Text>
+        </Pressable>
+      </View>
+      <Rule weight="major" />
 
-          <LimitPicker
-            label="Limit each sitting"
-            valueMs={settings.sessionLimitMs}
-            onChange={(ms) => updateSettings({ sessionLimitMs: ms })}
-          />
-          <LimitPicker
-            label="Limit each day"
-            valueMs={settings.dailyLimitMs}
-            onChange={(ms) => updateSettings({ dailyLimitMs: ms })}
-          />
-        </Section>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <View style={styles.tags}>
+          <Tag label={`AGE ${activeProfile?.age ?? '—'}`} filled />
+          <Tag label="NO ADS" />
+          <Tag label="NO CHAT" />
+          <Tag label="NO PURCHASES" />
+        </View>
+        <Rule weight="major" />
 
-        <Section title="Profile">
-          <View style={styles.row}>
-            {activeProfile ? (
-              <View style={styles.profileRow}>
-                <Avatar name={activeProfile.name} color={activeProfile.avatar} size={36} />
-                <Text style={styles.rowLabel}>
-                  {activeProfile.name}, age {activeProfile.age}
+        <FactGrid
+          facts={[
+            { value: `${GAMES_META.length}`, label: 'GAMES ON DEVICE' },
+            { value: '0 KB', label: 'SENT ANYWHERE' },
+            { value: '1', label: 'PLAYER AT A TIME' },
+          ]}
+        />
+        <Rule weight="major" />
+
+        <SectionHeader label="TODAY'S PLAY TIME" />
+        <View style={styles.block}>
+          <PlayTimeMeter playedMs={usage.playedTodayMs} limitMs={settings.dailyLimitMs} />
+        </View>
+
+        <LimitPicker
+          label="LIMIT EACH SITTING"
+          valueMs={settings.sessionLimitMs}
+          onChange={(ms) => updateSettings({ sessionLimitMs: ms })}
+        />
+        <LimitPicker
+          label="LIMIT EACH DAY"
+          valueMs={settings.dailyLimitMs}
+          onChange={(ms) => updateSettings({ dailyLimitMs: ms })}
+        />
+        <Rule weight="major" />
+
+        <SectionHeader label="WHO IS PLAYING" />
+        <View style={styles.profileRow}>
+          {activeProfile ? (
+            <>
+              <Avatar name={activeProfile.name} color={activeProfile.avatar} size={40} />
+              <View style={styles.profileText}>
+                <Text style={type.h5}>{activeProfile.name}</Text>
+                <Text style={type.meta}>
+                  Age {activeProfile.age} — decides which games show, and where each one starts
                 </Text>
               </View>
-            ) : (
-              <Text style={styles.rowLabel}>No profile</Text>
-            )}
-          </View>
-          <BigButton label="Manage profiles" icon="user" tone="quiet" onPress={onOpenProfiles} />
-          <Text style={styles.caption}>
-            Switch who's playing, add a profile for someone else, or change a profile's age —
-            which decides which games show for them. Every game still adjusts up or down on its
-            own after that, round to round, based on how it's going.
-          </Text>
-        </Section>
+            </>
+          ) : (
+            <Text style={type.body}>No profile</Text>
+          )}
+        </View>
+        <View style={styles.block}>
+          <BigButton label="Manage profiles" icon="user" tone="quiet" chevron onPress={onOpenProfiles} />
+        </View>
+        <Rule weight="major" />
 
-        <Section title="Play">
-          <Toggle
-            label="Sound effects"
-            value={settings.soundOn}
-            onChange={(v) => updateSettings({ soundOn: v })}
-          />
-          <Toggle
-            label="Vibration"
-            value={settings.hapticsOn}
-            onChange={(v) => updateSettings({ hapticsOn: v })}
-          />
-          <Toggle
-            label="Reduce motion"
-            value={settings.reduceMotion}
-            onChange={(v) => updateSettings({ reduceMotion: v })}
-          />
-        </Section>
+        <SectionHeader label="PLAY" />
+        <Toggle
+          label="Sound effects"
+          value={settings.soundOn}
+          onChange={(v) => updateSettings({ soundOn: v })}
+        />
+        <Toggle
+          label="Vibration"
+          value={settings.hapticsOn}
+          onChange={(v) => updateSettings({ hapticsOn: v })}
+        />
+        <Toggle
+          label="Reduce motion"
+          value={settings.reduceMotion}
+          onChange={(v) => updateSettings({ reduceMotion: v })}
+        />
+        <Rule weight="major" />
 
-        <Section title="What each game practises">
-          {GAMES_META.map((game) => {
-            const gp = progressFor(progress, game.id);
-            return (
-              <View key={game.id} style={styles.gameRow}>
-                <View style={styles.gameIcon}>
-                  <Icon name={game.icon} size={30} color={game.color} />
-                </View>
-                <View style={styles.gameText}>
-                  <Text style={styles.gameTitle}>{game.title}</Text>
-                  <Text style={styles.caption}>
-                    {game.skill} · ages {game.ages}
-                  </Text>
-                  <Text style={styles.caption}>
-                    {gp.rounds} {gp.rounds === 1 ? 'round' : 'rounds'} played · level{' '}
-                    {levelForGame(game.id)} of {MAX_LEVEL}
-                  </Text>
-                </View>
+        <SectionHeader label="WHAT PARENTS SHOULD KNOW" />
+        <NumberedRow
+          index="01"
+          copy="Runs fully offline. Release builds have no internet permission at all."
+        />
+        <NumberedRow
+          index="02"
+          copy="No strangers, no messaging, no leaderboards — stars and levels stay on this device."
+        />
+        <NumberedRow
+          index="03"
+          copy="No ads, no purchases, no accounts, no analytics. Nothing is collected to sell or lose."
+        />
+        <NumberedRow
+          index="04"
+          copy="Every game adjusts itself round to round. Nobody can lose, and nothing is timed."
+        />
+        <Rule weight="major" />
+
+        <SectionHeader label="WHAT EACH GAME PRACTISES" meta={`${GAMES_META.length} TOTAL`} />
+        {GAMES_META.map((game) => {
+          const gp = progressFor(progress, game.id);
+          return (
+            <View key={game.id} style={styles.gameRow}>
+              <View style={styles.gameMark}>
+                <Icon name={game.icon} size={24} color={palette.ink} />
               </View>
-            );
-          })}
-        </Section>
+              <View style={styles.gameText}>
+                <Text style={type.h5}>{game.title}</Text>
+                <Text style={type.meta}>{game.skill}</Text>
+                <Text style={type.monoSm}>
+                  AGES {game.ages} · {gp.rounds} {gp.rounds === 1 ? 'ROUND' : 'ROUNDS'} · LEVEL{' '}
+                  {levelForGame(game.id)}/{MAX_LEVEL}
+                </Text>
+              </View>
+            </View>
+          );
+        })}
+        <Rule weight="major" />
 
-        <Section title="Privacy">
-          <Text style={styles.privacy}>
-            This app works entirely offline. It has no ads, no in-app purchases, no accounts,
-            no analytics, and no third-party trackers. It does not ask for any device
-            permission. Play history and settings are stored only on this device and are
-            never sent anywhere.
+        <SectionHeader label="PRIVACY" />
+        <View style={styles.block}>
+          <Text style={type.secondary}>
+            This app works entirely offline. It has no ads, no in-app purchases, no accounts, no
+            analytics, and no third-party trackers. It does not ask for any device permission.
+            Play history and settings are stored only on this device and are never sent anywhere.
           </Text>
-
           <BigButton
             label={erased ? 'Data deleted' : 'Delete all data'}
             icon={erased ? 'check' : 'trash'}
-            color={palette.berry}
+            note={erased ? undefined : 'EVERY PROFILE ON THIS DEVICE'}
             onPress={() => setConfirmingErase(true)}
             disabled={erased}
-            style={styles.erase}
+            style={styles.gap}
           />
-        </Section>
+        </View>
       </ScrollView>
 
       <ConfirmModal
@@ -149,7 +204,6 @@ export function ParentZoneScreen({
         title="Delete all data?"
         body="This removes play history and settings from this device. It cannot be undone."
         confirmLabel="Delete"
-        confirmColor={palette.berry}
         onConfirm={eraseNow}
         onCancel={() => setConfirmingErase(false)}
       />
@@ -157,13 +211,12 @@ export function ParentZoneScreen({
   );
 }
 
-function Section({ title, children }: { readonly title: string; readonly children: React.ReactNode }) {
+/** A small safety claim, in the handoff's tag shape: filled tint for the
+ *  age, 1px outline for the rest. */
+function Tag({ label, filled = false }: { readonly label: string; readonly filled?: boolean }) {
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle} accessibilityRole="header">
-        {title}
-      </Text>
-      {children}
+    <View style={[styles.tag, filled ? styles.tagFilled : styles.tagOutlined]}>
+      <Text style={[type.monoSm, filled ? styles.tagFilledText : undefined]}>{label}</Text>
     </View>
   );
 }
@@ -179,12 +232,12 @@ function Toggle({
 }) {
   return (
     <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={type.h5}>{label}</Text>
       <Switch
         value={value}
         onValueChange={onChange}
         accessibilityLabel={label}
-        trackColor={{ true: palette.leaf, false: palette.border }}
+        trackColor={{ true: palette.accent, false: palette.surfaceAlt }}
       />
     </View>
   );
@@ -201,43 +254,32 @@ function LimitPicker({
 }) {
   return (
     <View style={styles.limit}>
-      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={[type.mono, styles.limitLabel]}>{label}</Text>
       <View style={styles.chips}>
         {LIMIT_CHOICES_MIN.map((minutes) => {
           const ms = minutes == null ? null : minutes * MINUTE_MS;
+          const selected = valueMs === ms;
           return (
-            <Chip
+            <Pressable
               key={String(minutes)}
-              label={minutes == null ? 'No limit' : `${minutes}m`}
-              selected={valueMs === ms}
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              accessibilityLabel={minutes == null ? 'No limit' : `${minutes} minutes`}
               onPress={() => onChange(ms)}
-            />
+              style={({ pressed }) => [
+                styles.chip,
+                selected && styles.chipSelected,
+                pressed && !selected && styles.pressedTint,
+              ]}
+            >
+              <Text style={[type.h5, selected && styles.onAccent]}>
+                {minutes == null ? 'None' : `${minutes}m`}
+              </Text>
+            </Pressable>
           );
         })}
       </View>
     </View>
-  );
-}
-
-function Chip({
-  label,
-  selected,
-  onPress,
-}: {
-  readonly label: string;
-  readonly selected: boolean;
-  readonly onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityState={{ selected }}
-      accessibilityLabel={label}
-      onPress={onPress}
-      style={[styles.chip, selected && styles.chipSelected]}
-    >
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
-    </Pressable>
   );
 }
 
@@ -246,48 +288,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: space.md,
+    paddingLeft: gutter,
+    paddingTop: space.md,
+    paddingBottom: space.lg,
   },
-  title: { flex: 1, flexShrink: 1, fontSize: font.title - 8, fontWeight: '800', color: palette.ink },
-  done: { paddingHorizontal: space.md, marginLeft: space.sm },
-  body: { paddingBottom: space.xxl, gap: space.md },
-  section: {
-    backgroundColor: palette.surface,
-    borderRadius: radius.xl,
-    padding: space.md,
-    gap: space.sm,
-    ...shadow,
+  headerText: { gap: space.xs },
+  done: {
+    minHeight: hitTarget,
+    paddingHorizontal: gutter,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderLeftWidth: rule.hair,
+    borderLeftColor: palette.border,
   },
-  sectionTitle: { fontSize: font.label, fontWeight: '800', color: palette.ink },
+  scroll: { paddingBottom: space.xl },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, padding: gutter },
+  tag: { paddingHorizontal: space.sm, paddingVertical: 5 },
+  tagFilled: { backgroundColor: palette.accentTint },
+  tagFilledText: { color: palette.accentTintText },
+  tagOutlined: { borderWidth: rule.hair, borderColor: palette.border },
+  block: { paddingHorizontal: gutter, paddingBottom: space.lg, gap: space.md },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 56,
+    minHeight: hitTarget,
+    paddingHorizontal: gutter,
+    borderTopWidth: rule.hair,
+    borderTopColor: palette.border,
   },
-  rowLabel: { fontSize: font.body, color: palette.ink, fontWeight: '600', flexShrink: 1 },
-  caption: { fontSize: font.body - 3, color: palette.inkSoft },
-  limit: { gap: space.xs, paddingVertical: space.xs },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, paddingTop: space.xs },
+  limit: { paddingTop: space.md, paddingBottom: space.lg, gap: space.sm },
+  limitLabel: { paddingHorizontal: gutter },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: rule.hair, paddingHorizontal: gutter },
   chip: {
-    minHeight: 52,
-    minWidth: 68,
+    minHeight: 56,
+    minWidth: 72,
     paddingHorizontal: space.md,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    backgroundColor: palette.surface,
+    borderWidth: rule.hair,
+    borderColor: palette.border,
+  },
+  chipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+  onAccent: { color: palette.bg },
+  pressedTint: { backgroundColor: 'rgba(32,30,29,0.10)' },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingHorizontal: gutter,
+    paddingBottom: space.lg,
+  },
+  profileText: { flex: 1, gap: 2 },
+  gameRow: {
+    flexDirection: 'row',
+    gap: space.md,
+    alignItems: 'center',
+    minHeight: hitTarget,
+    paddingHorizontal: gutter,
+    paddingVertical: space.md,
+    borderTopWidth: rule.hair,
+    borderTopColor: palette.border,
+  },
+  gameMark: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    borderColor: palette.border,
-    backgroundColor: palette.surfaceAlt,
+    backgroundColor: palette.surface,
   },
-  chipSelected: { backgroundColor: palette.sky, borderColor: palette.sky },
-  chipText: { fontSize: font.body - 2, fontWeight: '700', color: palette.ink },
-  chipTextSelected: { color: '#FFFFFF' },
-  gameRow: { flexDirection: 'row', gap: space.md, alignItems: 'center', minHeight: hitTarget },
-  gameIcon: { width: 38, alignItems: 'center' },
-  profileRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   gameText: { flex: 1, gap: 2 },
-  gameTitle: { fontSize: font.body, fontWeight: '700', color: palette.ink },
-  privacy: { fontSize: font.body - 3, color: palette.inkSoft, lineHeight: 24 },
-  erase: { marginTop: space.sm },
+  gap: { marginTop: space.md },
 });

@@ -1,17 +1,20 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { GradientSurface } from './GradientSurface';
 import { Icon, type IconName } from './Icon';
-import { font, gradientForColor, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
+import { font, hitTarget, palette, rule, space, tracking } from '../theme/tokens';
+import { monoFamily } from '../theme/type';
 
 type Props = {
   readonly label: string;
   readonly icon?: IconName;
   readonly onPress: () => void;
-  readonly color?: string;
   readonly tone?: 'solid' | 'quiet';
   readonly disabled?: boolean;
+  /** Machine-type second line under the label, e.g. `OPENS INSTANTLY`. */
+  readonly note?: string;
+  /** Draws a chevron at the right edge — for an action that goes somewhere. */
+  readonly chevron?: boolean;
   readonly style?: ViewStyle;
   /** Spoken by a screen reader in place of the visible label when they differ. */
   readonly accessibilityLabel?: string;
@@ -20,25 +23,27 @@ type Props = {
 /**
  * The app's only button.
  *
- * Every instance is at least `hitTarget` tall, carries a visible label, and
- * grows its own press feedback — small children press imprecisely and need to
- * see that something happened.
+ * Modernist: a square block, flush-left label, accent fill for the primary
+ * action and a 2px ink outline for everything else. No radius, no shadow,
+ * no gradient.
  *
- * Shadow lives on the outer `Pressable` and the gradient fill on an inner,
- * clipped `View`: combining a shadow with `overflow: hidden` on the same
- * layer clips the shadow itself on iOS, so the two are kept apart.
+ * Its height is the one place this deliberately overshoots the handoff —
+ * 72dp rather than the handoff's ~52px CTA — because small hands press
+ * imprecisely and `hitTarget` is the app's floor everywhere (see SAFETY.md).
  */
 export function BigButton({
   label,
   icon,
   onPress,
-  color = palette.sky,
   tone = 'solid',
   disabled = false,
+  note,
+  chevron = false,
   style,
   accessibilityLabel,
 }: Props) {
   const solid = tone === 'solid';
+  const ink = solid ? palette.bg : palette.ink;
 
   return (
     <Pressable
@@ -48,50 +53,45 @@ export function BigButton({
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
-        styles.outer,
-        pressed && !disabled && styles.pressed,
+        styles.base,
+        solid ? styles.solid : styles.quiet,
+        pressed && !disabled && (solid ? styles.solidPressed : styles.quietPressed),
         disabled && styles.disabled,
         style,
       ]}
     >
-      <View style={[styles.inner, solid ? undefined : styles.quiet]}>
-        {solid ? <GradientSurface colors={gradientForColor(color)} style={StyleSheet.absoluteFill} /> : null}
-        <View style={styles.row}>
-          {icon ? <Icon name={icon} size={font.label} color={solid ? '#FFFFFF' : palette.ink} /> : null}
-          <Text style={[styles.label, solid ? styles.labelSolid : { color: palette.ink }]}>
-            {label}
-          </Text>
+      <View style={styles.row}>
+        {icon ? <Icon name={icon} size={20} color={ink} /> : null}
+        <View style={styles.text}>
+          <Text style={[styles.label, { color: ink }]}>{label}</Text>
+          {note ? <Text style={[styles.note, { color: ink }]}>{note}</Text> : null}
         </View>
+        {chevron ? <Icon name="chevron" size={18} color={ink} /> : null}
       </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  outer: {
-    minHeight: hitTarget,
-    borderRadius: radius.lg,
-    ...shadow,
-  },
-  inner: {
-    flex: 1,
+  base: {
     minHeight: hitTarget,
     justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: space.lg,
-    paddingVertical: space.md,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
+    paddingVertical: space.lg,
   },
-  quiet: {
-    backgroundColor: palette.surface,
-    borderWidth: 2,
-    borderColor: palette.border,
+  solid: { backgroundColor: palette.accent },
+  solidPressed: { backgroundColor: palette.accentPressed },
+  quiet: { borderWidth: rule.major, borderColor: palette.ink, backgroundColor: 'transparent' },
+  quietPressed: { backgroundColor: 'rgba(32,30,29,0.10)' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  text: { flex: 1, gap: 2 },
+  label: { fontSize: font.h5, fontWeight: '800' },
+  note: {
+    fontFamily: monoFamily,
+    fontSize: font.mono,
+    letterSpacing: tracking.mono,
+    textTransform: 'uppercase',
+    opacity: 0.85,
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  icon: { fontSize: font.label },
-  label: { fontSize: font.label, fontWeight: '800', textAlign: 'center' },
-  labelSolid: { color: '#FFFFFF' },
-  pressed: { transform: [{ scale: 0.96 }], opacity: 0.92 },
-  disabled: { opacity: 0.4 },
+  disabled: { opacity: 0.45 },
 });

@@ -3,9 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from './BigButton';
 import { AVATAR_CHOICES, clampAge, monogramFor, NAME_CHOICES, type ProfileInput } from '../state/profiles';
-import { gradients, type GradientKey } from '../theme/tokens';
-import { GradientSurface } from './GradientSurface';
-import { font, hitTarget, palette, radius, space } from '../theme/tokens';
+import { font, hitTarget, palette, playColor, rule, space } from '../theme/tokens';
+import { type } from '../theme/type';
 
 /**
  * The form behind both "create your first profile" (`OnboardingScreen`) and
@@ -13,10 +12,10 @@ import { font, hitTarget, palette, radius, space } from '../theme/tokens';
  * flows can never drift into asking for a name, avatar, and age two
  * different ways.
  *
- * No text input anywhere: a name is picked from a small fixed list, an
- * avatar from a small fixed set of emoji, and age from a stepper. That
- * keeps the "collect nothing" promise literal for this screen — there is no
- * keyboard involved, so there is nothing typed to even consider sensitive.
+ * No text input anywhere: a name is picked from a small fixed list, a
+ * colour from the palette, and age from a stepper. That keeps the "collect
+ * nothing" promise literal for this screen — there is no keyboard involved,
+ * so there is nothing typed to even consider sensitive.
  */
 export function ProfileEditor({
   initial,
@@ -35,8 +34,8 @@ export function ProfileEditor({
 
   return (
     <View style={styles.root}>
-      <Text style={styles.label}>Pick a colour</Text>
-      <View style={styles.chips}>
+      <Text style={type.mono}>PICK A COLOUR</Text>
+      <View style={styles.swatches}>
         {AVATAR_CHOICES.map((choice) => (
           <Pressable
             key={choice}
@@ -44,16 +43,14 @@ export function ProfileEditor({
             accessibilityLabel={`${choice} colour`}
             accessibilityState={{ selected: avatar === choice }}
             onPress={() => setAvatar(choice)}
-            style={[styles.avatarChip, avatar === choice && styles.chipSelected]}
+            style={[styles.swatch, { backgroundColor: playColor(choice) }, avatar === choice && styles.selectedEdge]}
           >
-            <GradientSurface colors={gradients[choice as GradientKey]} style={styles.swatch}>
-              <Text style={styles.swatchLetter}>{monogramFor(name)}</Text>
-            </GradientSurface>
+            <Text style={styles.swatchLetter}>{monogramFor(name)}</Text>
           </Pressable>
         ))}
       </View>
 
-      <Text style={styles.label}>Pick a name</Text>
+      <Text style={[type.mono, styles.label]}>PICK A NAME</Text>
       <View style={styles.chips}>
         {NAME_CHOICES.map((choice) => (
           <Pressable
@@ -62,14 +59,14 @@ export function ProfileEditor({
             accessibilityLabel={choice}
             accessibilityState={{ selected: name === choice }}
             onPress={() => setName(choice)}
-            style={[styles.nameChip, name === choice && styles.chipSelected]}
+            style={[styles.chip, name === choice && styles.chipSelected]}
           >
-            <Text style={[styles.nameText, name === choice && styles.nameTextSelected]}>{choice}</Text>
+            <Text style={[type.h5, name === choice && styles.textOnAccent]}>{choice}</Text>
           </Pressable>
         ))}
       </View>
 
-      <Text style={styles.label}>How old?</Text>
+      <Text style={[type.mono, styles.label]}>HOW OLD?</Text>
       <View style={styles.stepper}>
         <Pressable
           accessibilityRole="button"
@@ -104,46 +101,43 @@ export function ProfileEditor({
 }
 
 const styles = StyleSheet.create({
-  root: { gap: space.xs },
-  label: { fontSize: font.body, fontWeight: '700', color: palette.ink, marginTop: space.sm },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, paddingTop: space.xs },
-  avatarChip: {
-    width: 56,
-    height: 56,
-    borderRadius: radius.md,
-    borderWidth: 2,
-    borderColor: palette.border,
-    overflow: 'hidden',
-  },
-  swatch: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  swatchLetter: { fontSize: 22, fontWeight: '800', color: palette.surface },
-  nameChip: {
+  root: { gap: space.sm },
+  label: { marginTop: space.md },
+  swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: rule.hair },
+  swatch: { width: 56, height: 56, alignItems: 'center', justifyContent: 'center' },
+  swatchLetter: { fontSize: 22, fontWeight: '800', color: palette.bg },
+  selectedEdge: { borderWidth: rule.major, borderColor: palette.ink },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: rule.hair },
+  chip: {
     minHeight: 52,
-    minWidth: 68,
+    minWidth: 84,
     paddingHorizontal: space.md,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
-    borderRadius: radius.pill,
-    borderWidth: 2,
+    backgroundColor: palette.surface,
+    borderWidth: rule.hair,
     borderColor: palette.border,
-    backgroundColor: palette.surfaceAlt,
   },
-  nameText: { fontSize: font.body - 2, fontWeight: '700', color: palette.ink },
-  nameTextSelected: { color: '#FFFFFF' },
-  chipSelected: { backgroundColor: palette.sky, borderColor: palette.sky },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingTop: space.xs },
+  chipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+  textOnAccent: { color: palette.bg },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: rule.hair },
   stepButton: {
     width: hitTarget,
     height: hitTarget,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: palette.surfaceAlt,
-    borderWidth: 2,
+    backgroundColor: palette.surface,
+    borderWidth: rule.hair,
     borderColor: palette.border,
   },
-  stepButtonText: { fontSize: font.title, fontWeight: '800', color: palette.ink },
-  ageValue: { fontSize: font.hero - 8, fontWeight: '800', color: palette.ink, minWidth: 72, textAlign: 'center' },
-  pressed: { transform: [{ scale: 0.95 }] },
+  stepButtonText: { fontSize: font.h2, fontWeight: '800', color: palette.ink },
+  ageValue: {
+    fontSize: font.h2,
+    fontWeight: '800',
+    color: palette.ink,
+    minWidth: 72,
+    textAlign: 'center',
+  },
+  pressed: { backgroundColor: 'rgba(32,30,29,0.10)' },
   gap: { marginTop: space.md },
 });

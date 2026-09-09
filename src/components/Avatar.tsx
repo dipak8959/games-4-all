@@ -2,16 +2,16 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { monogramFor } from '../state/profiles';
-import { gradients, palette, radius, type GradientKey } from '../theme/tokens';
-import { GradientSurface } from './GradientSurface';
+import { palette, playColor } from '../theme/tokens';
 
 /**
  * A profile, drawn as its initial on its own colour.
  *
- * Replaces the emoji faces this app used to identify profiles with. A
- * letter and a colour are enough to tell "mine" from "my brother's" at a
- * glance, cost nothing to ship, and — unlike emoji — render identically on
- * every device.
+ * A flat square now — no gradient, no rounding — but it keeps its colour
+ * where the rest of the chrome went to ink. Whose profile this is has to be
+ * legible to someone who can't read the name yet, and colour is the only
+ * signal that works at that age. It is one of two places colour survives in
+ * the interface; the other is inside the games themselves.
  */
 export function Avatar({
   name,
@@ -25,21 +25,16 @@ export function Avatar({
   readonly color: string;
   readonly size?: number;
 }) {
-  const key: GradientKey = color in gradients ? (color as GradientKey) : 'sky';
-
   return (
-    <View style={[styles.outer, { width: size, height: size }]}>
-      <GradientSurface colors={gradients[key]} style={styles.fill}>
-        <Text style={[styles.letter, { fontSize: size * 0.44 }]} allowFontScaling={false}>
-          {monogramFor(name)}
-        </Text>
-      </GradientSurface>
+    <View style={[styles.tile, { width: size, height: size, backgroundColor: playColor(color) }]}>
+      <Text style={[styles.letter, { fontSize: size * 0.44 }]} allowFontScaling={false}>
+        {monogramFor(name)}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  outer: { borderRadius: radius.md, overflow: 'hidden' },
-  fill: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  letter: { fontWeight: '800', color: palette.surface },
+  tile: { alignItems: 'center', justifyContent: 'center' },
+  letter: { fontWeight: '800', color: palette.bg },
 });

@@ -58,6 +58,12 @@ construction.
 
 ## Screen time
 
+The `TIME` tab shows how long today has gone — played today, this sitting,
+and what is left — and is the one destination in the app that is *not*
+gated. Reading the number changes nothing, and a child who can see it is
+better placed to stop on their own than one who is simply cut off. Changing
+a limit still needs a grown-up.
+
 Two independent limits, both off by default and both parent-set:
 
 - **Per sitting** — how long one continuous session may run
@@ -77,7 +83,10 @@ change the limit.
 
 Settings, limits, deletion, and **switching or managing profiles** all sit
 behind a gate (`src/safety/parentGate.ts`) that asks a two-digit
-multiplication question, well beyond the target age band. A wrong answer
+multiplication question, well beyond the target age band. (The `Games Hub`
+design handoff asks for a PIN here instead. The question stayed: this gate
+is a speed bump, not authentication, and a PIN would be a real secret to
+store, forget, and reset — see the end of this section.) A wrong answer
 re-rolls the question rather than allowing repeated guesses at the same one,
 so trial-and-error is impractical.
 
@@ -116,11 +125,18 @@ game where reading is the point rather than something to avoid:
   it's capped at the young end but not the old one.
 - **Colour is never the only signal.** The palette is Okabe-Ito derived, and
   anything identified by colour also differs in shape, so the games work for
-  colour-blind players. Pattern Play in particular pairs every tile with a
+  colour-blind players. The interface chrome is ink on a light ground, with
+  one accent red used sparingly; colour is kept for the two jobs where it
+  actually carries meaning — telling one profile from another, and telling
+  play objects apart. Pattern Play in particular pairs every tile with a
   distinct glyph rather than relying on colour to distinguish a sequence.
 - **Big targets.** Nothing tappable is under 72dp, above both platform
-  minimums — Sudoku's grid cells are the one deliberate exception (a 9x9
-  board cannot fit 72dp cells on a phone screen), and only after selecting a
+  minimums — and above the design handoff's own 44-52px rows, which is why
+  the tab bar and the buttons are drawn taller here than the handoff draws
+  them. Where this app and the handoff disagree on a touch target, this app
+  wins, and only ever in the safe direction (`tests/theme.test.ts` asserts
+  it). Sudoku's grid cells are the one deliberate exception (a 9x9 board
+  cannot fit 72dp cells on a phone screen), and only after selecting a
   cell does the actual answer get entered on full-sized number buttons. A
   game card's pin/favourite star is visually smaller (40dp) but carries
   `hitSlop` out to a 72dp effective touch target, since it's a secondary,
@@ -174,7 +190,10 @@ every game added from here on, not just the ones that exist today:
   every game shape is drawn the same way (`Shape.tsx`). There are no image
   files in this repository at all, no icon font, and no icon library
   dependency to audit. No copied images, no ripped audio, no fonts without a
-  clear licence already covered by this project's dependencies.
+  clear licence already covered by this project's dependencies. This is also
+  why the design handoff's grayscale key art became a drawn mark and its
+  Archivo became the platform grotesque: shipping either would mean shipping
+  the first asset file this project has ever had.
 - **When in doubt, go generic.** A game named for what it teaches ("Number
   Crunch", "Sort It Out") rather than for a franchise is both safer and more
   honest about what a parent is getting.

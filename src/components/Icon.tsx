@@ -38,6 +38,9 @@ export type IconName =
   | 'check'
   | 'replay'
   | 'star'
+  | 'chevron'
+  | 'shield'
+  | 'offline'
   // One distinct mark per game, and the "all categories" mark
   | 'all'
   | 'pairs'
@@ -122,6 +125,73 @@ export function Icon({
               borderColor: color,
               marginLeft: size * 0.12,
               transform: [{ rotate: '45deg' }],
+            }}
+          />
+        </View>
+      );
+
+    // The same corner as 'back', turned to point the other way. It sits at
+    // the end of a primary action, where the handoff puts a chevron.
+    case 'chevron':
+      return (
+        <View style={[styles.center, box]} {...hidden}>
+          <View
+            style={{
+              width: size * 0.42,
+              height: size * 0.42,
+              borderRightWidth: s,
+              borderTopWidth: s,
+              borderColor: color,
+              marginRight: size * 0.12,
+              transform: [{ rotate: '45deg' }],
+            }}
+          />
+        </View>
+      );
+
+    // A crest: square shoulders over a point. Marks everything a grown-up
+    // has to pass the gate to reach.
+    case 'shield':
+      return (
+        <View style={[styles.center, box]} {...hidden}>
+          <View style={{ width: size * 0.62, height: size * 0.42, backgroundColor: color }} />
+          <View
+            style={{
+              width: 0,
+              height: 0,
+              borderLeftWidth: size * 0.31,
+              borderRightWidth: size * 0.31,
+              borderTopWidth: size * 0.3,
+              borderLeftColor: 'transparent',
+              borderRightColor: 'transparent',
+              borderTopColor: color,
+            }}
+          />
+        </View>
+      );
+
+    // The universal "no": a ring with a bar struck through it. This app
+    // never reaches the network, and this mark says so at 16px where a
+    // drawn cloud would only smudge.
+    case 'offline':
+      return (
+        <View style={[styles.center, box]} {...hidden}>
+          <View
+            style={{
+              width: size * 0.84,
+              height: size * 0.84,
+              borderRadius: size,
+              borderWidth: s,
+              borderColor: color,
+            }}
+          />
+          <View
+            style={{
+              position: 'absolute',
+              width: size * 0.84,
+              height: s,
+              backgroundColor: color,
+              transform: [{ rotate: '-45deg' }],
             }}
           />
         </View>

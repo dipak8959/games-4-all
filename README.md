@@ -38,10 +38,11 @@ unfiltered — an active search or category already narrowed things down, so
 there's nothing left for a shortcut to shortcut.
 
 Plus **Profiles**, so a parent and each child sharing this device get their
-own separate stars, adaptive levels, favourites, and settings, and **Parent
+own separate stars, adaptive levels, favourites, and settings; **Parent
 Zone** behind a parent gate, holding screen-time limits, sound and motion
 toggles, profile management, a plain-language privacy statement, and a
-delete-all-data control.
+delete-all-data control; and **Play time**, a child-readable account of how
+long today has gone, which is the one destination that needs no gate.
 
 ### Profiles: sharing one device honestly
 
@@ -127,6 +128,52 @@ Adding a game to the catalogue means picking its age range deliberately
 stop being one?), not defaulting to "all ages" — that default is exactly
 what made an 18-year-old's game list identical to a 4-year-old's before this
 model existed.
+
+### The look: Modernist
+
+The interface follows the `Games Hub` design handoff in this project's own
+design system, **Modernist**, applied to the app itself rather than kept as
+a separate mock (`src/theme/tokens.ts`, `src/theme/type.ts`). Four of its
+rules are load-bearing, and `tests/theme.test.ts` fails the build if any of
+them slips:
+
+- **Zero radius everywhere.** No rounded corners, no pills. The only curves
+  left in the app are circles that are genuinely circles — a ring in the
+  icon set, the circle you sort in Sort It Out.
+- **Flat.** No gradients, no shadows, no glows. Removing them also removed a
+  dependency: `expo-linear-gradient` is gone.
+- **Structure comes from rules.** A 2px rule divides one section from the
+  next, a 1px rule divides rows inside one, and grid cells are separated by
+  1px divider-coloured gaps. There is not a card anywhere in the app.
+- **Flush left, one accent.** Button labels included. `#ec3013` marks the
+  primary action, the active tab, and small emphasis — never decoration.
+
+Home is the handoff's first screen, built for real: header over a rule,
+offline reassurance row, search, `WHO IS PLAYING`, a 184px hero, the
+`ON THIS DEVICE` shelf as a 3-up grid, pinned games, and a four-item tab
+bar. The handoff's second screen — "let a parent approve a game in
+seconds" — landed in **Parent Zone** instead of between a child and the game
+they just tapped: the safety tag row, the fact grid, the numbered "what
+parents should know" rows and the play-time meter are all there. `TIME` is
+the one new destination, and the one tab that isn't gated: how long you have
+played is your own information, and reading it changes nothing.
+
+Five things deliberately depart from the handoff, all of them documented at
+the call site:
+
+| The handoff | This app | Why |
+| --- | --- | --- |
+| Rows ≥44px, CTA ~52px | Everything tappable ≥72dp | The app's own floor is higher (SAFETY.md, "Big targets"). It only ever disagrees in the safe direction. |
+| Archivo, bundled locally | The platform grotesque at the handoff's weights, sizes and tracking | This repository ships no asset files at all — no images, no fonts, nothing to license or audit. |
+| Grayscale key art in every image slot | The game's own drawn mark on a flat field | Same reason: there are no bitmaps here, so the icon *is* the art. |
+| Age bands (`Kids 6-12`, `Teen 13-17`, …) | `WHO IS PLAYING` picks a person, and their real age filters the shelf | This app dropped named age groups a while ago — see "Age: a real number, not a named group" above. |
+| A PIN for the parent gate | The existing two-digit multiplication question | The gate is a speed bump, not authentication, and deliberately guards nothing whose disclosure would matter. A PIN would be a real secret to store, forget, and reset. |
+
+Colour survives the flattening in exactly two places, and both are about
+recognition rather than decoration: a profile keeps its own colour, and the
+games keep their colour-blind-safe play palette. A four-year-old picks "the
+blue one" long before they can read "Champ", and Sort It Out literally sorts
+by colour.
 
 ### No emoji in the interface
 
@@ -227,11 +274,18 @@ src/
     memory/ counting/ shapes/ wordbuilder/ sudoku/ patternplay/ numbercrunch/
       logic.ts              Pure, seeded, unit-tested game rules
       *Screen.tsx           Presentation only
-  screens/                  Home, Parent Zone, Profiles, time's-up
+  screens/                  Home, Parent Zone, Profiles, play time, time's-up
   components/               Shared UI (all targets >= 72dp)
     Icon.tsx                Every icon, drawn from plain views — no assets, no library
     Avatar.tsx              A profile as its initial on its colour
-  theme/tokens.ts           Colour-blind-safe palette, spacing, type scale
+    Rule.tsx                The 2px/1px rules the whole layout is built from
+    SectionHeader.tsx       A machine label over a shelf
+    TabBar.tsx              GAMES / PARENT / TIME / ME
+    FactGrid.tsx            The handoff's fact cells and numbered parent rows
+    PlayTimeMeter.tsx       Today's play time as a track and two labels
+  theme/
+    tokens.ts               Modernist tokens: palette, rules, spacing, type scale
+    type.ts                 Heading and machine-label styles built from them
 scripts/check-safety.mjs    The build gate
 tests/                      Unit tests for all pure logic
 ```

@@ -2,11 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
-import { GradientSurface } from '../../components/GradientSurface';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gradients, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
+import { font, hitTarget, palette, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { answer, createGame, QUESTIONS_PER_ROUND, type NumberCrunchState } from './logic';
@@ -84,7 +83,6 @@ export function NumberCrunchScreen({ level: initialLevel, onRoundComplete, onExi
               style={({ pressed }) => [
                 styles.choiceOuter,
                 pressed && !isRuledOut && styles.pressed,
-                isRuledOut && styles.ruledOutOuter,
               ]}
             >
               {isRuledOut ? (
@@ -92,9 +90,9 @@ export function NumberCrunchScreen({ level: initialLevel, onRoundComplete, onExi
                   <Text style={[styles.choiceText, styles.ruledOutText]}>{choice}</Text>
                 </View>
               ) : (
-                <GradientSurface colors={gradients.teal} style={styles.choiceInner}>
+                <View style={[styles.choiceInner, { backgroundColor: palette.teal }]}>
                   <Text style={styles.choiceText}>{choice}</Text>
-                </GradientSurface>
+                </View>
               )}
             </Pressable>
           );
@@ -120,27 +118,24 @@ export function NumberCrunchScreen({ level: initialLevel, onRoundComplete, onExi
 }
 
 const styles = StyleSheet.create({
-  stageOuter: { flex: 1, borderRadius: radius.lg, marginBottom: space.md, ...shadow },
+  stageOuter: { flex: 1, marginBottom: space.md },
   stageInner: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: palette.surface,
-    borderRadius: radius.lg,
     padding: space.md,
   },
-  sum: { fontSize: font.hero, fontWeight: '800', color: palette.ink },
+  sum: { fontSize: font.playHero, fontWeight: '800', color: palette.ink },
   choices: { flexDirection: 'row', justifyContent: 'center', gap: space.md, paddingBottom: space.md },
-  choiceOuter: { minWidth: hitTarget + 16, minHeight: hitTarget + 16, borderRadius: radius.lg, ...shadow },
-  ruledOutOuter: { shadowOpacity: 0, elevation: 0 },
+  choiceOuter: { minWidth: hitTarget + 16, minHeight: hitTarget + 16 },
   choiceInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.lg,
     overflow: 'hidden',
   },
-  choiceText: { fontSize: font.title + 8, fontWeight: '800', color: '#FFFFFF' },
+  choiceText: { fontSize: font.playTitle + 8, fontWeight: '800', color: '#FFFFFF' },
   ruledOut: { backgroundColor: palette.surfaceAlt },
   ruledOutText: { color: palette.inkSoft },
   pressed: { transform: [{ scale: 0.95 }] },

@@ -2,7 +2,8 @@ import React from 'react';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from './BigButton';
-import { font, palette, radius, shadowFloating, space } from '../theme/tokens';
+import { palette, rule, space } from '../theme/tokens';
+import { type } from '../theme/type';
 
 /**
  * A yes/no confirmation, styled to match the rest of the app.
@@ -19,7 +20,6 @@ export function ConfirmModal({
   title,
   body,
   confirmLabel,
-  confirmColor,
   onConfirm,
   onCancel,
 }: {
@@ -27,7 +27,6 @@ export function ConfirmModal({
   readonly title: string;
   readonly body: string;
   readonly confirmLabel: string;
-  readonly confirmColor: string;
   readonly onConfirm: () => void;
   readonly onCancel: () => void;
 }) {
@@ -35,12 +34,12 @@ export function ConfirmModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title} accessibilityRole="header">
+          <Text style={type.h3} accessibilityRole="header">
             {title}
           </Text>
-          <Text style={styles.body}>{body}</Text>
+          <Text style={[type.body, styles.body]}>{body}</Text>
 
-          <BigButton label={confirmLabel} color={confirmColor} onPress={onConfirm} style={styles.gap} />
+          <BigButton label={confirmLabel} onPress={onConfirm} />
           <BigButton label="Cancel" onPress={onCancel} tone="quiet" style={styles.gap} />
         </View>
       </View>
@@ -51,7 +50,7 @@ export function ConfirmModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(42, 33, 24, 0.5)',
+    backgroundColor: 'rgba(32,30,29,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.lg,
@@ -59,18 +58,11 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: palette.surface,
-    borderRadius: radius.xl,
+    backgroundColor: palette.bg,
+    borderWidth: rule.major,
+    borderColor: palette.ink,
     padding: space.lg,
-    ...shadowFloating,
   },
-  title: { fontSize: font.title - 4, fontWeight: '800', color: palette.ink, textAlign: 'center' },
-  body: {
-    fontSize: font.body,
-    color: palette.inkSoft,
-    textAlign: 'center',
-    marginTop: space.sm,
-    marginBottom: space.lg,
-  },
+  body: { color: palette.inkSoft, marginTop: space.sm, marginBottom: space.lg },
   gap: { marginTop: space.sm },
 });

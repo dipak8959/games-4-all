@@ -3,13 +3,16 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '../components/Avatar';
 import { BigButton } from '../components/BigButton';
-import { Icon } from '../components/Icon';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { Icon } from '../components/Icon';
 import { ProfileEditor } from '../components/ProfileEditor';
+import { Rule } from '../components/Rule';
 import { Screen } from '../components/Screen';
+import { SectionHeader } from '../components/SectionHeader';
 import { useApp } from '../state/AppProvider';
 import { type Profile } from '../state/profiles';
-import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
+import { gutter, hitTarget, palette, rule, space } from '../theme/tokens';
+import { type } from '../theme/type';
 
 /**
  * Manage who plays.
@@ -19,8 +22,14 @@ import { font, hitTarget, palette, radius, shadow, space } from '../theme/tokens
  * sibling's, or create a new one, without a grown-up saying so.
  */
 export function ProfilesScreen({ onClose }: { readonly onClose: () => void }) {
-  const { profiles, activeProfile, switchActiveProfile, addProfile, updateProfileInfo, removeProfileById } =
-    useApp();
+  const {
+    profiles,
+    activeProfile,
+    switchActiveProfile,
+    addProfile,
+    updateProfileInfo,
+    removeProfileById,
+  } = useApp();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -30,15 +39,27 @@ export function ProfilesScreen({ onClose }: { readonly onClose: () => void }) {
   const canRemove = profiles.length > 1;
 
   return (
-    <Screen>
+    <Screen padded={false}>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header" numberOfLines={1} ellipsizeMode="tail">
-          Profiles
-        </Text>
-        <BigButton label="Done" onPress={onClose} tone="quiet" style={styles.done} />
+        <View style={styles.headerText}>
+          <Text style={type.mono}>GROWN-UPS ONLY</Text>
+          <Text style={type.h3} accessibilityRole="header">
+            PROFILES
+          </Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Done"
+          onPress={onClose}
+          style={({ pressed }) => [styles.done, pressed && styles.pressedTint]}
+        >
+          <Text style={type.monoStrong}>DONE</Text>
+        </Pressable>
       </View>
+      <Rule weight="major" />
 
-      <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <SectionHeader label="ON THIS DEVICE" meta={`${profiles.length}`} />
         {profiles.map((profile) => (
           <ProfileRow
             key={profile.id}
@@ -49,36 +70,48 @@ export function ProfilesScreen({ onClose }: { readonly onClose: () => void }) {
             onRemove={canRemove ? () => setRemovingId(profile.id) : undefined}
           />
         ))}
+        <Rule weight="major" />
 
         {editing ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Edit {editing.name}</Text>
-            <ProfileEditor
-              initial={editing}
-              saveLabel="Save changes"
-              onSave={(input) => {
-                updateProfileInfo(editing.id, input);
-                setEditingId(null);
-              }}
-              onCancel={() => setEditingId(null)}
-            />
-          </View>
+          <>
+            <SectionHeader label={`EDIT ${editing.name.toUpperCase()}`} />
+            <View style={styles.block}>
+              <ProfileEditor
+                initial={editing}
+                saveLabel="Save changes"
+                onSave={(input) => {
+                  updateProfileInfo(editing.id, input);
+                  setEditingId(null);
+                }}
+                onCancel={() => setEditingId(null)}
+              />
+            </View>
+          </>
         ) : null}
 
         {adding ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Add a profile</Text>
-            <ProfileEditor
-              saveLabel="Add profile"
-              onSave={(input) => {
-                addProfile(input);
-                setAdding(false);
-              }}
-              onCancel={() => setAdding(false)}
+          <>
+            <SectionHeader label="ADD A PROFILE" />
+            <View style={styles.block}>
+              <ProfileEditor
+                saveLabel="Add profile"
+                onSave={(input) => {
+                  addProfile(input);
+                  setAdding(false);
+                }}
+                onCancel={() => setAdding(false)}
+              />
+            </View>
+          </>
+        ) : (
+          <View style={styles.block}>
+            <BigButton
+              label="Add profile"
+              icon="plus"
+              tone="quiet"
+              onPress={() => setAdding(true)}
             />
           </View>
-        ) : (
-          <BigButton label="Add profile" icon="plus" tone="quiet" onPress={() => setAdding(true)} />
         )}
       </ScrollView>
 
@@ -87,7 +120,6 @@ export function ProfilesScreen({ onClose }: { readonly onClose: () => void }) {
         title={removing ? `Remove ${removing.name}?` : ''}
         body="Their stars, levels, and settings on this device will be deleted. This cannot be undone."
         confirmLabel="Remove"
-        confirmColor={palette.berry}
         onConfirm={() => {
           if (removing) removeProfileById(removing.id);
           setRemovingId(null);
@@ -112,44 +144,41 @@ function ProfileRow({
   readonly onRemove?: () => void;
 }) {
   return (
-    <View style={[styles.row, isActive && styles.rowActive]}>
+    <View style={styles.row}>
       <Pressable
         accessibilityRole="radio"
         accessibilityState={{ selected: isActive }}
         accessibilityLabel={`${profile.name}, age ${profile.age}${isActive ? ', current profile' : ''}`}
         onPress={onSwitch}
-        style={styles.rowMain}
+        style={({ pressed }) => [styles.rowMain, pressed && styles.pressedTint]}
       >
         <Avatar name={profile.name} color={profile.avatar} size={44} />
         <View style={styles.rowText}>
-          <Text style={styles.name}>{profile.name}</Text>
-          <Text style={styles.caption}>Age {profile.age}</Text>
+          <Text style={type.h5}>{profile.name}</Text>
+          <Text style={type.monoSm}>
+            {profile.age} YRS{isActive ? ' · PLAYING NOW' : ''}
+          </Text>
         </View>
-        {isActive ? <Text style={styles.currentBadge}>Current</Text> : null}
       </Pressable>
 
-      <View style={styles.rowActions}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Edit ${profile.name}`}
+        onPress={onEdit}
+        style={({ pressed }) => [styles.action, pressed && styles.pressedTint]}
+      >
+        <Icon name="pencil" size={18} color={palette.ink} />
+      </Pressable>
+      {onRemove ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Edit ${profile.name}`}
-          onPress={onEdit}
-          hitSlop={8}
-          style={styles.actionButton}
+          accessibilityLabel={`Remove ${profile.name}`}
+          onPress={onRemove}
+          style={({ pressed }) => [styles.action, pressed && styles.pressedTint]}
         >
-          <Icon name="pencil" size={20} color={palette.ink} />
+          <Icon name="trash" size={18} color={palette.ink} />
         </Pressable>
-        {onRemove ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Remove ${profile.name}`}
-            onPress={onRemove}
-            hitSlop={8}
-            style={styles.actionButton}
-          >
-            <Icon name="trash" size={20} color={palette.ink} />
-          </Pressable>
-        ) : null}
-      </View>
+      ) : null}
     </View>
   );
 }
@@ -159,51 +188,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: space.md,
+    paddingLeft: gutter,
+    paddingTop: space.md,
+    paddingBottom: space.lg,
   },
-  title: { flex: 1, flexShrink: 1, fontSize: font.title - 8, fontWeight: '800', color: palette.ink },
-  done: { paddingHorizontal: space.md, marginLeft: space.sm },
-  body: { paddingBottom: space.xxl, gap: space.md },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    backgroundColor: palette.surface,
-    borderRadius: radius.xl,
-    padding: space.md,
-    borderWidth: 2,
-    borderColor: palette.border,
-    ...shadow,
-  },
-  rowActive: { borderColor: palette.sky },
-  rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: hitTarget },
-  rowText: { flex: 1, gap: 2 },
-  name: { fontSize: font.body, fontWeight: '800', color: palette.ink },
-  caption: { fontSize: font.body - 3, color: palette.inkSoft },
-  currentBadge: {
-    fontSize: font.body - 4,
-    fontWeight: '800',
-    color: palette.sky,
-    borderWidth: 2,
-    borderColor: palette.sky,
-    borderRadius: radius.pill,
-    paddingHorizontal: space.sm,
-    paddingVertical: 2,
-  },
-  rowActions: { flexDirection: 'row', gap: space.xs },
-  actionButton: {
-    width: 44,
-    height: 44,
+  headerText: { gap: space.xs },
+  done: {
+    minHeight: hitTarget,
+    paddingHorizontal: gutter,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: palette.surfaceAlt,
+    borderLeftWidth: rule.hair,
+    borderLeftColor: palette.border,
   },
-  card: {
-    backgroundColor: palette.surface,
-    borderRadius: radius.xl,
-    padding: space.md,
-    ...shadow,
+  scroll: { paddingBottom: space.xl },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    minHeight: hitTarget,
+    borderTopWidth: rule.hair,
+    borderTopColor: palette.border,
   },
-  cardTitle: { fontSize: font.body, fontWeight: '800', color: palette.ink },
+  rowMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingHorizontal: gutter,
+    paddingVertical: space.md,
+  },
+  rowText: { flex: 1, gap: 2 },
+  action: {
+    width: hitTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderLeftWidth: rule.hair,
+    borderLeftColor: palette.border,
+  },
+  pressedTint: { backgroundColor: 'rgba(32,30,29,0.10)' },
+  block: { paddingHorizontal: gutter, paddingBottom: space.lg },
 });

@@ -2,11 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
-import { GradientSurface } from '../../components/GradientSurface';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gradients, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
+import { font, hitTarget, palette, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, tapTile, WORDS_PER_ROUND, type WordBuilderState } from './logic';
@@ -96,15 +95,14 @@ export function WordBuilderScreen({ level: initialLevel, onRoundComplete, onExit
             style={({ pressed }) => [
               styles.tileOuter,
               pressed && !tile.used && styles.pressed,
-              tile.used && styles.tileUsedOuter,
             ]}
           >
             {tile.used ? (
               <View style={[styles.tileInner, styles.tileUsed]} />
             ) : (
-              <GradientSurface colors={gradients.grape} style={styles.tileInner}>
+              <View style={[styles.tileInner, { backgroundColor: palette.grape }]}>
                 <Text style={styles.tileText}>{tile.letter.toUpperCase()}</Text>
-              </GradientSurface>
+              </View>
             )}
           </Pressable>
         ))}
@@ -129,13 +127,12 @@ export function WordBuilderScreen({ level: initialLevel, onRoundComplete, onExit
 }
 
 const styles = StyleSheet.create({
-  stageOuter: { flex: 1, borderRadius: radius.lg, marginBottom: space.md, ...shadow },
+  stageOuter: { flex: 1, marginBottom: space.md },
   stageInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: palette.surface,
-    borderRadius: radius.lg,
     overflow: 'hidden',
     gap: space.lg,
   },
@@ -144,7 +141,6 @@ const styles = StyleSheet.create({
   blank: {
     width: 52,
     height: 60,
-    borderRadius: radius.sm,
     borderWidth: 3,
     borderColor: palette.border,
     borderStyle: 'dashed',
@@ -152,18 +148,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   blankFilled: { borderStyle: 'solid', borderColor: palette.grape, backgroundColor: palette.surfaceAlt },
-  blankText: { fontSize: font.title - 4, fontWeight: '800', color: palette.ink },
+  blankText: { fontSize: font.playTitle - 4, fontWeight: '800', color: palette.ink },
   tiles: { flexDirection: 'row', justifyContent: 'center', gap: space.sm, paddingBottom: space.md, flexWrap: 'wrap' },
-  tileOuter: { minWidth: hitTarget, minHeight: hitTarget, borderRadius: radius.md, ...shadow },
-  tileUsedOuter: { shadowOpacity: 0, elevation: 0 },
+  tileOuter: { minWidth: hitTarget, minHeight: hitTarget },
   tileInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
     overflow: 'hidden',
   },
   tileUsed: { backgroundColor: palette.surfaceAlt },
-  tileText: { fontSize: font.title, fontWeight: '800', color: '#FFFFFF' },
+  tileText: { fontSize: font.playTitle, fontWeight: '800', color: '#FFFFFF' },
   pressed: { transform: [{ scale: 0.95 }] },
 });

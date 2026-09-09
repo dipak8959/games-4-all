@@ -2,11 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
-import { GradientSurface } from '../../components/GradientSurface';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gradients, palette, playColors, radius, shadow, space } from '../../theme/tokens';
+import { font, gutter, palette, playColors, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, flip, hasPendingPair, resolvePair, type MemoryState } from './logic';
@@ -89,7 +88,7 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
 
   const columns = state.cards.length <= 8 ? 3 : 4;
   const size = useMemo(() => {
-    const width = Dimensions.get('window').width - space.md * 2;
+    const width = Dimensions.get('window').width - gutter * 2;
     return Math.floor((width - space.sm * (columns - 1)) / columns);
   }, [columns]);
 
@@ -118,7 +117,7 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
                 {visible ? (
                   <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.surface }]} />
                 ) : (
-                  <GradientSurface colors={gradients.sky} style={StyleSheet.absoluteFill} />
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.sky }]} />
                 )}
                 <Text style={[styles.symbol, { fontSize: size * 0.5 }]}>
                   {visible ? card.symbol : '?'}
@@ -159,15 +158,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flex: 1,
   },
-  cardOuter: { borderRadius: radius.md, borderWidth: 4, ...shadow },
+  cardOuter: { borderWidth: 4 },
   cardInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.sm,
     overflow: 'hidden',
   },
   matched: { opacity: 0.55 },
   pressed: { transform: [{ scale: 0.95 }] },
-  symbol: { fontSize: font.title },
+  symbol: { fontSize: font.playTitle },
 });

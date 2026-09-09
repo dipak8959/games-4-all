@@ -4,10 +4,13 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BigButton } from '../components/BigButton';
 import { Icon } from '../components/Icon';
 import { ProfileEditor } from '../components/ProfileEditor';
+import { Rule } from '../components/Rule';
 import { Screen } from '../components/Screen';
+import { SectionHeader } from '../components/SectionHeader';
 import { ParentGateModal } from '../safety/ParentGateModal';
 import { DEFAULT_AGE, DEFAULT_AVATAR, DEFAULT_NAME, type ProfileInput } from '../state/profiles';
-import { font, palette, radius, shadow, space } from '../theme/tokens';
+import { gutter, palette, space } from '../theme/tokens';
+import { type } from '../theme/type';
 
 /**
  * First-launch, one-time setup: create the first profile.
@@ -24,25 +27,37 @@ export function OnboardingScreen({ onDone }: { readonly onDone: (input: ProfileI
   const [unlocked, setUnlocked] = useState(false);
 
   return (
-    <Screen>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.root}>
-          <View style={styles.hero} accessibilityElementsHidden importantForAccessibility="no">
-            <Icon name="user" size={64} color={palette.inkSoft} />
-          </View>
-          <Text style={styles.title} accessibilityRole="header">
-            Welcome!
+    <Screen padded={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <View style={styles.header}>
+          <Text style={type.mono}>OFFLINE SUPER APP</Text>
+          <Text style={type.h2} accessibilityRole="header">
+            GAMES 4 ALL
           </Text>
+        </View>
+        <Rule weight="major" />
 
-          {!unlocked ? (
-            <>
-              <Text style={styles.body}>
-                Quick one-time setup for a grown-up — creating a profile helps games start at a
-                good level for whoever's playing.
+        <View style={styles.offlineRow}>
+          <Icon name="offline" size={16} color={palette.accentText} />
+          <Text style={type.secondary}>
+            Works with no internet. No ads, no chat, no purchases, no accounts.
+          </Text>
+        </View>
+        <Rule weight="major" />
+
+        {!unlocked ? (
+          <>
+            <SectionHeader label="ONE-TIME SETUP" meta="GROWN-UPS" />
+            <View style={styles.block}>
+              <Text style={type.body}>
+                Creating a profile helps games start at a good level for whoever's playing, and
+                keeps everyone's stars separate.
               </Text>
               <BigButton
                 label="Let's set this up"
                 icon="lock"
+                note="GROWN-UPS ONLY"
+                chevron
                 onPress={() => setGateOpen(true)}
                 style={styles.gap}
               />
@@ -52,18 +67,20 @@ export function OnboardingScreen({ onDone }: { readonly onDone: (input: ProfileI
                 onPress={() => onDone({ name: DEFAULT_NAME, avatar: DEFAULT_AVATAR, age: DEFAULT_AGE })}
                 style={styles.gap}
               />
-            </>
-          ) : (
-            <>
-              <Text style={styles.body}>Who's playing?</Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <SectionHeader label="WHO IS PLAYING" />
+            <View style={styles.block}>
               <ProfileEditor onSave={onDone} saveLabel="Start playing" />
-              <Text style={styles.footnote}>
+              <Text style={[type.meta, styles.gap]}>
                 Every game still adjusts up or down on its own after that, round to round — this
                 just picks a starting point, and which games are age-appropriate to show.
               </Text>
-            </>
-          )}
-        </View>
+            </View>
+          </>
+        )}
       </ScrollView>
 
       <ParentGateModal
@@ -79,28 +96,15 @@ export function OnboardingScreen({ onDone }: { readonly onDone: (input: ProfileI
 }
 
 const styles = StyleSheet.create({
-  scroll: { flexGrow: 1, justifyContent: 'center' },
-  root: {
-    alignItems: 'stretch',
-    padding: space.lg,
-    backgroundColor: palette.surface,
-    borderRadius: radius.xl,
-    ...shadow,
+  scroll: { paddingBottom: space.xl },
+  header: { paddingHorizontal: gutter, paddingTop: space.xl, paddingBottom: space.lg, gap: space.xs },
+  offlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingHorizontal: gutter,
+    paddingVertical: 11,
   },
-  hero: { alignItems: 'center', marginBottom: space.sm },
-  title: { fontSize: font.title, fontWeight: '800', color: palette.ink, textAlign: 'center' },
-  body: {
-    fontSize: font.body,
-    color: palette.inkSoft,
-    textAlign: 'center',
-    marginTop: space.sm,
-    marginBottom: space.md,
-  },
-  gap: { marginTop: space.sm },
-  footnote: {
-    fontSize: font.body - 4,
-    color: palette.inkSoft,
-    textAlign: 'center',
-    marginTop: space.md,
-  },
+  block: { paddingHorizontal: gutter, paddingBottom: space.lg },
+  gap: { marginTop: space.md },
 });

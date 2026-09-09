@@ -6,7 +6,7 @@ import { Icon, type IconName } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
+import { font, hitTarget, palette, rule, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import {
@@ -101,7 +101,7 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
   return (
     <GameFrame title="Sort It Out" icon="shapes" onExit={onExit} progress={progress}>
       <View style={styles.ruleBadge}>
-        <Icon name={ruleIcon} size={font.body} color={palette.ink} />
+        <Icon name={ruleIcon} size={font.play} color={palette.ink} />
         <Text style={styles.rule} accessibilityRole="header">
           {rule}
         </Text>
@@ -170,20 +170,17 @@ const styles = StyleSheet.create({
     gap: space.xs,
     alignSelf: 'center',
     backgroundColor: palette.surface,
-    borderRadius: radius.pill,
     paddingHorizontal: space.md,
     paddingVertical: space.xs,
     marginBottom: space.sm,
-    ...shadow,
   },
-  rule: { fontSize: font.body, fontWeight: '800', color: palette.ink },
-  stageOuter: { flex: 1, borderRadius: radius.lg, marginBottom: space.md, ...shadow },
+  rule: { fontSize: font.play, fontWeight: '800', color: palette.ink },
+  stageOuter: { flex: 1, marginBottom: space.md },
   stageInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: palette.surface,
-    borderRadius: radius.lg,
     overflow: 'hidden',
   },
   baskets: {
@@ -197,16 +194,14 @@ const styles = StyleSheet.create({
   basketOuter: {
     minWidth: hitTarget,
     minHeight: hitTarget,
-    borderRadius: radius.md,
     borderWidth: 4,
-    ...shadow,
   },
   basketInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: palette.surfaceAlt,
-    borderRadius: radius.md - 2,
+    
     overflow: 'hidden',
   },
   pressed: { transform: [{ scale: 0.94 }] },

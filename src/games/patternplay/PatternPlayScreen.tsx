@@ -2,11 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
-import { GradientSurface } from '../../components/GradientSurface';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gradients, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
+import { font, hitTarget, palette, rule, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, startInput, tapTile, type PatternPlayState } from './logic';
@@ -109,9 +108,9 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
                 ]}
               >
                 {lit ? (
-                  <GradientSurface colors={gradients.deep} style={styles.tileInner}>
+                  <View style={[styles.tileInner, { backgroundColor: palette.deep }]}>
                     <Text style={styles.tileGlyph}>{TILE_GLYPHS[i % TILE_GLYPHS.length]}</Text>
-                  </GradientSurface>
+                  </View>
                 ) : (
                   <View style={[styles.tileInner, styles.tileIdle]}>
                     <Text style={styles.tileGlyph}>{TILE_GLYPHS[i % TILE_GLYPHS.length]}</Text>
@@ -143,7 +142,7 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
 
 const styles = StyleSheet.create({
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg },
-  hint: { fontSize: font.label, fontWeight: '700', color: palette.inkSoft, textAlign: 'center' },
+  hint: { fontSize: font.playLabel, fontWeight: '700', color: palette.inkSoft, textAlign: 'center' },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -151,15 +150,14 @@ const styles = StyleSheet.create({
     gap: space.md,
     maxWidth: 3 * (hitTarget + 24) + space.md * 2,
   },
-  tileOuter: { width: hitTarget + 16, height: hitTarget + 16, borderRadius: radius.lg, ...shadow },
+  tileOuter: { width: hitTarget + 16, height: hitTarget + 16 },
   tileInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.lg,
     overflow: 'hidden',
   },
   tileIdle: { backgroundColor: palette.surface, borderWidth: 2, borderColor: palette.border },
-  tileGlyph: { fontSize: font.title },
+  tileGlyph: { fontSize: font.playTitle },
   pressed: { transform: [{ scale: 0.95 }] },
 });

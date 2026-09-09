@@ -2,11 +2,10 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GameFrame } from '../../components/GameFrame';
-import { GradientSurface } from '../../components/GradientSurface';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gradients, hitTarget, palette, radius, shadow, space } from '../../theme/tokens';
+import { font, gutter, hitTarget, palette, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, enterNumber, filledCount, selectCell, type SudokuState } from './logic';
@@ -59,7 +58,7 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
 
   const cellSize = useMemo(() => {
     const { width, height } = Dimensions.get('window');
-    const widthBudget = width - space.md * 2;
+    const widthBudget = width - gutter * 2;
     // Sizing from width alone works on a typical narrow phone screen (the
     // grid naturally stays short enough too), but on a wide-but-short
     // viewport — a tablet in landscape, a resized browser window — width
@@ -142,9 +141,9 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
             onPress={() => onEnterNumber(value)}
             style={({ pressed }) => [styles.numberOuter, pressed && styles.pressed]}
           >
-            <GradientSurface colors={gradients.berry} style={styles.numberInner}>
+            <View style={[styles.numberInner, { backgroundColor: palette.berry }]}>
               <Text style={styles.numberText}>{value}</Text>
-            </GradientSurface>
+            </View>
           </Pressable>
         ))}
       </View>
@@ -174,7 +173,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderWidth: 3,
     borderColor: palette.ink,
-    borderRadius: radius.sm,
     overflow: 'hidden',
     backgroundColor: palette.surface,
   },
@@ -186,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surface,
   },
   cellGiven: { backgroundColor: palette.surfaceAlt },
-  cellSelected: { backgroundColor: palette.berryLight },
+  cellSelected: { backgroundColor: palette.accentTint },
   cellText: { fontWeight: '800' },
   cellTextGiven: { color: palette.ink },
   cellTextEntered: { color: palette.berry },
@@ -198,14 +196,13 @@ const styles = StyleSheet.create({
     paddingTop: space.md,
     paddingBottom: space.md,
   },
-  numberOuter: { width: hitTarget, height: hitTarget, borderRadius: radius.md, ...shadow },
+  numberOuter: { width: hitTarget, height: hitTarget },
   numberInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
     overflow: 'hidden',
   },
-  numberText: { fontSize: font.title, fontWeight: '800', color: '#FFFFFF' },
+  numberText: { fontSize: font.playTitle, fontWeight: '800', color: '#FFFFFF' },
   pressed: { transform: [{ scale: 0.95 }] },
 });

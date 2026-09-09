@@ -1,10 +1,11 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { GradientSurface } from './GradientSurface';
 import { Icon, type IconName } from './Icon';
+import { Rule } from './Rule';
 import { Screen } from './Screen';
-import { font, gradients, hitTarget, palette, radius, shadow, space } from '../theme/tokens';
+import { gutter, hitTarget, palette, rule, space } from '../theme/tokens';
+import { type } from '../theme/type';
 
 /**
  * Chrome shared by every game: a back control, a title, and a progress row.
@@ -30,27 +31,25 @@ export function GameFrame({
   const clamped = Math.max(0, Math.min(1, progress));
 
   return (
-    <Screen>
+    <Screen padded={false}>
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back to games"
           onPress={onExit}
           style={({ pressed }) => [styles.back, pressed && styles.pressed]}
-          hitSlop={12}
         >
-          <Icon name="back" size={30} color={palette.ink} />
+          <Icon name="back" size={26} color={palette.ink} />
         </Pressable>
 
-        <View style={styles.titleBadge}>
-          <Icon name={icon} size={font.label} color={palette.ink} />
-          <Text style={styles.title} numberOfLines={1}>
+        <View style={styles.titleWrap}>
+          <Icon name={icon} size={18} color={palette.ink} />
+          <Text style={type.h5} numberOfLines={1}>
             {title}
           </Text>
         </View>
 
-        {/* Balances the back control so the title stays centred. */}
-        <View style={styles.back} />
+        <Text style={type.mono}>{Math.round(clamped * 100)}%</Text>
       </View>
 
       <View
@@ -58,8 +57,9 @@ export function GameFrame({
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 0, max: 100, now: Math.round(clamped * 100) }}
       >
-        <GradientSurface colors={gradients.leaf} style={[styles.fill, { width: `${clamped * 100}%` }]} />
+        <View style={[styles.fill, { width: `${clamped * 100}%` }]} />
       </View>
+      <Rule weight="major" />
 
       <View style={styles.body}>{children}</View>
     </Screen>
@@ -70,42 +70,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: space.sm,
+    gap: space.md,
+    paddingRight: gutter,
   },
   back: {
     width: hitTarget,
     height: hitTarget,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: palette.surface,
-    ...shadow,
+    borderRightWidth: rule.hair,
+    borderRightColor: palette.border,
   },
-  backIcon: { fontSize: 34, color: palette.ink, fontWeight: '700' },
-  pressed: { opacity: 0.6, transform: [{ scale: 0.94 }] },
-  titleBadge: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.xs,
-    backgroundColor: palette.surface,
-    borderRadius: radius.pill,
-    paddingVertical: space.sm,
-    paddingHorizontal: space.md,
-    marginHorizontal: space.sm,
-    ...shadow,
-  },
-  titleIcon: { fontSize: font.label },
-  title: { flexShrink: 1, fontSize: font.label - 2, fontWeight: '800', color: palette.ink },
-  track: {
-    height: 14,
-    borderRadius: radius.pill,
-    backgroundColor: palette.surfaceAlt,
-    overflow: 'hidden',
-    marginBottom: space.md,
-  },
-  fill: { height: '100%', borderRadius: radius.pill },
-  body: { flex: 1 },
+  pressed: { backgroundColor: 'rgba(32,30,29,0.10)' },
+  titleWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  track: { height: 10, backgroundColor: palette.surface, borderTopWidth: rule.hair, borderTopColor: palette.border },
+  fill: { height: '100%', backgroundColor: palette.ink },
+  body: { flex: 1, paddingHorizontal: gutter, paddingTop: space.md },
 });

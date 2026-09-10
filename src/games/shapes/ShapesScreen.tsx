@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { GameStage, StageLabel } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
-import { Icon, type IconName } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, hitTarget, palette, rule, space } from '../../theme/tokens';
-import { fonts } from '../../theme/type';
+import { hitTarget, palette, rule as ruleWeight, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import {
@@ -22,7 +21,7 @@ import {
   type ShapesHistory,
   type ShapesState,
 } from './logic';
-import { describe, SHAPE_COLORS, Shape } from './Shape';
+import { describe, Shape } from './Shape';
 
 /** Basket box size in dp, keyed by role. Both stay well above the 72dp
  *  minimum tap target even in "small" size-sort rounds. */
@@ -87,7 +86,6 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
   const progress = state.queue.length ? state.placed / state.queue.length : 0;
   const rule =
     state.sortBy === 'shape' ? 'Match the shape' : state.sortBy === 'color' ? 'Match the colour' : 'Match the size';
-  const ruleIcon: IconName = state.sortBy === 'shape' ? 'shapes' : state.sortBy === 'color' ? 'all' : 'sequence';
 
   // The item on stage is drawn at its own size only when size is the rule —
   // otherwise size is one of the irrelevant, randomised attributes and every
@@ -101,22 +99,15 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
 
   return (
     <GameFrame title="Sort It Out" icon="shapes" onExit={onExit} progress={progress}>
-      <View style={styles.ruleBadge}>
-        <Icon name={ruleIcon} size={font.play} color={palette.ink} />
-        <Text style={styles.rule} accessibilityRole="header">
-          {rule}
-        </Text>
-      </View>
+      <StageLabel>{rule.toUpperCase()}</StageLabel>
 
-      <View style={styles.stageOuter}>
-        <View style={styles.stageInner}>
-          {item ? (
-            <View accessibilityLabel={itemLabel}>
-              <Shape shape={item.shape} color={item.color} size={itemDisplaySize} />
-            </View>
-          ) : null}
-        </View>
-      </View>
+      <GameStage>
+        {item ? (
+          <View accessibilityLabel={itemLabel}>
+            <Shape shape={item.shape} color={item.color} size={itemDisplaySize} />
+          </View>
+        ) : null}
+      </GameStage>
 
       <View style={styles.baskets}>
         {state.baskets.map((basket, index) => {
@@ -132,14 +123,16 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
               accessibilityLabel={basketLabel(state, basket)}
               onPress={() => onDrop(index)}
               style={({ pressed }) => [
-                styles.basketOuter,
-                { width: box, height: box, borderColor: SHAPE_COLORS[basket.color] },
-                pressed && styles.pressed,
+                styles.basket,
+                { width: box, height: box },
+                pressed && styles.basketPressed,
               ]}
             >
-              <View style={styles.basketInner}>
-                <Shape shape={basket.shape} color={basket.color} size={box * 0.48} />
-              </View>
+              {/* The one place colour survives inside a game, because here it
+                  is the content: a colour-sort round is literally asking
+                  which colour this is. The basket around it is ink like every
+                  other control in the app. */}
+              <Shape shape={basket.shape} color={basket.color} size={box * 0.48} />
             </Pressable>
           );
         })}
@@ -164,46 +157,22 @@ export function ShapesScreen({ level: initialLevel, onRoundComplete, onExit }: G
 }
 
 const styles = StyleSheet.create({
-  ruleBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.xs,
-    alignSelf: 'center',
-    backgroundColor: palette.surface,
-    paddingHorizontal: space.md,
-    paddingVertical: space.xs,
-    marginBottom: space.sm,
-  },
-  rule: { fontFamily: fonts.heavy, fontSize: font.play, color: palette.ink },
-  stageOuter: { flex: 1, marginBottom: space.md },
-  stageInner: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: palette.surface,
-    overflow: 'hidden',
-  },
   baskets: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.md,
+    gap: ruleWeight.hair,
     paddingBottom: space.md,
     flexWrap: 'wrap',
   },
-  basketOuter: {
+  basket: {
     minWidth: hitTarget,
     minHeight: hitTarget,
-    borderWidth: 4,
-  },
-  basketInner: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: palette.surfaceAlt,
-    
-    overflow: 'hidden',
+    backgroundColor: palette.surface,
+    borderWidth: ruleWeight.hair,
+    borderColor: palette.border,
   },
-  pressed: { transform: [{ scale: 0.94 }] },
+  basketPressed: { backgroundColor: palette.accentTint, borderColor: palette.accent },
 });

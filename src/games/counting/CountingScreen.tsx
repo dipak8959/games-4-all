@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { AnswerButton, AnswerRow, GameStage, StageLabel } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, hitTarget, palette, space } from '../../theme/tokens';
-import { fonts } from '../../theme/type';
+import { space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { answer, createGame, QUESTIONS_PER_ROUND, type CountingState } from './logic';
@@ -72,47 +72,27 @@ export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }:
 
   return (
     <GameFrame title="How Many?" icon="count" onExit={onExit} progress={progress}>
-      <View style={styles.stageOuter}>
-        <View style={styles.stageInner}>
-          <View style={styles.objects} accessibilityLabel={`${state.question.count} objects to count`}>
-            {Array.from({ length: state.question.count }, (_, i) => (
-              <Text key={i} style={[styles.object, { fontSize: objectSize, lineHeight: objectSize * 1.2 }]}>
-                {state.question.symbol}
-              </Text>
-            ))}
-          </View>
+      <StageLabel>COUNT THEM</StageLabel>
+      <GameStage>
+        <View style={styles.objects} accessibilityLabel={`${state.question.count} objects to count`}>
+          {Array.from({ length: state.question.count }, (_, i) => (
+            <Text key={i} style={{ fontSize: objectSize, lineHeight: objectSize * 1.2 }}>
+              {state.question.symbol}
+            </Text>
+          ))}
         </View>
-      </View>
+      </GameStage>
 
-      <View style={styles.choices}>
-        {state.question.choices.map((choice) => {
-          const isRuledOut = state.ruledOut.includes(choice);
-          return (
-            <Pressable
-              key={choice}
-              accessibilityRole="button"
-              accessibilityLabel={`${choice}`}
-              accessibilityState={{ disabled: isRuledOut }}
-              disabled={isRuledOut}
-              onPress={() => onChoose(choice)}
-              style={({ pressed }) => [
-                styles.choiceOuter,
-                pressed && !isRuledOut && styles.pressed,
-              ]}
-            >
-              {isRuledOut ? (
-                <View style={[styles.choiceInner, styles.ruledOut]}>
-                  <Text style={[styles.choiceText, styles.ruledOutText]}>{choice}</Text>
-                </View>
-              ) : (
-                <View style={[styles.choiceInner, { backgroundColor: palette.sun }]}>
-                  <Text style={styles.choiceText}>{choice}</Text>
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
+      <AnswerRow>
+        {state.question.choices.map((choice) => (
+          <AnswerButton
+            key={choice}
+            label={`${choice}`}
+            state={state.ruledOut.includes(choice) ? 'spent' : 'idle'}
+            onPress={() => onChoose(choice)}
+          />
+        ))}
+      </AnswerRow>
 
       {state.complete ? (
         <RoundComplete
@@ -133,26 +113,5 @@ export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }:
 }
 
 const styles = StyleSheet.create({
-  stageOuter: { flex: 1, marginBottom: space.md },
-  stageInner: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: palette.surface,
-    padding: space.md,
-    overflow: 'hidden',
-  },
   objects: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm },
-  object: { textAlign: 'center' },
-  choices: { flexDirection: 'row', justifyContent: 'center', gap: space.md, paddingBottom: space.md },
-  choiceOuter: { minWidth: hitTarget + 16, minHeight: hitTarget + 16 },
-  choiceInner: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  choiceText: { fontFamily: fonts.heavy, fontSize: font.playTitle + 8, color: '#FFFFFF' },
-  ruledOut: { backgroundColor: palette.surfaceAlt },
-  ruledOutText: { color: palette.inkSoft },
-  pressed: { transform: [{ scale: 0.95 }] },
 });

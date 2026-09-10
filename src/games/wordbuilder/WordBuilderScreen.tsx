@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { AnswerButton, AnswerRow, GameStage, StageLabel } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, hitTarget, palette, space } from '../../theme/tokens';
+import { font, palette, rule, space } from '../../theme/tokens';
 import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
@@ -62,52 +63,38 @@ export function WordBuilderScreen({ level: initialLevel, onRoundComplete, onExit
 
   return (
     <GameFrame title="Spell It!" icon="letters" onExit={onExit} progress={progress}>
-      <View style={styles.stageOuter}>
-        <View style={styles.stageInner}>
-          <Text style={styles.emoji} accessibilityLabel={state.puzzle.word}>
-            {state.puzzle.emoji}
-          </Text>
+      <StageLabel>SPELL THE PICTURE</StageLabel>
+      <GameStage style={styles.stage}>
+        <Text style={styles.emoji} accessibilityLabel={state.puzzle.word}>
+          {state.puzzle.emoji}
+        </Text>
 
-          <View
-            style={styles.blanks}
-            accessibilityLabel={`${state.filled.length} of ${state.puzzle.word.length} letters filled in`}
-          >
-            {state.puzzle.word.split('').map((_, i) => {
-              const letter = state.filled[i];
-              return (
-                <View key={i} style={[styles.blank, letter ? styles.blankFilled : null]}>
-                  <Text style={styles.blankText}>{letter ? letter.toUpperCase() : ''}</Text>
-                </View>
-              );
-            })}
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.tiles}>
-        {state.tiles.map((tile, index) => (
-          <Pressable
-            key={index}
-            accessibilityRole="button"
-            accessibilityLabel={tile.letter.toUpperCase()}
-            accessibilityState={{ disabled: tile.used }}
-            disabled={tile.used}
-            onPress={() => onTapTile(index)}
-            style={({ pressed }) => [
-              styles.tileOuter,
-              pressed && !tile.used && styles.pressed,
-            ]}
-          >
-            {tile.used ? (
-              <View style={[styles.tileInner, styles.tileUsed]} />
-            ) : (
-              <View style={[styles.tileInner, { backgroundColor: palette.grape }]}>
-                <Text style={styles.tileText}>{tile.letter.toUpperCase()}</Text>
+        <View
+          style={styles.blanks}
+          accessibilityLabel={`${state.filled.length} of ${state.puzzle.word.length} letters filled in`}
+        >
+          {state.puzzle.word.split('').map((_, i) => {
+            const letter = state.filled[i];
+            return (
+              <View key={i} style={[styles.blank, letter ? styles.blankFilled : null]}>
+                <Text style={styles.blankText}>{letter ? letter.toUpperCase() : ''}</Text>
               </View>
-            )}
-          </Pressable>
+            );
+          })}
+        </View>
+      </GameStage>
+
+      <AnswerRow>
+        {state.tiles.map((tile, index) => (
+          <AnswerButton
+            key={index}
+            label={tile.used ? '' : tile.letter.toUpperCase()}
+            accessibilityLabel={tile.letter.toUpperCase()}
+            state={tile.used ? 'spent' : 'idle'}
+            onPress={() => onTapTile(index)}
+          />
         ))}
-      </View>
+      </AnswerRow>
 
       {state.complete ? (
         <RoundComplete
@@ -128,37 +115,20 @@ export function WordBuilderScreen({ level: initialLevel, onRoundComplete, onExit
 }
 
 const styles = StyleSheet.create({
-  stageOuter: { flex: 1, marginBottom: space.md },
-  stageInner: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: palette.surface,
-    overflow: 'hidden',
-    gap: space.lg,
-  },
+  stage: { gap: space.lg },
   emoji: { fontSize: 100 },
-  blanks: { flexDirection: 'row', gap: space.sm },
+  blanks: { flexDirection: 'row', gap: rule.hair },
   blank: {
     width: 52,
     height: 60,
-    borderWidth: 3,
+    borderWidth: rule.hair,
     borderColor: palette.border,
-    borderStyle: 'dashed',
+    backgroundColor: palette.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  blankFilled: { borderStyle: 'solid', borderColor: palette.grape, backgroundColor: palette.surfaceAlt },
-  blankText: { fontFamily: fonts.heavy, fontSize: font.playTitle - 4, color: palette.ink },
-  tiles: { flexDirection: 'row', justifyContent: 'center', gap: space.sm, paddingBottom: space.md, flexWrap: 'wrap' },
-  tileOuter: { minWidth: hitTarget, minHeight: hitTarget },
-  tileInner: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  tileUsed: { backgroundColor: palette.surfaceAlt },
-  tileText: { fontFamily: fonts.heavy, fontSize: font.playTitle, color: '#FFFFFF' },
-  pressed: { transform: [{ scale: 0.95 }] },
+  // A filled blank is the one thing that just changed, so it takes the
+  // accent tint — the same mark the rest of the app uses for "this one".
+  blankFilled: { backgroundColor: palette.accentTint, borderColor: palette.accentTint },
+  blankText: { fontFamily: fonts.heavy, fontSize: font.h2, color: palette.ink },
 });

@@ -15,6 +15,17 @@ import {
   space,
 } from '../src/theme/tokens.ts';
 
+/** Every game screen, which is where a design drifts first. */
+const GAME_SCREENS = [
+  'src/games/counting/CountingScreen.tsx',
+  'src/games/memory/MemoryScreen.tsx',
+  'src/games/numbercrunch/NumberCrunchScreen.tsx',
+  'src/games/patternplay/PatternPlayScreen.tsx',
+  'src/games/shapes/ShapesScreen.tsx',
+  'src/games/sudoku/SudokuScreen.tsx',
+  'src/games/wordbuilder/WordBuilderScreen.tsx',
+];
+
 /**
  * The `Games Hub` design handoff, held in place.
  *
@@ -108,6 +119,74 @@ test('touch targets stay at 72dp — larger than the handoff draws them, never s
   // (SAFETY.md, "Big targets"), so the two only ever disagree in the safe
   // direction.
   assert.ok(hitTarget >= 52, `${hitTarget} is below the handoff's own CTA height`);
+});
+
+test('every game screen is in the catalogue, and the catalogue in the tests', () => {
+  // If a game is added and this list is not updated, the checks below would
+  // quietly stop covering it — so the list is checked against the directory
+  // rather than trusted.
+  const onDisk = sourceFiles('src/games').filter((path) => path.endsWith('Screen.tsx'));
+  assert.deepEqual(onDisk.sort(), [...GAME_SCREENS].sort());
+});
+
+/**
+ * Find the Pairs is the one game whose tappable things are not answers: its
+ * cards *are* the board, sized to the screen and flipped in place, so it
+ * lays them out itself. It still takes every fill, rule and type style from
+ * the tokens, which the checks below enforce.
+ */
+const BUILDS_ITS_OWN_BOARD = ['src/games/memory/MemoryScreen.tsx'];
+
+test('no game draws its own buttons', () => {
+  // Seven games each drawing their own tiles is how the design drifted into
+  // seven dialects. A game says what its answers are; `GameStage` says what
+  // an answer looks like.
+  for (const path of GAME_SCREENS) {
+    if (BUILDS_ITS_OWN_BOARD.includes(path)) continue;
+    const source = readFileSync(path, 'utf8');
+    assert.match(source, /components\/GameStage/, `${path} builds its own controls`);
+  }
+});
+
+test('the board exemption stays honest', () => {
+  // If an exempted game starts using the shared answer button after all, it
+  // should come off this list rather than sit there granting a permission
+  // nothing needs.
+  for (const path of BUILDS_ITS_OWN_BOARD) {
+    assert.ok(
+      !readFileSync(path, 'utf8').includes('AnswerButton'),
+      `${path} no longer needs its exemption`,
+    );
+  }
+});
+
+test('no game invents a colour', () => {
+  // Colour inside a game is spent only where colour is the content. A raw
+  // hex anywhere in a screen means someone reached past the palette.
+  const offenders = sourceFiles('src')
+    .filter((path) => path !== 'src/theme/tokens.ts')
+    .filter((path) => /#[0-9a-fA-F]{3,8}\b/.test(readFileSync(path, 'utf8')));
+
+  assert.deepEqual(offenders, [], `raw colour literals in: ${offenders.join(', ')}`);
+});
+
+test('press feedback is a tint, never a bounce', () => {
+  // The design's interaction states are a tint from the accent ramp and a
+  // focus ring — not a spring. Motion stays under 200ms and out of the way.
+  const offenders = sourceFiles('src').filter((path) =>
+    /transform: \[\{ scale/.test(readFileSync(path, 'utf8')),
+  );
+  assert.deepEqual(offenders, [], `scale-on-press found in: ${offenders.join(', ')}`);
+});
+
+test('borders are 1px or 2px — the design has no third weight', () => {
+  const offenders: string[] = [];
+  for (const path of sourceFiles('src')) {
+    for (const match of readFileSync(path, 'utf8').matchAll(/border\w*Width: (\d+)/g)) {
+      if (match[1] !== '0') offenders.push(`${path} (${match[1]}px)`);
+    }
+  }
+  assert.deepEqual(offenders, [], `hard-coded border widths: ${offenders.join(', ')}`);
 });
 
 test('play colours survive the flattening, and resolve safely', () => {

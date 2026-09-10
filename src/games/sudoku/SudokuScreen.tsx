@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gutter, hitTarget, palette, space } from '../../theme/tokens';
+import { gutter, hitTarget, palette, rule } from '../../theme/tokens';
 import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
@@ -75,6 +76,7 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
 
   return (
     <GameFrame title="Sudoku" icon="grid" onExit={onExit} progress={progress}>
+      <StageLabel>FILL THE GRID</StageLabel>
       <View style={styles.stage}>
         {/* Built as explicit rows rather than one flex-wrapped list of `size *
             size` cells: relying on wrapping to break every `size`-th cell
@@ -99,8 +101,8 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
                   {
                     width: cellSize,
                     height: cellSize,
-                    borderRightWidth: isRightEdge ? 3 : 1,
-                    borderBottomWidth: isBottomEdge ? 3 : 1,
+                    borderRightWidth: isRightEdge ? rule.major : rule.hair,
+                    borderBottomWidth: isBottomEdge ? rule.major : rule.hair,
                   },
                   cell.given && styles.cellGiven,
                   isSelected && styles.cellSelected,
@@ -133,21 +135,17 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
         </View>
       </View>
 
-      <View style={styles.numbers}>
+      <AnswerRow>
         {Array.from({ length: size }, (_, i) => i + 1).map((value) => (
-          <Pressable
+          <AnswerButton
             key={value}
-            accessibilityRole="button"
+            label={`${value}`}
             accessibilityLabel={`Enter ${value}`}
+            size={hitTarget}
             onPress={() => onEnterNumber(value)}
-            style={({ pressed }) => [styles.numberOuter, pressed && styles.pressed]}
-          >
-            <View style={[styles.numberInner, { backgroundColor: palette.berry }]}>
-              <Text style={styles.numberText}>{value}</Text>
-            </View>
-          </Pressable>
+          />
         ))}
-      </View>
+      </AnswerRow>
 
       {state.complete ? (
         <RoundComplete
@@ -172,7 +170,7 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'column',
     alignSelf: 'center',
-    borderWidth: 3,
+    borderWidth: rule.major,
     borderColor: palette.ink,
     overflow: 'hidden',
     backgroundColor: palette.surface,
@@ -182,28 +180,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderColor: palette.border,
-    backgroundColor: palette.surface,
+    backgroundColor: palette.bg,
   },
-  cellGiven: { backgroundColor: palette.surfaceAlt },
+  // A given is part of the puzzle rather than something you did: it sits on
+  // the surface tone, one step back from the cells you can still fill.
+  cellGiven: { backgroundColor: palette.surface },
   cellSelected: { backgroundColor: palette.accentTint },
   cellText: { fontFamily: fonts.heavy },
   cellTextGiven: { color: palette.ink },
-  cellTextEntered: { color: palette.berry },
-  numbers: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    gap: space.sm,
-    paddingTop: space.md,
-    paddingBottom: space.md,
-  },
-  numberOuter: { width: hitTarget, height: hitTarget },
-  numberInner: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  numberText: { fontFamily: fonts.heavy, fontSize: font.playTitle, color: '#FFFFFF' },
-  pressed: { transform: [{ scale: 0.95 }] },
+  cellTextEntered: { color: palette.accentText },
 });

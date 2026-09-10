@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
+import { AnswerButton, AnswerRow, GameStage, StageLabel } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, hitTarget, palette, space } from '../../theme/tokens';
+import { font, palette } from '../../theme/tokens';
 import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
@@ -62,43 +63,26 @@ export function NumberCrunchScreen({ level: initialLevel, onRoundComplete, onExi
 
   return (
     <GameFrame title="Number Crunch" icon="math" onExit={onExit} progress={progress}>
-      <View style={styles.stageOuter}>
-        <View style={styles.stageInner}>
-          <Text style={styles.sum} accessibilityLabel={`${state.question.a} ${state.question.operator} ${state.question.b}`}>
-            {state.question.a} {state.question.operator} {state.question.b}
-          </Text>
-        </View>
-      </View>
+      <StageLabel>WORK IT OUT</StageLabel>
+      <GameStage>
+        <Text
+          style={styles.sum}
+          accessibilityLabel={`${state.question.a} ${state.question.operator} ${state.question.b}`}
+        >
+          {state.question.a} {state.question.operator} {state.question.b}
+        </Text>
+      </GameStage>
 
-      <View style={styles.choices}>
-        {state.question.choices.map((choice) => {
-          const isRuledOut = state.ruledOut.includes(choice);
-          return (
-            <Pressable
-              key={choice}
-              accessibilityRole="button"
-              accessibilityLabel={`${choice}`}
-              accessibilityState={{ disabled: isRuledOut }}
-              disabled={isRuledOut}
-              onPress={() => onChoose(choice)}
-              style={({ pressed }) => [
-                styles.choiceOuter,
-                pressed && !isRuledOut && styles.pressed,
-              ]}
-            >
-              {isRuledOut ? (
-                <View style={[styles.choiceInner, styles.ruledOut]}>
-                  <Text style={[styles.choiceText, styles.ruledOutText]}>{choice}</Text>
-                </View>
-              ) : (
-                <View style={[styles.choiceInner, { backgroundColor: palette.teal }]}>
-                  <Text style={styles.choiceText}>{choice}</Text>
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
+      <AnswerRow>
+        {state.question.choices.map((choice) => (
+          <AnswerButton
+            key={choice}
+            label={`${choice}`}
+            state={state.ruledOut.includes(choice) ? 'spent' : 'idle'}
+            onPress={() => onChoose(choice)}
+          />
+        ))}
+      </AnswerRow>
 
       {state.complete ? (
         <RoundComplete
@@ -119,25 +103,5 @@ export function NumberCrunchScreen({ level: initialLevel, onRoundComplete, onExi
 }
 
 const styles = StyleSheet.create({
-  stageOuter: { flex: 1, marginBottom: space.md },
-  stageInner: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: palette.surface,
-    padding: space.md,
-  },
-  sum: { fontFamily: fonts.heavy, fontSize: font.playHero, color: palette.ink },
-  choices: { flexDirection: 'row', justifyContent: 'center', gap: space.md, paddingBottom: space.md },
-  choiceOuter: { minWidth: hitTarget + 16, minHeight: hitTarget + 16 },
-  choiceInner: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  choiceText: { fontFamily: fonts.heavy, fontSize: font.playTitle + 8, color: '#FFFFFF' },
-  ruledOut: { backgroundColor: palette.surfaceAlt },
-  ruledOutText: { color: palette.inkSoft },
-  pressed: { transform: [{ scale: 0.95 }] },
+  sum: { fontFamily: fonts.heavy, fontSize: font.display, color: palette.ink },
 });

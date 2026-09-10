@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { StageLabel } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gutter, palette, playColors, space } from '../../theme/tokens';
+import { font, gutter, palette, rule } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, flip, hasPendingPair, resolvePair, type MemoryState } from './logic';
@@ -89,15 +90,15 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
   const columns = state.cards.length <= 8 ? 3 : 4;
   const size = useMemo(() => {
     const width = Dimensions.get('window').width - gutter * 2;
-    return Math.floor((width - space.sm * (columns - 1)) / columns);
+    return Math.floor((width - rule.hair * (columns - 1)) / columns);
   }, [columns]);
 
   return (
     <GameFrame title="Find the Pairs" icon="pairs" onExit={onExit} progress={progress}>
-      <View style={[styles.grid, { maxWidth: columns * (size + space.sm) }]}>
+      <StageLabel>MATCH THE PAIRS</StageLabel>
+      <View style={[styles.grid, { maxWidth: columns * (size + rule.hair) }]}>
         {state.cards.map((card, index) => {
           const visible = card.faceUp || card.matched;
-          const accent = playColors[card.colorIndex % playColors.length];
 
           return (
             <Pressable
@@ -107,22 +108,20 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
               accessibilityState={{ selected: visible, disabled: card.matched }}
               onPress={() => onFlip(index)}
               style={({ pressed }) => [
-                styles.cardOuter,
-                { width: size, height: size, borderColor: visible ? accent : palette.deep },
+                styles.card,
+                { width: size, height: size },
+                visible ? styles.cardUp : styles.cardDown,
                 card.matched && styles.matched,
                 pressed && !visible && styles.pressed,
               ]}
             >
-              <View style={styles.cardInner}>
-                {visible ? (
-                  <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.surface }]} />
-                ) : (
-                  <View style={[StyleSheet.absoluteFill, { backgroundColor: palette.sky }]} />
-                )}
-                <Text style={[styles.symbol, { fontSize: size * 0.5 }]}>
-                  {visible ? card.symbol : '?'}
-                </Text>
-              </View>
+              {/* A face-down card is a blank, so it is drawn as one: an ink
+                  block. The symbols are the game's content and carry all the
+                  colour it needs — `card.colorIndex` is deliberately unused
+                  now, since a tile's own picture already tells it apart. */}
+              <Text style={[styles.symbol, { fontSize: size * 0.5 }, !visible && styles.symbolDown]}>
+                {visible ? card.symbol : '?'}
+              </Text>
             </Pressable>
           );
         })}
@@ -152,20 +151,23 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: space.sm,
-    justifyContent: 'center',
+    gap: rule.hair,
+    justifyContent: 'flex-start',
     alignContent: 'center',
     alignSelf: 'center',
     flex: 1,
   },
-  cardOuter: { borderWidth: 4 },
-  cardInner: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+  card: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  cardDown: { backgroundColor: palette.ink },
+  cardUp: {
+    backgroundColor: palette.surface,
+    borderWidth: rule.hair,
+    borderColor: palette.border,
   },
-  matched: { opacity: 0.55 },
-  pressed: { transform: [{ scale: 0.95 }] },
-  symbol: { fontSize: font.playTitle },
+  // A matched pair is settled, not gone: the accent tint marks it the same
+  // way a filled blank is marked in Spell It!.
+  matched: { backgroundColor: palette.accentTint, borderColor: palette.accentTint },
+  pressed: { backgroundColor: palette.accent },
+  symbol: { fontSize: font.h2 },
+  symbolDown: { color: palette.bg },
 });

@@ -169,6 +169,31 @@ two weights, and Archivo itself are the handoff's, exactly (see "Type" below):
 | Age bands (`Kids 6-12`, `Teen 13-17`, …) | `WHO IS PLAYING` picks a person, and their real age filters the shelf | This app dropped named age groups a while ago — see "Age: a real number, not a named group" above. |
 | A PIN for the parent gate | The existing two-digit multiplication question | The gate is a speed bump, not authentication, and deliberately guards nothing whose disclosure would matter. A PIN would be a real secret to store, forget, and reset. |
 
+#### The games follow it too
+
+A game is part of the same interface as everything around it, so it is built
+from the same parts: `src/components/GameStage.tsx` holds the band a prompt
+sits in, the row of answers, and the answer button itself. A game screen
+decides *what* is on the stage and what the answers say; it does not decide
+what an answer looks like. Before that existed, seven games had drifted into
+seven dialects of the same idea — solid colour blocks in one, 4px borders in
+another, a bounce on press here and a fade there.
+
+They also share one type scale with the rest of the app now. The separate,
+larger "play" scale is gone: a sum is set at `display` and an answer at `h2`,
+which are sizes the design already had.
+
+Colour inside a game is spent only where colour is the content — the shapes
+you sort by colour in Sort It Out. Everywhere else a tile is ink on a
+surface and the accent marks the one live thing: the answer under your
+finger, the tile lighting up. Pattern Play is the single exception to *that*:
+its tiles carry colour pictures, and a red one on an accent-red block
+disappears, so its lit state is ink.
+
+`tests/theme.test.ts` keeps all of this honest — it fails if a game screen
+stops using the shared parts, invents a colour literal, bounces on press, or
+draws a border in a weight the design does not have.
+
 #### Type
 
 Archivo 400 and 800 ship in `assets/fonts/` under the SIL Open Font License
@@ -306,6 +331,7 @@ src/
     SectionHeader.tsx       A machine label over a shelf
     TabBar.tsx              GAMES / PARENT / TIME / ME
     FactGrid.tsx            The handoff's fact cells and numbered parent rows
+    GameStage.tsx           The band, row and button every game is built from
     PlayTimeMeter.tsx       Today's play time as a track and two labels
   theme/
     tokens.ts               Modernist tokens: palette, rules, spacing, type scale

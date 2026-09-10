@@ -125,10 +125,12 @@ game where reading is the point rather than something to avoid:
   it's capped at the young end but not the old one.
 - **Colour is never the only signal.** The palette is Okabe-Ito derived, and
   anything identified by colour also differs in shape, so the games work for
-  colour-blind players. The interface chrome is ink on a light ground, with
-  one accent red used sparingly; colour is kept for the two jobs where it
-  actually carries meaning — telling one profile from another, and telling
-  play objects apart. Pattern Play in particular pairs every tile with a
+  colour-blind players. The interface is ink on a light ground with one
+  accent red used sparingly, and colour is now kept for the two jobs where it
+  actually carries meaning: telling one profile from another, and being the
+  content of a round in "Sort It Out", where the task is literally to match a
+  colour. Nothing else in any game depends on colour — a card is told apart
+  by its picture, a tile by its glyph, an answer by its number. Pattern Play in particular pairs every tile with a
   distinct glyph rather than relying on colour to distinguish a sequence.
 - **Big targets.** Nothing tappable is under 72dp, above both platform
   minimums — and above the design handoff's own 44-52px rows, which is why

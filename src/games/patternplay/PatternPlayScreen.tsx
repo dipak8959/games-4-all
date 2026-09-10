@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, hitTarget, palette, rule, space } from '../../theme/tokens';
-import { fonts } from '../../theme/type';
+import { font, hitTarget, palette, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, startInput, tapTile, type PatternPlayState } from './logic';
@@ -88,39 +88,27 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
   return (
     <GameFrame title="Pattern Play" icon="sequence" onExit={onExit} progress={progress}>
       <View style={styles.stage}>
-        <Text style={styles.hint} accessibilityLiveRegion="polite">
-          {state.revealing ? 'Watch the pattern…' : 'Now repeat it back!'}
-        </Text>
+        <StageLabel live>{state.revealing ? 'WATCH THE PATTERN' : 'NOW REPEAT IT BACK'}</StageLabel>
 
-        <View style={styles.grid}>
+        <AnswerRow style={styles.grid}>
           {Array.from({ length: state.tileCount }, (_, i) => {
-            const lit = revealIndex === i;
+            const glyph = TILE_GLYPHS[i % TILE_GLYPHS.length];
             return (
-              <Pressable
+              <AnswerButton
                 key={i}
-                accessibilityRole="button"
-                accessibilityLabel={`Tile ${TILE_GLYPHS[i % TILE_GLYPHS.length]}`}
-                accessibilityState={{ disabled: state.revealing, selected: lit }}
+                accessibilityLabel={`Tile ${glyph}`}
+                // Lit tiles go ink rather than accent: these faces are colour
+                // pictures, and a red one on an accent-red block disappears.
+                state={revealIndex === i ? 'active' : 'idle'}
+                activeTone="ink"
                 disabled={state.revealing}
                 onPress={() => onTapTile(i)}
-                style={({ pressed }) => [
-                  styles.tileOuter,
-                  pressed && !state.revealing && styles.pressed,
-                ]}
               >
-                {lit ? (
-                  <View style={[styles.tileInner, { backgroundColor: palette.deep }]}>
-                    <Text style={styles.tileGlyph}>{TILE_GLYPHS[i % TILE_GLYPHS.length]}</Text>
-                  </View>
-                ) : (
-                  <View style={[styles.tileInner, styles.tileIdle]}>
-                    <Text style={styles.tileGlyph}>{TILE_GLYPHS[i % TILE_GLYPHS.length]}</Text>
-                  </View>
-                )}
-              </Pressable>
+                <Text style={[styles.glyph, revealIndex === i && styles.glyphLit]}>{glyph}</Text>
+              </AnswerButton>
             );
           })}
-        </View>
+        </AnswerRow>
       </View>
 
       {state.complete ? (
@@ -142,28 +130,8 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
 }
 
 const styles = StyleSheet.create({
-  stage: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg },
-  hint: {
-    fontFamily: fonts.heavy,
-    fontSize: font.playLabel,
-    color: palette.inkSoft,
-    textAlign: 'center',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: space.md,
-    maxWidth: 3 * (hitTarget + 24) + space.md * 2,
-  },
-  tileOuter: { width: hitTarget + 16, height: hitTarget + 16 },
-  tileInner: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  tileIdle: { backgroundColor: palette.surface, borderWidth: 2, borderColor: palette.border },
-  tileGlyph: { fontSize: font.playTitle },
-  pressed: { transform: [{ scale: 0.95 }] },
+  stage: { flex: 1, justifyContent: 'center' },
+  grid: { maxWidth: 3 * (hitTarget + 16) + space.sm, alignSelf: 'center' },
+  glyph: { fontSize: font.h2, color: palette.ink },
+  glyphLit: { color: palette.bg },
 });

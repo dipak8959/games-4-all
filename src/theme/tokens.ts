@@ -32,7 +32,6 @@ export const palette = {
   surface: '#eae9e9',
   /** A surface one step further back — placeholder fills, quiet rows. */
   surfaceAlt: '#d7d3d3',
-  bgAlt: '#eae9e9',
   ink: '#201e1d',
   /** Muted text: meta, mono labels, secondary copy. */
   inkSoft: '#605d5d',
@@ -58,9 +57,6 @@ export const palette = {
   grape: '#D9739F',
   deep: '#5B5A82',
   teal: '#0E8C7F',
-
-  success: '#1B7F5A',
-  warn: '#ae1800',
 } as const;
 
 export type PaletteColor = (typeof palette)[keyof typeof palette];
@@ -101,7 +97,13 @@ export const radius = 0;
 export const rule = { major: 2, hair: 1 } as const;
 
 export const font = {
-  // The handoff's scale, used as drawn.
+  // The handoff's scale, used as drawn — and the only scale in the app.
+  //
+  // The games used to carry a second, larger one of their own. They no
+  // longer do: a game is part of the same interface as everything around
+  // it, and two scales meant two looks. What a game does keep is the top of
+  // this scale — a sum is set at `display`, an answer at `h2` — because the
+  // sizes it needs are already here.
   //
   // Every one of these is a size the wireframe actually sets. It is a
   // small-type system on purpose: the design carries emphasis with weight
@@ -119,15 +121,6 @@ export const font = {
   monoLg: 11,
   mono: 10,
   monoSm: 9,
-
-  // Play surfaces keep generous type: a game's own numbers, letters and
-  // answer buttons are read by a five-year-old at arm's length, which is a
-  // different job from a section header, and the handoff has nothing to say
-  // about what happens inside a game.
-  play: 20,
-  playLabel: 24,
-  playTitle: 34,
-  playHero: 64,
 } as const;
 
 /** Letter-spacing, in px (React Native has no `em`). Headings tighten,
@@ -141,14 +134,3 @@ export const tracking = {
 /** Minimum tappable edge, in dp. Above both platform minimums, and above
  *  the handoff's own 44-52px rows, on purpose. */
 export const hitTarget = 72;
-
-/** Colours used to distinguish game objects, in a fixed order so a given
- *  index always maps to the same colour within a round. */
-export const playColors = [
-  palette.berry,
-  palette.sky,
-  palette.leaf,
-  palette.sun,
-  palette.grape,
-  palette.deep,
-] as const;

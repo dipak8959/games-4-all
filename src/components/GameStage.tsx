@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { font, hitTarget, palette, rule, space } from '../theme/tokens';
 import { fonts, type } from '../theme/type';
@@ -65,7 +65,7 @@ export function GameStage({
   style,
 }: {
   readonly children: React.ReactNode;
-  readonly style?: ViewStyle;
+  readonly style?: StyleProp<ViewStyle>;
 }) {
   return <View style={[styles.stage, style]}>{children}</View>;
 }
@@ -76,7 +76,7 @@ export function AnswerRow({
   style,
 }: {
   readonly children: React.ReactNode;
-  readonly style?: ViewStyle;
+  readonly style?: StyleProp<ViewStyle>;
 }) {
   return <View style={[styles.row, style]}>{children}</View>;
 }
@@ -103,7 +103,6 @@ export function AnswerButton({
   state = 'idle',
   disabled = false,
   size = hitTarget + 16,
-  activeTone = 'accent',
   accessibilityLabel,
 }: {
   readonly label?: string;
@@ -112,16 +111,8 @@ export function AnswerButton({
   readonly state?: AnswerState;
   readonly disabled?: boolean;
   readonly size?: number;
-  /**
-   * What "live" is filled with. Accent by default — but a button whose face
-   * is a colour picture rather than a letter needs a fill that cannot
-   * collide with it, and a red shape on an accent-red block is invisible.
-   * Those pass `ink`.
-   */
-  readonly activeTone?: 'accent' | 'ink';
   readonly accessibilityLabel?: string;
 }) {
-  const activeStyle = activeTone === 'ink' ? styles.answerActiveInk : styles.answerActive;
   return (
     <Pressable
       accessibilityRole="button"
@@ -132,9 +123,9 @@ export function AnswerButton({
       style={({ pressed }) => [
         styles.answer,
         { minWidth: size, minHeight: size },
-        state === 'active' && activeStyle,
+        state === 'active' && styles.answerActive,
         state === 'spent' && styles.answerSpent,
-        pressed && state === 'idle' && activeStyle,
+        pressed && state === 'idle' && styles.answerActive,
       ]}
     >
       {label != null ? (
@@ -179,7 +170,6 @@ const styles = StyleSheet.create({
   // Press and "lit" are the same state visually — in both cases this is the
   // one live thing on screen, which is exactly what the accent is for.
   answerActive: { backgroundColor: palette.accent, borderColor: palette.accent },
-  answerActiveInk: { backgroundColor: palette.ink, borderColor: palette.ink },
   answerSpent: { opacity: 0.45 },
   answerText: { fontFamily: fonts.heavy, fontSize: font.h2, color: palette.ink },
   answerTextActive: { color: palette.bg },

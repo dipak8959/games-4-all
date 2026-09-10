@@ -9,6 +9,8 @@ import {
   tapTile,
   tileCountForLevel,
 } from '../src/games/patternplay/logic.ts';
+import { markFor, MARK_COUNT } from '../src/games/patternplay/marks.ts';
+import { MAX_LEVEL, MIN_LEVEL } from '../src/games/types.ts';
 
 test('tile count grows with level: 4, then 6, then 9', () => {
   assert.equal(tileCountForLevel(1), 4);
@@ -85,4 +87,20 @@ test('startInput only ever flips revealing, nothing else', () => {
   const state = createGame(seededRng(6), 2);
   const revealed = startInput(state);
   assert.deepEqual(revealed, { ...state, revealing: false });
+});
+
+test('there is a distinct mark for every tile the hardest level puts on the board', () => {
+  // Two tiles wearing the same face would make a sequence ambiguous — you
+  // could repeat it back correctly and still be told you were wrong. If a
+  // future level raises the tile count, `PatternMark` has to grow with it.
+  for (let level = MIN_LEVEL; level <= MAX_LEVEL; level += 1) {
+    assert.ok(
+      tileCountForLevel(level) <= MARK_COUNT,
+      `level ${level} wants ${tileCountForLevel(level)} tiles but only ${MARK_COUNT} marks exist`,
+    );
+  }
+
+  // And every one of those marks is genuinely its own face.
+  const faces = Array.from({ length: MARK_COUNT }, (_, i) => markFor(i));
+  assert.equal(new Set(faces).size, MARK_COUNT, 'two tiles would share a mark');
 });

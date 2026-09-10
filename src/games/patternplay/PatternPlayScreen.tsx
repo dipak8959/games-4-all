@@ -1,20 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { PatternMark } from './PatternMark';
+import { MARK_LABELS, markFor } from './marks';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, hitTarget, palette, space } from '../../theme/tokens';
+import { hitTarget, palette, rule } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, startInput, tapTile, type PatternPlayState } from './logic';
 
-/** One glyph per tile so the sequence never depends on colour alone to be
- *  followed — see SAFETY.md's "colour is never the only signal" rule. Fixed
- *  order, so a given tile index always shows the same glyph within a round. */
-const TILE_GLYPHS = ['⭐', '🔵', '🔺', '🌙', '☀️', '🍀', '🎵', '🎈', '💎'] as const;
 
 /** How long each tile stays highlighted during the reveal, and the gap
  *  between them — long enough to register, short enough not to drag. */
@@ -82,6 +80,12 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
     setState(createGame(systemRng, atLevel));
   }, []);
 
+  // Square-ish boards: 4 tiles want 2x2, 6 want 3x2, 9 want 3x3. Fixing the
+  // row at three wrapped a four-tile board to 3+1, leaving one tile stranded
+  // on its own line.
+  const columns = Math.ceil(Math.sqrt(state.tileCount));
+  const tile = hitTarget + 16;
+
   const stars = starsForMistakes(state.mistakes);
   const progress = state.revealing ? 0 : state.inputIndex / state.sequence.length;
 
@@ -90,21 +94,22 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
       <View style={styles.stage}>
         <StageLabel live>{state.revealing ? 'WATCH THE PATTERN' : 'NOW REPEAT IT BACK'}</StageLabel>
 
-        <AnswerRow style={styles.grid}>
+        <AnswerRow style={[styles.grid, { maxWidth: columns * tile + (columns - 1) * rule.hair }]}>
           {Array.from({ length: state.tileCount }, (_, i) => {
-            const glyph = TILE_GLYPHS[i % TILE_GLYPHS.length];
+            const mark = markFor(i);
+            const lit = revealIndex === i;
             return (
               <AnswerButton
                 key={i}
-                accessibilityLabel={`Tile ${glyph}`}
-                // Lit tiles go ink rather than accent: these faces are colour
-                // pictures, and a red one on an accent-red block disappears.
-                state={revealIndex === i ? 'active' : 'idle'}
-                activeTone="ink"
+                accessibilityLabel={`${MARK_LABELS[mark]} tile`}
+                state={lit ? 'active' : 'idle'}
                 disabled={state.revealing}
                 onPress={() => onTapTile(i)}
               >
-                <Text style={[styles.glyph, revealIndex === i && styles.glyphLit]}>{glyph}</Text>
+                {/* The mark takes the colour it is given, so a lit tile
+                    inverts to the ground rather than needing a fill its face
+                    can survive. */}
+                <PatternMark name={mark} size={34} color={lit ? palette.bg : palette.ink} />
               </AnswerButton>
             );
           })}
@@ -131,7 +136,5 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
 
 const styles = StyleSheet.create({
   stage: { flex: 1, justifyContent: 'center' },
-  grid: { maxWidth: 3 * (hitTarget + 16) + space.sm, alignSelf: 'center' },
-  glyph: { fontSize: font.h2, color: palette.ink },
-  glyphLit: { color: palette.bg },
+  grid: { alignSelf: 'center' },
 });

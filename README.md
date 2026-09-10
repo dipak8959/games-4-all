@@ -232,12 +232,19 @@ on its own colour (`Avatar.tsx`). There are no image files in the repository,
 no icon font, and no icon-library dependency, so an icon can't render as a
 missing-glyph box on one platform and a cartoon on another.
 
-Four games are the deliberate exception, because there the emoji *are* the
+Three games are the deliberate exception, because there the emoji *are* the
 playable material rather than decoration: the symbols you match in Find the
-Pairs, the objects you count in How Many?, the tiles you repeat in Pattern
-Play, and the picture clue you spell in Spell It!. `tests/chrome.test.ts`
-enforces the split — it fails if an emoji appears anywhere outside those four
-files, and equally if one of them stops needing its exemption.
+Pairs, the objects you count in How Many?, and the picture clue you spell in
+Spell It!. `tests/chrome.test.ts` enforces the split — it fails if an emoji
+appears anywhere outside those three files, and equally if one of them stops
+needing its exemption.
+
+Pattern Play used to be a fourth. Its tiles were emoji too, but they were
+never really content: nine arbitrary faces used to tell nine buttons apart,
+and full-colour cartoons sat badly on a flat ink interface. They are drawn
+marks now (`src/games/patternplay/PatternMark.tsx`), which suits the game
+better anyway — a drawn mark takes the colour it is given, so a lit tile
+inverts to the ground instead of needing a fill its face can survive.
 
 ### Staying fresh round to round
 

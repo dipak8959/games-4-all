@@ -11,16 +11,22 @@ import { join } from 'node:path';
  * on a glyph that renders differently — or not at all — from one device to
  * the next.
  *
- * Four games still use emoji as their actual playable material: the symbols
- * you match, the objects you count, the tiles you repeat back, and the
- * picture clue you spell. Those are content, not decoration, and are listed
- * here explicitly so the exemption stays deliberate rather than accidental.
+ * Three games still use emoji as their actual playable material: the symbols
+ * you match, the objects you count, and the picture clue you spell. Those are
+ * content, not decoration, and are listed here explicitly so the exemption
+ * stays deliberate rather than accidental.
+ *
+ * Pattern Play used to be a fourth. Its tiles were emoji too, but they were
+ * never really content — they were nine arbitrary faces used to tell nine
+ * buttons apart, and full-colour cartoons sat badly on a flat ink interface.
+ * They are drawn marks now (`PatternMark.tsx`), which is both more on-system
+ * and a better fit for the game: they take the colour they are given, so a
+ * lit tile inverts cleanly.
  */
 const CONTENT_FILES = [
   'src/games/memory/logic.ts',
   'src/games/counting/logic.ts',
   'src/games/wordbuilder/logic.ts',
-  'src/games/patternplay/PatternPlayScreen.tsx',
 ];
 
 /**

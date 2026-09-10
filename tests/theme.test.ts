@@ -211,7 +211,11 @@ function sourceFiles(dir: string): string[] {
  * dots, and Sort It Out draws an actual circle to sort. Everything else in
  * the app is square.
  */
-const MAY_DRAW_CIRCLES = ['src/components/Icon.tsx', 'src/games/shapes/Shape.tsx'];
+const MAY_DRAW_CIRCLES = [
+  'src/components/Icon.tsx',
+  'src/games/shapes/Shape.tsx',
+  'src/games/patternplay/PatternMark.tsx',
+];
 
 test('nothing rounds a corner', () => {
   const offenders = sourceFiles('src')

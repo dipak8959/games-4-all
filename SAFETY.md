@@ -130,8 +130,9 @@ game where reading is the point rather than something to avoid:
   actually carries meaning: telling one profile from another, and being the
   content of a round in "Sort It Out", where the task is literally to match a
   colour. Nothing else in any game depends on colour — a card is told apart
-  by its picture, a tile by its glyph, an answer by its number. Pattern Play in particular pairs every tile with a
-  distinct glyph rather than relying on colour to distinguish a sequence.
+  by its picture, a tile by its glyph, an answer by its number. Pattern Play in particular gives every tile a
+  distinct drawn mark — filled against hollow, square against round, up
+  against down — so a sequence is followed by shape and never by colour.
 - **Big targets.** Nothing tappable is under 72dp, above both platform
   minimums — and above the design handoff's own 44-52px rows, which is why
   the tab bar and the buttons are drawn taller here than the handoff draws

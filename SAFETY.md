@@ -149,6 +149,49 @@ game where reading is the point rather than something to avoid:
 - **Motion is optional.** The OS "reduce motion" setting is honoured
   automatically, and can also be set per-profile in Parent Zone.
 
+## Nothing here is built to be hard to stop
+
+Childhood gaming addiction is real, and the mechanics that cause it are
+design choices rather than accidents. This app makes them impossible to add
+by accident, and `npm run safety` fails the build on any of them.
+
+**The load-bearing property is that every round ends.** Not "ends when you
+lose" and not "ends when you get bored" — ends on its own, at a point fixed
+before you started: five questions answered, the grid filled, the sequence
+repeated back. Every game declares that ending as a required field
+(`roundEnds` in `src/games/catalog.ts`) and Parent Zone shows it, so a
+parent can see for each game exactly what finishes it. A game that only ends
+when you fail, or never ends at all, cannot fill that field with anything
+true — which is the point of requiring it.
+
+That matters more than the "no losing" rule it sits beside. An endless game
+is one a child is always *mid-something* in, so every moment is a bad moment
+to stop; a bounded one hands them a natural place to put the phone down,
+several times an hour.
+
+Also banned outright, as identifiers rather than as words — naming one in a
+comment or in parent-facing copy is fine, building one is not:
+
+| Mechanic | Why it is banned |
+| --- | --- |
+| High scores, personal bests | Turns stopping into losing something. There is no score in this app, only stars for finishing. |
+| Streaks | Makes not playing today cost something. |
+| Leaderboards | Ranks children against each other, and needs a network this app does not have. |
+| Combo and score multipliers | Escalating reward for uninterrupted play — the "don't stop now" mechanic. |
+| Daily rewards, bonuses, login gifts | Schedules the child's day around the app. |
+| Rounds that start themselves | Removes the decision to continue. Every round here needs a deliberate tap. |
+| Endless or infinite modes | Removes the ending, which is the whole safeguard. |
+
+Two existing rules carry the same weight and are listed under "Design rules
+for the games themselves" above: no timers, lives, or game-over; and no
+notifications of any kind.
+
+**Every game must also be worth the time.** Each entry declares what it
+practises (`skill`), and that is shown to parents too. "It passes the time"
+is not an entry in this catalogue. This applies hardest below 18, where the
+whole catalogue is filtered by age: a game that exists only to be replayed
+has no place in a child's list.
+
 ## Switching who's playing
 
 A parent and each child sharing this device get their own profile

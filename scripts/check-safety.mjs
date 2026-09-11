@@ -97,6 +97,40 @@ function stripComments(source) {
   return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
+/** Strips string and template literals too. The engagement-mechanic check
+ *  below needs this: the app's own copy says "no leaderboards" out loud, and
+ *  a rule that trips on an honest promise not to do the thing is useless. */
+function stripLiterals(source) {
+  return stripComments(source)
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, "''")
+    .replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
+    .replace(/`(?:[^`\\]|\\.)*`/g, '``');
+}
+
+/**
+ * Mechanics whose whole purpose is to make a game hard to put down.
+ *
+ * These are identifiers, not words: the check runs with comments and string
+ * literals removed, so naming one in a comment or in parent-facing copy is
+ * fine and only building one fails. `MULTIPLIER` in the parent gate is
+ * arithmetic, which is why only the scoring compounds are listed.
+ */
+const FORBIDDEN_MECHANICS = [
+  // Deliberately unanchored: `\b` does not fire inside camelCase, so a
+  // boundaried pattern catches `bestScore` and sails straight past
+  // `playerBestScore` and `winStreak` — which is exactly how someone would
+  // name one of these.
+  { pattern: /(?:high|best|top|max)score/i, why: 'a high score to chase' },
+  { pattern: /personalbest/i, why: 'a personal best to beat' },
+  { pattern: /streak/i, why: 'a streak to protect' },
+  { pattern: /leaderboard/i, why: 'a leaderboard' },
+  { pattern: /(?:score|combo)multiplier/i, why: 'a scoring multiplier' },
+  { pattern: /combo(?:count|chain)/i, why: 'a combo counter' },
+  { pattern: /daily(?:reward|bonus|gift|login)/i, why: 'a daily reward' },
+  { pattern: /auto(?:play|advance|continue|restart)/i, why: 'a round that starts itself' },
+  { pattern: /(?:endless|infinite)mode/i, why: 'a mode that never ends' },
+];
+
 function checkSourceForbiddenApis() {
   for (const file of collectSourceFiles()) {
     const code = stripComments(readFileSync(file, 'utf8'));
@@ -106,6 +140,30 @@ function checkSourceForbiddenApis() {
       lines.forEach((line, i) => {
         if (pattern.test(line)) {
           fail(`${relative(ROOT, file)}:${i + 1} uses ${why}`);
+        }
+      });
+    }
+  }
+}
+
+/**
+ * No game may be built to be hard to stop.
+ *
+ * Every round in this app ends on its own — a fixed number of questions, a
+ * grid filled, a sequence repeated back — and a child who wants to stop is
+ * never mid-something-they-would-lose. The mechanics below all work by
+ * removing that ending, and none of them belongs in an app used by someone
+ * under 18. See "Nothing here is built to be hard to stop" in SAFETY.md.
+ */
+function checkEngagementMechanics() {
+  for (const file of collectSourceFiles()) {
+    const code = stripLiterals(readFileSync(file, 'utf8'));
+    const lines = code.split('\n');
+
+    for (const { pattern, why } of FORBIDDEN_MECHANICS) {
+      lines.forEach((line, i) => {
+        if (pattern.test(line)) {
+          fail(`${relative(ROOT, file)}:${i + 1} builds ${why}`);
         }
       });
     }
@@ -159,6 +217,7 @@ function checkAppConfig() {
 }
 
 checkSourceForbiddenApis();
+checkEngagementMechanics();
 checkDependencies();
 checkAppConfig();
 
@@ -169,4 +228,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log('✔ Child-safety checks passed (no network, no trackers, no permissions).');
+console.log('✔ Child-safety checks passed (no network, no trackers, no permissions, nothing built to be hard to stop).');

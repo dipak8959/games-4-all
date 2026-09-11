@@ -367,7 +367,10 @@ exactly one basket; every round is completable).
    the pattern. This is what makes the game's difficulty adaptive rather than
    fixed at whatever the parent chose as a starting point.
 4. Add an entry to `GAMES_META` in `src/games/catalog.ts`, including a
-   deliberate `minAge`/`maxAge` and a `category` — don't default to "all
+   deliberate `minAge`/`maxAge`, a `category`, and a `roundEnds` sentence
+   saying what finishes a round. If that sentence is hard to write, the game
+   is probably unbounded — see "Nothing here is built to be hard to stop" in
+   **[SAFETY.md](SAFETY.md)** — don't default to "all
    ages" without thinking about it; that's what made an adult's game list
    identical to a young child's before this field existed. Register the
    screen component in `src/games/registry.ts`'s `SCREEN_BY_ID`.

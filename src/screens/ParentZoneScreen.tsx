@@ -171,6 +171,7 @@ export function ParentZoneScreen({
               <View style={styles.gameText}>
                 <Text style={type.rowTitle}>{game.title}</Text>
                 <Text style={type.meta}>{game.skill}</Text>
+                <Text style={type.meta}>Round ends: {game.roundEnds.toLowerCase()}</Text>
                 <Text style={type.monoSm}>
                   AGES {game.ages} · {gp.rounds} {gp.rounds === 1 ? 'ROUND' : 'ROUNDS'} · LEVEL{' '}
                   {levelForGame(game.id)}/{MAX_LEVEL}

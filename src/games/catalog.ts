@@ -35,8 +35,23 @@ export type GameMeta = {
    *  image or an emoji. See `src/components/Icon.tsx`. */
   readonly icon: IconName;
   readonly color: string;
-  /** Parent-facing: what this game actually practises. */
+  /** Parent-facing: what this game actually practises. Every game has to
+   *  practise something nameable — "it passes the time" is not an entry in
+   *  this catalogue. */
   readonly skill: string;
+  /**
+   * What finishes a round, in plain words.
+   *
+   * Required, and the point of requiring it is that an unbounded game
+   * cannot answer it. Every round here ends on its own — a fixed number of
+   * questions, a grid filled, a sequence repeated back — so a child who
+   * wants to stop is never mid-something they would lose by stopping. A
+   * game that only ends when you fail, or never ends at all, is the shape
+   * that makes play hard to put down, and it does not belong in an app used
+   * by someone under 18 (see "Nothing here is built to be hard to stop" in
+   * SAFETY.md).
+   */
+  readonly roundEnds: string;
   /** Free-text age range shown to parents (e.g. "3-6" or "7+"). Keep this in
    *  sync with `minAge`/`maxAge` — it's the human-readable form of the same
    *  range, not an independent claim. */
@@ -68,6 +83,7 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: 'pairs',
     color: palette.sky,
     skill: 'Visual memory and concentration',
+    roundEnds: 'Every pair has been found.',
     ages: '3-6',
     category: 'memory',
     minAge: 3,
@@ -83,6 +99,7 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: 'count',
     color: palette.sun,
     skill: 'Counting and recognising numerals 1-12',
+    roundEnds: 'Five questions answered.',
     ages: '3-6',
     category: 'numbers',
     minAge: 3,
@@ -94,6 +111,7 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: 'shapes',
     color: palette.leaf,
     skill: 'Sorting by shape, colour, and size',
+    roundEnds: 'Every item in the round has been sorted.',
     ages: '3-6',
     category: 'sorting',
     minAge: 3,
@@ -105,6 +123,7 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: 'letters',
     color: palette.grape,
     skill: 'Reading and spelling simple words',
+    roundEnds: 'Four words spelled.',
     ages: '6-10',
     category: 'words',
     minAge: 6,
@@ -119,6 +138,7 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: 'grid',
     color: palette.berry,
     skill: 'Logical reasoning and number placement',
+    roundEnds: 'The grid is filled.',
     ages: '7+',
     category: 'logic',
     minAge: 7,
@@ -133,6 +153,7 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: 'sequence',
     color: palette.deep,
     skill: 'Sequence memory and concentration',
+    roundEnds: 'The sequence has been repeated back.',
     ages: '4+',
     category: 'memory',
     minAge: 4,
@@ -147,6 +168,7 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: 'math',
     color: palette.teal,
     skill: 'Mental arithmetic: addition, subtraction, multiplication, division',
+    roundEnds: 'Six questions answered.',
     ages: '6+',
     category: 'numbers',
     minAge: 6,

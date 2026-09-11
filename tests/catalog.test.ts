@@ -111,3 +111,18 @@ test('every category has at least one game', () => {
     assert.ok(gamesByCategory(GAMES_META, c.id).length > 0, `category ${c.id} has no games`);
   }
 });
+
+test('every game practises something, and says how its round ends', () => {
+  // The second half is the load-bearing one. A game that is hard to put down
+  // is usually one with no ending — you stop when you fail, or you never
+  // stop — and requiring this field means an unbounded game cannot be added
+  // without someone writing a sentence that is plainly untrue.
+  for (const game of GAMES_META) {
+    assert.ok(game.skill.trim().length > 0, `${game.id} practises nothing`);
+    assert.ok(game.roundEnds.trim().length > 0, `${game.id} never says how a round ends`);
+    assert.ok(
+      !/never|score|beat|forever|survive/i.test(game.roundEnds),
+      `${game.id} ends on a score or not at all: "${game.roundEnds}"`,
+    );
+  }
+});

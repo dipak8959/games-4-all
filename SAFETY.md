@@ -100,6 +100,75 @@ settings. It is not a secret and deliberately guards nothing whose disclosure
 would matter — worst case, a determined older child changes their own screen
 time limit.
 
+## The charter: what a game has to be
+
+Ten principles, in one place, in `src/games/charter.ts`. That file is the
+list — everything below and above in this document explains a principle, and
+the principles themselves live in code so they can be run rather than only
+read.
+
+| | Principle | Rule |
+| --- | --- | --- |
+| 1 | Offline | Works with nothing connected, and reaches nothing outside the device. |
+| 2 | Nothing to sell | No ads, purchases, accounts, analytics, third-party SDKs or device permissions. |
+| 3 | It ends | A round ends on its own, at a point fixed before it started. |
+| 4 | Nothing to lose | No timers, no lives, no game-over. |
+| 5 | Nothing to chase | No scores, streaks, leaderboards, multipliers, daily rewards or self-starting rounds. |
+| 6 | Worth the time | It practises something nameable, stated plainly enough to show a parent. |
+| 7 | Honest age | Its age range is a deliberate claim about who it suits, not "everyone" by default. |
+| 8 | Original | Invented here, or a format old enough to belong to everyone. |
+| 9 | Plays without reading | A child who cannot read can play it, unless reading is the skill. |
+| 10 | Reachable by a child | Nothing under 72dp, always escapable, and colour is never the only signal. |
+
+### The gate runs before the game is built
+
+The trouble with rules that live in a build script is that they fire after
+someone has built the thing. The expensive moment is earlier — a brainstorm
+that produces a game which should never exist.
+
+So an idea is written down first, as a `GameProposal` (see
+`src/games/catalog.ts`), and checked:
+
+```bash
+npm run propose proposals/my-idea.json
+```
+
+It reports per principle, and separates **blocks** — the idea cannot be
+built as described — from **ask**, which is a question only a person can
+answer and never a refusal. It catches a round that ends only when you fail,
+a "skill" of *fun*, a borrowed commercial name hiding in the prior-art
+field, an age range nobody set, and pieces told apart by colour alone.
+
+A blocked idea reads like this:
+
+```
+✖ proposals/tile-rush.json — Tile Rush (3-99)
+    BLOCKS IT_ENDS
+           "When you run out of lives, or forever if you are good enough" describes
+           a run that only stops when the player does. A round has to end on its own.
+    BLOCKS NOTHING_TO_CHASE
+           Mentions "high score". That mechanic works by making stopping cost something.
+    BLOCKS WORTH_THE_TIME
+           "Fun" is not a skill. Name what a child gets better at.
+    BLOCKS REACHABLE_BY_A_CHILD
+           Tells pieces apart by colour alone. Roughly one boy in twelve cannot.
+    ASK    HONEST_AGE
+           Spans three to ninety-nine. Is this one of the few games that genuinely
+           suits a three-year-old and an adult, or is the range just unset?
+```
+
+It is not a substitute for judgement. It cannot tell you whether a game is
+any good; it tells you whether it is the kind of thing that belongs here.
+
+### Why the gate cannot rot
+
+`GameMeta` is `GameProposal` plus presentation, so **a shipped game is a
+passed proposal by construction**, and `tests/charter.test.ts` runs the same
+gate over the entire live catalogue on every CI run. A principle the seven
+existing games cannot satisfy is a wrong principle and fails the build
+immediately. The catalogue is the gate's fixture set, which is what stops it
+drifting into a document nobody applies.
+
 ## Design rules for the games themselves
 
 Safety for this age range is as much about tone as about data. Every rule

@@ -92,9 +92,18 @@ function collectSourceFiles() {
   return files;
 }
 
-/** Strips comments so a rule named in prose does not trip its own check. */
+/**
+ * Strips comments so a rule named in prose does not trip its own check.
+ *
+ * A block comment is replaced by the newlines it spanned rather than by
+ * nothing, so the line numbers in a failure still point at the real line.
+ * Collapsing them silently shifted every number after the first doc comment
+ * in a file, which sends you looking in the wrong place.
+ */
 function stripComments(source) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, (match) => match.replace(/[^\n]/g, ''))
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
 /** Strips string and template literals too. The engagement-mechanic check

@@ -27,17 +27,23 @@ export const GAME_CATEGORIES: readonly GameCategoryDef[] = [
   { id: 'sorting', label: 'Sorting', icon: 'shapes' },
 ];
 
-export type GameMeta = {
+/**
+ * A game, as an idea — everything the charter needs to judge it, and
+ * nothing about how it looks.
+ *
+ * This is the shape a brainstormed game is written in *before* anyone builds
+ * it, and `reviewProposal` in `charter.ts` gates it. `GameMeta` below is
+ * this plus presentation, which means a shipped game is a passed proposal by
+ * construction: the same checker runs over the whole catalogue on every CI
+ * run, so the gate cannot rot into a document nobody applies.
+ */
+export type GameProposal = {
   readonly id: string;
-  /** Shown to parents. Children navigate by the icon and colour. */
+  /** Shown to parents. Children navigate by the icon. */
   readonly title: string;
-  /** A mark from the app's own icon set — geometry the app draws, never an
-   *  image or an emoji. See `src/components/Icon.tsx`. */
-  readonly icon: IconName;
-  readonly color: string;
-  /** Parent-facing: what this game actually practises. Every game has to
-   *  practise something nameable — "it passes the time" is not an entry in
-   *  this catalogue. */
+  /** What this game actually practises. Every game has to practise
+   *  something nameable — "it passes the time" is not an entry in this
+   *  catalogue, and the charter rejects it. */
   readonly skill: string;
   /**
    * What finishes a round, in plain words.
@@ -45,29 +51,43 @@ export type GameMeta = {
    * Required, and the point of requiring it is that an unbounded game
    * cannot answer it. Every round here ends on its own — a fixed number of
    * questions, a grid filled, a sequence repeated back — so a child who
-   * wants to stop is never mid-something they would lose by stopping. A
-   * game that only ends when you fail, or never ends at all, is the shape
-   * that makes play hard to put down, and it does not belong in an app used
-   * by someone under 18 (see "Nothing here is built to be hard to stop" in
-   * SAFETY.md).
+   * wants to stop is never mid-something they would lose by stopping.
    */
   readonly roundEnds: string;
-  /** Free-text age range shown to parents (e.g. "3-6" or "7+"). Keep this in
-   *  sync with `minAge`/`maxAge` — it's the human-readable form of the same
-   *  range, not an independent claim. */
-  readonly ages: string;
   /** Which filter chip this game shows under on Home. Purely a discovery
    *  aid — see `GAME_CATEGORIES`. */
   readonly category: GameCategory;
   /** The actual age range (in years) Home filters by. Inclusive on both
    *  ends. There are no named "age groups" any more — every profile has a
    *  real age, and every game has a real range, compared directly. A game
-   *  that's only fun for a narrow band (a simple picture-matching game, say)
-   *  should say so honestly rather than defaulting to "all ages": an adult
-   *  profile finding a preschool game in their list because nothing capped
-   *  it is a worse experience than not seeing it at all. */
+   *  that's only fun for a narrow band should say so honestly rather than
+   *  defaulting to "all ages". */
   readonly minAge: number;
   readonly maxAge: number;
+  /** Invented here, or a format old enough to belong to everyone. Never a
+   *  specific commercial game's rules-plus-presentation. */
+  readonly origin: 'original' | 'public-domain';
+  /** For a public-domain format, the tradition it draws on — named, so the
+   *  claim can be checked rather than asserted. */
+  readonly priorArt?: string;
+  /** True only where reading is the skill being taught rather than a barrier
+   *  to play. Everything else must be playable by a child who cannot read. */
+  readonly readingIsTheSkill?: boolean;
+  /** How a player tells the pieces apart. Colour alone is never an answer —
+   *  the app is built to work for colour-blind players. */
+  readonly toldApartBy: string;
+};
+
+/** A proposal that has been built: the idea, plus how it looks. */
+export type GameMeta = GameProposal & {
+  /** A mark from the app's own icon set — geometry the app draws, never an
+   *  image or an emoji. See `src/components/Icon.tsx`. */
+  readonly icon: IconName;
+  readonly color: string;
+  /** Free-text age range shown to parents (e.g. "3-6" or "7+"). Keep this in
+   *  sync with `minAge`/`maxAge` — it's the human-readable form of the same
+   *  range, not an independent claim. */
+  readonly ages: string;
 };
 
 /**
@@ -84,6 +104,11 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.sky,
     skill: 'Visual memory and concentration',
     roundEnds: 'Every pair has been found.',
+    origin: 'public-domain',
+    priorArt:
+      'Concentration, a matching-pairs game played with ordinary cards since at least the 19th century.',
+    toldApartBy:
+      'The picture on the card.',
     ages: '3-6',
     category: 'memory',
     minAge: 3,
@@ -100,6 +125,9 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.sun,
     skill: 'Counting and recognising numerals 1-12',
     roundEnds: 'Five questions answered.',
+    origin: 'original',
+    toldApartBy:
+      'How many objects there are, and which object it is.',
     ages: '3-6',
     category: 'numbers',
     minAge: 3,
@@ -112,6 +140,9 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.leaf,
     skill: 'Sorting by shape, colour, and size',
     roundEnds: 'Every item in the round has been sorted.',
+    origin: 'original',
+    toldApartBy:
+      'Shape, colour and size together — a colour round still differs in shape, and a shape round still differs in colour.',
     ages: '3-6',
     category: 'sorting',
     minAge: 3,
@@ -124,6 +155,10 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.grape,
     skill: 'Reading and spelling simple words',
     roundEnds: 'Four words spelled.',
+    origin: 'original',
+    readingIsTheSkill: true,
+    toldApartBy:
+      'The picture clue, and the letters themselves.',
     ages: '6-10',
     category: 'words',
     minAge: 6,
@@ -139,6 +174,11 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.berry,
     skill: 'Logical reasoning and number placement',
     roundEnds: 'The grid is filled.',
+    origin: 'public-domain',
+    priorArt:
+      'Number-placement puzzles in the Latin-square tradition, in newspapers worldwide since the 1980s and derived from far older mathematics.',
+    toldApartBy:
+      'The numeral in the cell.',
     ages: '7+',
     category: 'logic',
     minAge: 7,
@@ -154,6 +194,11 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.deep,
     skill: 'Sequence memory and concentration',
     roundEnds: 'The sequence has been repeated back.',
+    origin: 'public-domain',
+    priorArt:
+      'Watch-and-repeat sequence memory, a playground game long before it was ever electronic.',
+    toldApartBy:
+      'A distinct drawn mark per tile — filled against hollow, square against round, up against down.',
     ages: '4+',
     category: 'memory',
     minAge: 4,
@@ -169,6 +214,9 @@ export const GAMES_META: readonly GameMeta[] = [
     color: palette.teal,
     skill: 'Mental arithmetic: addition, subtraction, multiplication, division',
     roundEnds: 'Six questions answered.',
+    origin: 'original',
+    toldApartBy:
+      'The numerals and the operator.',
     ages: '6+',
     category: 'numbers',
     minAge: 6,

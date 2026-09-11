@@ -10,6 +10,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "safety": "node scripts/check-safety.mjs",
+    "propose": "node --import ./tests/register.mjs scripts/propose.mjs",
     "test": "node --import ./tests/register.mjs --test \"tests/**/*.test.ts\"",
     "verify": "npm run safety && npm run typecheck && npm test"
   },

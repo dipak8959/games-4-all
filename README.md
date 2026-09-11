@@ -298,6 +298,7 @@ npm run web        # browser preview, handy for quick UI checks
 
 ```bash
 npm run verify     # safety gate + typecheck + unit tests
+npm run propose    # runs the charter over every idea in proposals/
 ```
 
 Individually:
@@ -326,6 +327,7 @@ src/
     settings.ts, progress.ts, freshness.ts
   games/
     catalog.ts              Pure game metadata + age/category/search filtering (no React)
+    charter.ts              The ten principles, and the gate that checks an idea against them
     registry.ts             Attaches each game's Screen component to the catalogue
     memory/ counting/ shapes/ wordbuilder/ sudoku/ patternplay/ numbercrunch/
       logic.ts              Pure, seeded, unit-tested game rules
@@ -345,6 +347,8 @@ src/
     type.ts                 Archivo faces, and the text styles built from them
 assets/fonts/               Archivo 400/800 (SIL OFL) + its licence
 scripts/check-safety.mjs    The build gate
+scripts/propose.mjs         The idea gate — run the charter on a game before building it
+proposals/                  Game ideas awaiting (or failing) that gate
 tests/                      Unit tests for all pure logic
 ```
 
@@ -355,10 +359,12 @@ exactly one basket; every round is completable).
 
 ## Adding a game
 
-0. Pick something **original or genuinely public-domain** — never a clone of
-   a specific commercial game's mechanics-plus-presentation, and never a
-   borrowed name, character, or asset. See "Original content, always" in
-   **[SAFETY.md](SAFETY.md)** before settling on a concept.
+0. **Write the idea down and run it through the gate, before writing any
+   code.** Put a `GameProposal` in `proposals/` and run `npm run propose` —
+   it checks the idea against the ten principles in `src/games/charter.ts`
+   and tells you which ones it fails and why. A game that cannot pass here
+   should not be built, and finding that out costs ten seconds rather than a
+   day. See "The charter" in **[SAFETY.md](SAFETY.md)**.
 1. Create `src/games/<id>/logic.ts` — pure rules, taking an `Rng` and a `level`.
 2. Add `tests/` coverage asserting the round is always completable and fair.
 3. Create `<id>Screen.tsx` implementing `GameScreenProps`. Seed local level

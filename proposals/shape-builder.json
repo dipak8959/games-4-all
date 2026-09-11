@@ -1,0 +1,12 @@
+{
+  "id": "shapebuilder",
+  "title": "Shape Builder",
+  "skill": "Spatial reasoning and rotation",
+  "roundEnds": "The outline is completely filled.",
+  "category": "logic",
+  "minAge": 6,
+  "maxAge": 99,
+  "origin": "public-domain",
+  "priorArt": "Dissection puzzles — fitting a fixed set of flat pieces into an outline — a tradition several centuries old with no single owner.",
+  "toldApartBy": "The shape of each piece, and how many sides it has."
+}

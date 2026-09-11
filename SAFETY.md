@@ -201,7 +201,9 @@ game where reading is the point rather than something to avoid:
   colour. Nothing else in any game depends on colour — a card is told apart
   by its picture, a tile by its glyph, an answer by its number. Pattern Play in particular gives every tile a
   distinct drawn mark — filled against hollow, square against round, up
-  against down — so a sequence is followed by shape and never by colour.
+  against down — so a sequence is followed by shape and never by colour, and
+  the tile currently lit says so in its accessible name as well as in its
+  fill.
 - **Big targets.** Nothing tappable is under 72dp, above both platform
   minimums — and above the design handoff's own 44-52px rows, which is why
   the tab bar and the buttons are drawn taller here than the handoff draws

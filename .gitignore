@@ -43,3 +43,6 @@ yarn-error.*
 # local export output
 dist-web/
 dist-native/
+
+# packed single-file build for phone testing
+games-4-all.html

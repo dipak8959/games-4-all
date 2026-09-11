@@ -19,6 +19,19 @@ import { createGame, startInput, tapTile, type PatternPlayState } from './logic'
 const REVEAL_ON_MS = 550;
 const REVEAL_GAP_MS = 220;
 
+/**
+ * A beat before the first tile lights.
+ *
+ * Without it the sequence starts on the same frame the screen mounts, so the
+ * first tile flashes while the board is still arriving — after a tap on the
+ * home tile, and again the instant the round-complete card is dismissed by
+ * "Play again". A child reliably misses step one, then gets it wrong, which
+ * reads as the game being unfair rather than as a timing bug. The pause is
+ * long enough for the board to settle and for the "watch the pattern" label
+ * to be read first.
+ */
+const REVEAL_LEAD_IN_MS = 900;
+
 export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
   // The prop only seeds the first round; from here the screen adapts locally
@@ -45,12 +58,12 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
     setRevealIndex(null);
 
     state.sequence.forEach((tile, i) => {
-      const onAt = i * (REVEAL_ON_MS + REVEAL_GAP_MS);
+      const onAt = REVEAL_LEAD_IN_MS + i * (REVEAL_ON_MS + REVEAL_GAP_MS);
       timers.current.push(setTimeout(() => setRevealIndex(tile), onAt));
       timers.current.push(setTimeout(() => setRevealIndex(null), onAt + REVEAL_ON_MS));
     });
 
-    const doneAt = state.sequence.length * (REVEAL_ON_MS + REVEAL_GAP_MS);
+    const doneAt = REVEAL_LEAD_IN_MS + state.sequence.length * (REVEAL_ON_MS + REVEAL_GAP_MS);
     timers.current.push(
       setTimeout(() => {
         setState((prev) => startInput(prev));
@@ -101,7 +114,12 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
             return (
               <AnswerButton
                 key={i}
-                accessibilityLabel={`${MARK_LABELS[mark]} tile`}
+                // The lit state has to be in the label, not only in
+                // `accessibilityState.selected`: `selected` is not a valid
+                // ARIA state on a button, so react-native-web drops it on the
+                // floor and the web build ends up signalling "lit" by colour
+                // alone.
+                accessibilityLabel={`${MARK_LABELS[mark]} tile${lit ? ', lit' : ''}`}
                 state={lit ? 'active' : 'idle'}
                 disabled={state.revealing}
                 onPress={() => onTapTile(i)}

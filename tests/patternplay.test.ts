@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import { seededRng } from '../src/util/random.ts';
 import {
@@ -103,4 +104,47 @@ test('there is a distinct mark for every tile the hardest level puts on the boar
   // And every one of those marks is genuinely its own face.
   const faces = Array.from({ length: MARK_COUNT }, (_, i) => markFor(i));
   assert.equal(new Set(faces).size, MARK_COUNT, 'two tiles would share a mark');
+});
+
+/**
+ * The two things the screen has to get right that its pure logic cannot
+ * express. `PatternPlayScreen.tsx` is JSX, so it can't be imported here — its
+ * source is read instead, which is the same trick `theme.test.ts` uses.
+ */
+const SCREEN = readFileSync('src/games/patternplay/PatternPlayScreen.tsx', 'utf8');
+
+test('the reveal waits for the board to arrive before lighting the first tile', () => {
+  // Played from a standing start the first tile lit on the same frame the
+  // screen mounted — during the tap that opened the game, and again the
+  // instant "Play again" dismissed the round-complete card. Step one was
+  // effectively invisible, so a child repeated a sequence they had only seen
+  // part of and was told they were wrong.
+  const leadIn = SCREEN.match(/const REVEAL_LEAD_IN_MS = (\d+);/);
+  assert.ok(leadIn, 'the reveal has no lead-in pause before the first tile');
+  assert.ok(
+    Number(leadIn[1]) >= 500,
+    `a ${leadIn[1]}ms lead-in is not long enough for the board to settle`,
+  );
+  assert.match(
+    SCREEN,
+    /const onAt = REVEAL_LEAD_IN_MS \+/,
+    'the lead-in is declared but not applied to the reveal timings',
+  );
+  assert.match(
+    SCREEN,
+    /const doneAt = REVEAL_LEAD_IN_MS \+/,
+    'input would open before the sequence has finished playing',
+  );
+});
+
+test('a lit tile says it is lit, rather than only looking it', () => {
+  // `accessibilityState.selected` is not a valid ARIA state on a button, so
+  // react-native-web drops it: on the web build the lit tile was signalled by
+  // its accent fill and nothing else, which is exactly the "colour is the
+  // only signal" case SAFETY.md rules out.
+  assert.match(
+    SCREEN,
+    /accessibilityLabel=\{`\$\{MARK_LABELS\[mark\]\} tile\$\{lit \? ', lit' : ''\}`\}/,
+    'the lit state is missing from the tile\'s accessible name',
+  );
 });

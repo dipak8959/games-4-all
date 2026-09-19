@@ -94,6 +94,26 @@ function specForLevel(level: number): LevelSpec {
   return LEVELS[index];
 }
 
+/**
+ * The number ranges a level draws from. Exported alongside `operatorsForLevel`
+ * because these — not the operator set — are what actually moves between
+ * levels 3 and 4, where the operators are unchanged but the floor lifts.
+ *
+ * Read the ceiling as the ceiling on *terms*, not on what appears on screen:
+ * subtraction is built from its answer outward (see `createQuestion`), so its
+ * minuend reaches roughly twice this.
+ */
+export function termRangeForLevel(level: number): { readonly min: number; readonly max: number } {
+  const spec = specForLevel(level);
+  return { min: spec.termMin, max: spec.termMax };
+}
+
+/** The same, for the factors of × and ÷. */
+export function factorRangeForLevel(level: number): { readonly min: number; readonly max: number } {
+  const spec = specForLevel(level);
+  return { min: spec.factorMin, max: spec.factorMax };
+}
+
 /** Which operators are in play at a level — the school order: addition,
  *  then subtraction, then multiplication, then division. */
 export function operatorsForLevel(level: number): readonly Operator[] {

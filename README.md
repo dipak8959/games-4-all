@@ -75,8 +75,9 @@ years, and every game declares a real `minAge`/`maxAge` range
 (`src/games/catalog.ts`) — Home just checks whether the profile's age falls
 inside it (`gamesForAge`). A simple picture-matching game caps out in the
 single digits, honestly, rather than defaulting to "all ages" and quietly
-boring anyone older; a game built to keep scaling (Sudoku's grid size,
-Pattern Play's sequence length, Number Crunch's arithmetic) carries no upper
+boring anyone older; a game built to keep scaling (Sudoku's grid size and
+clue count, Pattern Play's sequence length, Number Crunch's arithmetic)
+carries no upper
 cap at all, because it doesn't need one.
 
 Age still does the same two things it always did, just without the group

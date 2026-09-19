@@ -4,7 +4,10 @@ import { shuffle, type Rng } from '../../util/random';
  * Sudoku.
  *
  * A grown-up-recognisable logic puzzle, sized to the child: 4x4 to start,
- * growing to 6x6 and then a generously-clued 9x9 as adaptive level rises.
+ * growing to 6x6 and then a full 9x9 as adaptive level rises. Each size
+ * spans two levels — the first arrives generously clued, the second takes
+ * clues away — so there are six real tiers rather than three, and no level
+ * plays exactly like the one below it.
  * Every puzzle is generated fresh (full solve + hole-digging, both below),
  * so unlike the pooled-content games there's no fixed set to exhaust and no
  * "avoid the last one" bookkeeping needed — procedural generation already
@@ -48,14 +51,34 @@ export function sizeForLevel(level: number): SudokuSize {
   return 9;
 }
 
-/** How many cells stay filled in as "givens", per grid size — generous on
- *  purpose. This is a forgiving kids' variant, not a minimal-clue puzzle for
- *  Sudoku enthusiasts, so every tier leans toward "clearly solvable with a
- *  bit of patience" rather than maximum difficulty for its size. */
-function givensFor(size: SudokuSize): number {
-  if (size === 4) return 8; // half of 16
-  if (size === 6) return 20; // just over half of 36
-  return 38; // easy-to-medium for a 9x9's 81 cells
+/**
+ * How many cells stay filled in as "givens", per level — generous on purpose.
+ * This is a forgiving kids' variant, not a minimal-clue puzzle for Sudoku
+ * enthusiasts, so every tier leans toward "clearly solvable with a bit of
+ * patience" rather than maximum difficulty for its size.
+ *
+ * Clues used to be keyed to grid size alone, which made every second level a
+ * repeat and put the whole difficulty change on the size jumps. The 6x6-to-9x9
+ * step was the worst of it: 16 empty cells became 43 in one promotion, landing
+ * on a player who had just had a good round. Keying clues to the level instead
+ * splits each size into a gentle half and a tighter one, so the jump to a new
+ * grid is cushioned by arriving at its easiest setting.
+ *
+ * Empty cells by level: 5, 8, 12, 16, 29, 43.
+ */
+const GIVENS_BY_LEVEL: readonly number[] = [
+  11, // 4x4: 5 blanks — the first sudoku a child ever sees
+  8, //  4x4: 8 blanks, half the grid
+  24, // 6x6: 12 blanks, gentle at the new size
+  20, // 6x6: 16 blanks
+  52, // 9x9: 29 blanks — clued enough to go in on singles alone
+  38, // 9x9: 43 blanks, easy-to-medium for a full grid
+];
+
+/** Givens for a level, clamped to the 1-6 range every game shares. */
+export function givensForLevel(level: number): number {
+  const index = Math.max(1, Math.min(GIVENS_BY_LEVEL.length, Math.round(level))) - 1;
+  return GIVENS_BY_LEVEL[index];
 }
 
 const cellIndex = (row: number, col: number, size: number): number => row * size + col;
@@ -172,7 +195,7 @@ export function createGame(rng: Rng, level: number): SudokuState {
   const size = sizeForLevel(level);
   const { boxHeight, boxWidth } = boxDimsFor(size);
   const solution = generateSolution(rng, size);
-  const given = digHoles(rng, solution, size, givensFor(size));
+  const given = digHoles(rng, solution, size, givensForLevel(level));
 
   const cells: SudokuCell[] = solution.map((value, i) => ({
     value: given[i] ? value : null,

@@ -183,8 +183,9 @@ export const GAMES_META: readonly GameMeta[] = [
     category: 'logic',
     minAge: 7,
     // Unlike the games above, Sudoku's real difficulty grows with grid size
-    // (up to a full 9x9), so it stays genuinely challenging well past
-    // childhood — no upper cap needed.
+    // (up to a full 9x9) and then with how few clues that grid starts with,
+    // so it stays genuinely challenging well past childhood — no upper cap
+    // needed.
     maxAge: 99,
   },
   {

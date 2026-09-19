@@ -7,6 +7,7 @@ import {
   enterNumber,
   selectCell,
   filledCount,
+  givensForLevel,
   sizeForLevel,
   type SudokuState,
 } from '../src/games/sudoku/logic.ts';
@@ -69,6 +70,26 @@ test('given cells match the solution, and the given count matches expectations',
     }
     const givenCount = state.cells.filter((c) => c.given).length;
     assert.ok(givenCount > 0 && givenCount < state.cells.length, 'puzzle must be neither blank nor full');
+  }
+});
+
+test('every level is dug down to exactly the clue count it asks for', () => {
+  // `digHoles` stops early if no further cell can be removed without making
+  // the puzzle ambiguous, so the target is a ceiling on holes rather than a
+  // promise. These targets are deliberately generous enough that it is
+  // always reached — if a future tier is tightened past what unique
+  // solvability allows, this is where that shows up rather than silently
+  // shipping an easier puzzle than the level intends.
+  for (const level of [1, 2, 3, 4, 5, 6]) {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const state = createGame(seededRng(seed * 101 + level), level);
+      const givens = state.cells.filter((c) => c.given).length;
+      assert.equal(
+        givens,
+        givensForLevel(level),
+        `level ${level} seed ${seed} stopped at ${givens} givens`,
+      );
+    }
   }
 });
 

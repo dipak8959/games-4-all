@@ -54,12 +54,19 @@ async function listed() {
 console.log('=== age 3: every game at its gentlest ===');
 await setAge(page, 3);
 report.ok(`Home lists: ${(await listed()).join(', ')}`);
-for (const title of ['Find the Pairs', 'How Many?', 'Sort It Out', 'Odd One Out']) await round(title, 'age 3');
+for (const title of ['Find the Pairs', 'How Many?', 'Sort It Out', 'Odd One Out', 'Shadow Match', 'Which Cup?', 'Big to Small']) {
+  await round(title, 'age 3');
+}
 await setAge(page, 4);
 await round('Puddle Hop', 'age 4');
 await round('Memory Grid', 'age 4');
 await setAge(page, 5);
 await round('Lane Dash', 'age 5');
+await setAge(page, 7);
+for (const title of ['Shadow Match', 'Big to Small', 'Tile Slide']) await round(title, 'age 7');
+await setAge(page, 10);
+await round('Which Cup?', 'age 10');
+await round('Word Ladder', 'age 10');
 
 console.log('\n=== age 17: every game at full difficulty ===');
 await setAge(page, 17);
@@ -68,7 +75,20 @@ for (let i = 0; i < 6; i += 1) {
   await page.waitForTimeout(150);
 }
 report.ok(`Home lists: ${(await listed()).join(', ')}`);
-for (const title of ['Pattern Play', 'Number Crunch', 'Sudoku', 'Shape Builder', 'Puddle Hop', 'Lane Dash', 'Odd One Out', 'Memory Grid']) await round(title, 'age 17');
+for (const title of [
+  'Pattern Play',
+  'Number Crunch',
+  'Sudoku',
+  'Shape Builder',
+  'Puddle Hop',
+  'Lane Dash',
+  'Odd One Out',
+  'Memory Grid',
+  'Tile Slide',
+  'Word Ladder',
+]) {
+  await round(title, 'age 17');
+}
 
 console.log('\n=== getting it wrong on purpose ===');
 await setAge(page, 9);
@@ -183,6 +203,56 @@ if (await openGame(page, 'Lane Dash')) {
     else report.ok('no clock, lap time or record anywhere');
   }
   await backHome(page, report, 'Lane Dash');
+}
+
+console.log('\n=== Which Cup?: the wrong cup, and cups that move ===');
+if (await openGame(page, 'Which Cup?')) {
+  await page.getByText('KEEP WATCHING', { exact: true }).waitFor({ timeout: 8000 });
+  if (await page.getByLabel(/^Cup \d+$/).first().isEnabled()) {
+    report.bug('Which Cup?', 'a cup can be picked while the cups are still moving');
+  } else {
+    report.ok('no cup can be picked mid-shuffle');
+  }
+  await page.getByText('WHICH CUP?', { exact: true }).waitFor({ timeout: 15000 });
+  const cup = await page.locator('[data-testid$="-ball"]').first().boundingBox();
+  const middle = cup.x + cup.width / 2;
+  let wrong = null;
+  for (const slot of await page.getByLabel(/^Cup \d+$/).all()) {
+    const box = await slot.boundingBox();
+    if (middle < box.x || middle > box.x + box.width) wrong = slot;
+  }
+  const label = await wrong.getAttribute('aria-label');
+  await wrong.click();
+  await page.waitForTimeout(300);
+  if (!(await page.getByLabel(`${label}, empty`).count())) {
+    report.bug('Which Cup?', 'a wrong cup did not lift to show it was empty');
+  } else if (await page.getByLabel(`${label}, empty`).isEnabled()) {
+    report.bug('Which Cup?', 'an empty cup can be picked again');
+  } else {
+    report.ok('a wrong cup lifts, shows it is empty, and cannot be charged twice');
+  }
+  if (!(await page.getByText('WHICH CUP?', { exact: true }).count())) {
+    report.bug('Which Cup?', 'a wrong cup moved on instead of letting the child pick again');
+  }
+  await backHome(page, report, 'Which Cup?');
+}
+
+console.log('\n=== Tile Slide: a tile out of line ===');
+if (await openGame(page, 'Tile Slide')) {
+  const read = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('[aria-label]')]
+        .map((el) => el.getAttribute('aria-label'))
+        .filter((l) => /^(\d+|Gap), row/.test(l))
+        .join('|'),
+    );
+  const before = await read();
+  const stuck = page.getByLabel(/^\d+, row \d+, column \d+$/).first();
+  await stuck.click();
+  await page.waitForTimeout(250);
+  if ((await read()) !== before) report.bug('Tile Slide', 'a tile out of line with the gap moved');
+  else report.ok('a tile out of line with the gap stays put');
+  await backHome(page, report, 'Tile Slide');
 }
 
 console.log('\n=== leaving a round part-way through ===');

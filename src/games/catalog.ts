@@ -334,6 +334,101 @@ export const GAMES_META: readonly GameMeta[] = [
     // four-by-four is a stretch for an adult. Every round is five patterns.
     maxAge: 99,
   },
+  {
+    id: 'shadowmatch',
+    title: 'Shadow Match',
+    icon: 'shadow',
+    color: tilePalette.stone,
+    skill: 'Shape recognition: knowing a thing by its outline alone, then by its outline turned',
+    roundEnds: 'Six shadows matched.',
+    origin: 'public-domain',
+    priorArt:
+      'Match-the-shadow puzzles — a picture-book and preschool-worksheet staple for generations, owned by no one.',
+    toldApartBy:
+      'The outline of each shadow. Every shadow is the same dark colour, so shape is the only thing to go on.',
+    ages: '3-7',
+    category: 'sorting',
+    minAge: 3,
+    // Two very different shadows is a three-year-old's game; six near
+    // misses, each turned its own way, stretches a seven-year-old. Past
+    // that it is a picture-book game, so it stops there.
+    maxAge: 7,
+  },
+  {
+    id: 'whichcup',
+    title: 'Which Cup?',
+    icon: 'cups',
+    color: tilePalette.grape,
+    skill: 'Keeping track: following one thing with your eyes while it moves among others that look the same',
+    roundEnds: 'Five balls found.',
+    origin: 'public-domain',
+    priorArt:
+      'Cups and balls, a conjuring trick performed for over two thousand years, and the hide-it-under-a-cup game every family plays at a kitchen table.',
+    toldApartBy:
+      'Where each cup is. The cups are alike on purpose; the ball is a round shape seen when a cup lifts.',
+    ages: '3-10',
+    category: 'memory',
+    minAge: 3,
+    // Two cups swapped once is where a three-year-old's tracking is; four
+    // cups swapped seven times, crossing over, holds a ten-year-old. It
+    // never speeds up past what a child can follow, so it stops there.
+    maxAge: 10,
+  },
+  {
+    id: 'bigtosmall',
+    title: 'Big to Small',
+    icon: 'bigsmall',
+    color: tilePalette.moss,
+    skill: 'Ordering by size: seeing which is bigger, and putting a whole set in order',
+    roundEnds: 'Four sets put in order.',
+    origin: 'public-domain',
+    priorArt:
+      'Seriation — nesting cups, stacking rings and size-ordering tasks used in early-years teaching since Froebel and Montessori.',
+    toldApartBy: 'Size. Colour and shape never give the order away.',
+    ages: '3-7',
+    category: 'sorting',
+    minAge: 3,
+    // Ordering by size is an early-years idea. Seven shapes a tenth apart,
+    // each turned, is a real look for a seven-year-old, and there it stops.
+    maxAge: 7,
+  },
+  {
+    id: 'tileslide',
+    title: 'Tile Slide',
+    icon: 'slide',
+    color: tilePalette.cyan,
+    skill: 'Planning ahead: working out a sequence of moves that puts a mixed-up grid back in order',
+    roundEnds: 'Every tile is back in its place.',
+    origin: 'public-domain',
+    priorArt:
+      'The sliding fifteen puzzle, a craze of the 1880s, and sliding-block puzzles in general, owned by no one.',
+    toldApartBy: 'The numeral on each tile.',
+    ages: '7+',
+    category: 'logic',
+    minAge: 7,
+    // A four-by-four mixed by sixty moves asks an adult to plan, and every
+    // tile is full size — it is what Nonogram could not be on a phone.
+    maxAge: 99,
+  },
+  {
+    id: 'wordladder',
+    title: 'Word Ladder',
+    icon: 'ladder',
+    color: tilePalette.brown,
+    skill: 'Reading and vocabulary: turning one word into another a letter at a time, through real words',
+    roundEnds: 'Three ladders climbed.',
+    origin: 'public-domain',
+    readingIsTheSkill: true,
+    priorArt:
+      'Doublets, the one-letter-at-a-time word puzzle Lewis Carroll published in 1879, known ever since as the word ladder.',
+    toldApartBy: 'The letters of each word.',
+    ages: '10+',
+    category: 'words',
+    minAge: 10,
+    // Six-step ladders whose wrong turns look as close to the goal as the
+    // right one are Carroll's puzzle for grown-ups too.
+    maxAge: 99,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

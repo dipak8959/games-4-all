@@ -1,4 +1,5 @@
 import { GAMES_META } from './catalog';
+import { BigToSmallScreen } from './bigtosmall/BigToSmallScreen';
 import { CountingScreen } from './counting/CountingScreen';
 import { LaneDashScreen } from './lanedash/LaneDashScreen';
 import { MemoryGridScreen } from './memorygrid/MemoryGridScreen';
@@ -7,11 +8,15 @@ import { NumberCrunchScreen } from './numbercrunch/NumberCrunchScreen';
 import { OddOneOutScreen } from './oddoneout/OddOneOutScreen';
 import { PatternPlayScreen } from './patternplay/PatternPlayScreen';
 import { PuddleHopScreen } from './puddlehop/PuddleHopScreen';
+import { ShadowMatchScreen } from './shadowmatch/ShadowMatchScreen';
 import { ShapeBuilderScreen } from './shapebuilder/ShapeBuilderScreen';
 import { ShapesScreen } from './shapes/ShapesScreen';
 import { SudokuScreen } from './sudoku/SudokuScreen';
+import { TileSlideScreen } from './tileslide/TileSlideScreen';
 import type { GameDefinition } from './types';
+import { WhichCupScreen } from './whichcup/WhichCupScreen';
 import { WordBuilderScreen } from './wordbuilder/WordBuilderScreen';
+import { WordLadderScreen } from './wordladder/WordLadderScreen';
 
 /**
  * Attaches each game's screen component to its catalogue metadata.
@@ -34,6 +39,11 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   lanedash: LaneDashScreen,
   oddoneout: OddOneOutScreen,
   memorygrid: MemoryGridScreen,
+  shadowmatch: ShadowMatchScreen,
+  whichcup: WhichCupScreen,
+  bigtosmall: BigToSmallScreen,
+  tileslide: TileSlideScreen,
+  wordladder: WordLadderScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

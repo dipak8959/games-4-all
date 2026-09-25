@@ -145,6 +145,29 @@ function Glyph({
   );
 }
 
+/** An upside-down cup: a trapezoid, narrow at the top, its base at `y + h`. */
+function Cup({ u, cx, y, top, bottom, h, color }: { u: number; cx: number; y: number; top: number; bottom: number; h: number; color: string }) {
+  const side = ((bottom - top) / 2) * u;
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        left: (cx - bottom / 2) * u,
+        top: y * u,
+        // The box includes its borders, so it is the full base width.
+        width: bottom * u,
+        height: 0,
+        borderBottomWidth: h * u,
+        borderLeftWidth: side,
+        borderRightWidth: side,
+        borderBottomColor: color,
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent',
+      }}
+    />
+  );
+}
+
 /** Googly eyes: two whites and two pupils looking ahead. */
 function Eyes({ u, x, y, r }: { u: number; x: number; y: number; r: number }) {
   return (
@@ -342,6 +365,69 @@ const SCENES: Readonly<Record<string, Draw>> = {
           <Frame key={i} u={u} x={x} y={y} w={20} h={20} color={c.fg} line={2.5} />
         );
       })}
+    </>
+  ),
+  // A house, and its shadow.
+  shadowmatch: (u, c) => (
+    <>
+      <Block u={u} x={16} y={38} w={24} h={22} color={c.fg} />
+      <Peak u={u} cx={28} top={20} w={34} h={18} color={c.fg} />
+      <Block u={u} x={60} y={62} w={24} h={22} color={c.hi} />
+      <Peak u={u} cx={72} top={44} w={34} h={18} color={c.hi} />
+    </>
+  ),
+  // Three cups, the middle one lifted off the ball.
+  whichcup: (u, c) => (
+    <>
+      <Block u={u} x={8} y={78} w={84} h={3} color={c.fg} />
+      <Cup u={u} cx={22} y={52} top={14} bottom={24} h={26} color={c.fg} />
+      <Cup u={u} cx={50} y={26} top={14} bottom={24} h={26} color={c.fg} />
+      <Cup u={u} cx={78} y={52} top={14} bottom={24} h={26} color={c.fg} />
+      <Disc u={u} cx={50} cy={70} r={8} color={c.hi} />
+    </>
+  ),
+  // A line put in order, biggest first, the smallest still to go.
+  bigtosmall: (u, c) => (
+    <>
+      <Block u={u} x={8} y={78} w={84} h={3} color={c.fg} />
+      <Block u={u} x={10} y={42} w={32} h={36} color={c.fg} />
+      <Block u={u} x={46} y={54} w={22} h={24} color={c.fg} />
+      <Block u={u} x={72} y={62} w={16} h={16} color={c.hi} />
+    </>
+  ),
+  // Numbered tiles with a gap, one tile sliding into it.
+  tileslide: (u, c) => (
+    <>
+      {[
+        [0, 0, '1'],
+        [1, 0, '2'],
+        [2, 0, '3'],
+        [0, 1, '4'],
+        [1, 1, '5'],
+        [2, 1, '6'],
+        [0, 2, '7'],
+      ].map(([col, row, n]) => (
+        <React.Fragment key={String(n)}>
+          <Block u={u} x={16 + Number(col) * 23} y={16 + Number(row) * 23} w={21} h={21} color={c.fg} />
+          <Glyph u={u} x={16 + Number(col) * 23} y={19 + Number(row) * 23} w={21} size={12} color={c.field}>
+            {String(n)}
+          </Glyph>
+        </React.Fragment>
+      ))}
+      <Block u={u} x={50} y={62} w={21} h={21} color={c.hi} />
+      <Glyph u={u} x={50} y={65} w={21} size={12} color={c.fg}>
+        8
+      </Glyph>
+    </>
+  ),
+  // A ladder, one rung lit.
+  wordladder: (u, c) => (
+    <>
+      <Block u={u} x={26} y={10} w={4} h={80} color={c.fg} />
+      <Block u={u} x={70} y={10} w={4} h={80} color={c.fg} />
+      {[22, 40, 58, 76].map((y) => (
+        <Block key={y} u={u} x={30} y={y} w={40} h={4} color={y === 40 ? c.hi : c.fg} />
+      ))}
     </>
   ),
 };

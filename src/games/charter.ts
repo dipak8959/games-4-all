@@ -211,6 +211,8 @@ const TRADEMARKED = [
   'temple run', 'clash of clans', 'fruit ninja', 'flappy bird', '2048',
   // Chrome's offline game, under the names people actually call it.
   'chrome dino', 'dino game', 't-rex runner', 't-rex game', 'dino run',
+  // A toy's name for the press-a-light puzzle; Tile Slide is the one built.
+  'lights out',
 ];
 
 /** The youngest age this app has anything for. */

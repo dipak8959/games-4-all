@@ -19,6 +19,7 @@ import {
 
 /** Every game screen, which is where a design drifts first. */
 const GAME_SCREENS = [
+  'src/games/bigtosmall/BigToSmallScreen.tsx',
   'src/games/counting/CountingScreen.tsx',
   'src/games/lanedash/LaneDashScreen.tsx',
   'src/games/memory/MemoryScreen.tsx',
@@ -27,10 +28,14 @@ const GAME_SCREENS = [
   'src/games/oddoneout/OddOneOutScreen.tsx',
   'src/games/patternplay/PatternPlayScreen.tsx',
   'src/games/puddlehop/PuddleHopScreen.tsx',
+  'src/games/shadowmatch/ShadowMatchScreen.tsx',
   'src/games/shapebuilder/ShapeBuilderScreen.tsx',
   'src/games/shapes/ShapesScreen.tsx',
   'src/games/sudoku/SudokuScreen.tsx',
+  'src/games/tileslide/TileSlideScreen.tsx',
+  'src/games/whichcup/WhichCupScreen.tsx',
   'src/games/wordbuilder/WordBuilderScreen.tsx',
+  'src/games/wordladder/WordLadderScreen.tsx',
 ];
 
 /**
@@ -216,8 +221,10 @@ function sourceFiles(dir: string): string[] {
 /**
  * Circles are geometry, not rounded corners: the icon set draws rings and
  * dots, Sort It Out draws an actual circle to sort, and the Puddle Hop runner
- * and the Lane Dash car have round googly eyes (a square eye is not a joke anyone gets). Everything
- * else in the app is square — the runner's body included.
+ * and the Lane Dash car have round googly eyes (a square eye is not a joke anyone gets), a
+ * snowman or a lollipop in Shadow Match is round, and so is the ball under
+ * the cup. Everything else in the app is square — the runner's body
+ * included.
  */
 const MAY_DRAW_CIRCLES = [
   'src/components/Icon.tsx',
@@ -226,6 +233,8 @@ const MAY_DRAW_CIRCLES = [
   'src/games/patternplay/PatternMark.tsx',
   'src/games/puddlehop/PuddleHopScreen.tsx',
   'src/games/lanedash/LaneDashScreen.tsx',
+  'src/games/shadowmatch/Figure.tsx',
+  'src/games/whichcup/WhichCupScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

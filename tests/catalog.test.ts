@@ -45,7 +45,21 @@ test('gamesForAge excludes games whose range does not include that age', () => {
 
 test('a young child sees exactly the preschool-appropriate games', () => {
   const ids = gamesForAge(4).map((g) => g.id).sort();
-  assert.deepEqual(ids, ['counting', 'memory', 'memorygrid', 'oddoneout', 'patternplay', 'puddlehop', 'shapes'].sort());
+  assert.deepEqual(
+    ids,
+    [
+      'bigtosmall',
+      'counting',
+      'memory',
+      'memorygrid',
+      'oddoneout',
+      'patternplay',
+      'puddlehop',
+      'shadowmatch',
+      'shapes',
+      'whichcup',
+    ].sort(),
+  );
 });
 
 test('an adult profile is never shown a game built only for young children', () => {

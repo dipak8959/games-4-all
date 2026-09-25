@@ -54,7 +54,12 @@ export type IconName =
   | 'hop'
   | 'race'
   | 'odd'
-  | 'memorygrid';
+  | 'memorygrid'
+  | 'shadow'
+  | 'cups'
+  | 'bigsmall'
+  | 'slide'
+  | 'ladder';
 
 export function Icon({
   name,
@@ -565,6 +570,62 @@ export function Icon({
         </View>
       );
 
+    case 'shadow':
+      // A hollow square and the edge of its shadow, cast down and to the right.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.12, 0.12, 0.56, 0.56), { borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.68, 0.3, 0.2, 0.58), { backgroundColor: color }]} />
+          <View style={[at(size, 0.3, 0.68, 0.38, 0.2), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'cups':
+      // Three cups, the middle one lifted off the ball under it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.06, 0.5, 0.24, 0.3), { backgroundColor: color }]} />
+          <View style={[at(size, 0.38, 0.24, 0.24, 0.3), { backgroundColor: color }]} />
+          <View style={[at(size, 0.7, 0.5, 0.24, 0.3), { backgroundColor: color }]} />
+          <View style={[at(size, 0.44, 0.64, 0.12, 0.12), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.04, 0.84, 0.92, 0), { height: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'bigsmall':
+      // Three blocks standing in a line, biggest first.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.08, 0.3, 0.36, 0.52), { backgroundColor: color }]} />
+          <View style={[at(size, 0.5, 0.48, 0.24, 0.34), { backgroundColor: color }]} />
+          <View style={[at(size, 0.8, 0.64, 0.14, 0.18), { backgroundColor: color }]} />
+          <View style={[at(size, 0.04, 0.82, 0.92, 0), { height: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'slide':
+      // Three tiles and a gap, in a two-by-two frame.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.12, 0.12, 0.34, 0.34), { backgroundColor: color }]} />
+          <View style={[at(size, 0.54, 0.12, 0.34, 0.34), { backgroundColor: color }]} />
+          <View style={[at(size, 0.12, 0.54, 0.34, 0.34), { backgroundColor: color }]} />
+          <View style={[at(size, 0.54, 0.54, 0.34, 0.34), { borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'ladder':
+      // Two rails and three rungs.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.22, 0.08, 0, 0.84), { width: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.78, 0.08, 0, 0.84), { width: s, marginLeft: -s, backgroundColor: color }]} />
+          {[0.24, 0.48, 0.72].map((top) => (
+            <View key={top} style={[at(size, 0.22, top, 0.56, 0), { height: s, backgroundColor: color }]} />
+          ))}
+        </View>
+      );
+
     case 'odd':
       // Three squares in a row and one circle: the one that doesn't belong.
       return (
@@ -749,6 +810,17 @@ function Dot({
       }}
     />
   );
+}
+
+/** An absolutely placed box, in fractions of the icon's size. */
+function at(size: number, left: number, top: number, width: number, height: number) {
+  return {
+    position: 'absolute' as const,
+    left: size * left,
+    top: size * top,
+    width: size * width,
+    height: size * height,
+  };
 }
 
 const styles = StyleSheet.create({

@@ -87,9 +87,11 @@ export type PlayColorKey = keyof typeof playPalette;
  * yellow How Many? tile were 1.8:1 — and there were only seven of them for
  * twelve games, so tiles repeated.
  *
- * Fourteen, for twelve games and room for two more; `tests/theme.test.ts`
+ * Eighteen, for seventeen games and room for one more; `tests/theme.test.ts`
  * holds every game to a colour of its own that clears both contrasts. None
- * is red, which is the accent's.
+ * is red, which is the accent's. The band both contrasts leave is narrow, so
+ * the later colours differ as much by how strong they are as by hue: stone
+ * is a warm grey beside slate's blue one, khaki a muted ochre.
  */
 export const tilePalette = {
   indigo: '#5361C6',
@@ -106,6 +108,10 @@ export const tilePalette = {
   pine: '#3C7A5A',
   cyan: '#0B7FA6',
   brown: '#8E6034',
+  moss: '#5B7F2A',
+  grape: '#9448B8',
+  stone: '#7A6F66',
+  khaki: '#7F7340',
 } as const;
 
 /** Resolves one of `playPalette`'s keys, falling back to the first colour so

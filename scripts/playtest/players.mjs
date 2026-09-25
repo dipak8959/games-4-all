@@ -5,6 +5,8 @@
  * from the game's own logic, so a round only completes if the board, the
  * labels and the rules genuinely agree with each other.
  */
+import { readFileSync } from 'node:fs';
+
 import { roundResult } from './harness.mjs';
 
 /** Reads the memory board as a list of `{ locator, label }`. */
@@ -586,6 +588,248 @@ export async function playMemoryGrid(page, report) {
   }
 }
 
+/** Shadow Match: read what the thing is, and tap the shadow with its name. */
+export async function playShadowMatch(page, report) {
+  for (let q = 0; q < 8; q += 1) {
+    if (await roundResult(page)) break;
+    const thing = await page.getByLabel(/^A (orange|blue|green|yellow|pink) /).first().getAttribute('aria-label');
+    const name = thing.replace(/^A \w+ /, '');
+    const shadows = [];
+    for (const b of await page.getByRole('button').all()) {
+      const label = (await b.getAttribute('aria-label')) ?? '';
+      const m = label.match(/^Shadow of a (.+?)(, on its side|, upside down)?$/);
+      if (m) shadows.push({ b, name: m[1] });
+    }
+    const matches = shadows.filter((s) => s.name === name);
+    if (matches.length !== 1) {
+      report.bug('Shadow Match', `${matches.length} shadows of a ${name} among ${shadows.length}`);
+      return;
+    }
+    await matches[0].b.click();
+    await page.waitForTimeout(350);
+  }
+}
+
+/** Which Cup?: note which cup the ball went under, follow that cup across
+ *  the screen as it moves, and tap the slot it ends up in. */
+export async function playWhichCup(page, report) {
+  for (let q = 0; q < 7; q += 1) {
+    if (await roundResult(page)) break;
+    let shown = false;
+    for (let t = 0; t < 80 && !shown; t += 1) {
+      shown = (await page.getByLabel(/, the ball is under it$/).count()) > 0;
+      if (!shown) await page.waitForTimeout(50);
+    }
+    if (!shown) {
+      report.bug('Which Cup?', 'the ball was never shown going under a cup');
+      return;
+    }
+    // Exact: the header's "Which Cup?" would match a case-blind search.
+    await page.getByText('WHICH CUP?', { exact: true }).waitFor({ timeout: 15000 });
+    const cup = await page.locator('[data-testid$="-ball"]').first().boundingBox();
+    const middle = cup.x + cup.width / 2;
+    let picked = false;
+    for (const slot of await page.getByLabel(/^Cup \d+$/).all()) {
+      const box = await slot.boundingBox();
+      if (middle >= box.x && middle <= box.x + box.width) {
+        await slot.click();
+        picked = true;
+        break;
+      }
+    }
+    if (!picked) {
+      report.bug('Which Cup?', 'the ball\'s cup did not end up over any slot');
+      return;
+    }
+    try {
+      await page.getByText('FOUND IT', { exact: true }).waitFor({ timeout: 2000 });
+    } catch {
+      report.bug('Which Cup?', 'the cup the ball was followed to was not the right one');
+      return;
+    }
+    await page.waitForTimeout(1300);
+  }
+}
+
+/** Big to Small: tap whatever is biggest of what's left, until the line is
+ *  full; four times. */
+export async function playBigToSmall(page, report) {
+  for (let t = 0; t < 60; t += 1) {
+    if (await roundResult(page)) break;
+    const items = [];
+    for (const b of await page.getByRole('button').all()) {
+      const label = (await b.getAttribute('aria-label')) ?? '';
+      const m = label.match(/^\w+, size (\d+)$/);
+      if (m) items.push({ b, size: parseInt(m[1], 10) });
+    }
+    if (items.length === 0) {
+      await page.waitForTimeout(300);
+      continue;
+    }
+    items.sort((a, b) => b.size - a.size);
+    await items[0].b.click();
+    await page.waitForTimeout(items.length === 1 ? 1100 : 150);
+  }
+}
+
+/** The fewest gap moves that solve a sliding board, by search: breadth-first
+ *  up to 3x3, iterative deepening on distance-from-home for 4x4. */
+function solveSlide(board, size) {
+  const goal = board.map((_, i) => (i === board.length - 1 ? 0 : i + 1)).join();
+  const moves = (b) => {
+    const gap = b.indexOf(0);
+    const r = Math.floor(gap / size);
+    const c = gap % size;
+    return [
+      [r - 1, c],
+      [r + 1, c],
+      [r, c - 1],
+      [r, c + 1],
+    ]
+      .filter(([rr, cc]) => rr >= 0 && rr < size && cc >= 0 && cc < size)
+      .map(([rr, cc]) => rr * size + cc);
+  };
+  const swap = (b, to) => {
+    const n = [...b];
+    const gap = n.indexOf(0);
+    [n[gap], n[to]] = [n[to], n[gap]];
+    return n;
+  };
+  if (size <= 3) {
+    const prev = new Map([[board.join(), null]]);
+    let frontier = [board];
+    while (frontier.length) {
+      const next = [];
+      for (const b of frontier) {
+        if (b.join() === goal) {
+          const path = [];
+          for (let k = b.join(); prev.get(k); k = prev.get(k).from) path.unshift(prev.get(k).cell);
+          return path;
+        }
+        for (const to of moves(b)) {
+          const n = swap(b, to);
+          if (!prev.has(n.join())) {
+            prev.set(n.join(), { from: b.join(), cell: to });
+            next.push(n);
+          }
+        }
+      }
+      frontier = next;
+    }
+    return null;
+  }
+  const h = (b) =>
+    b.reduce((sum, t, i) => (t === 0 ? sum : sum + Math.abs(Math.floor((t - 1) / size) - Math.floor(i / size)) + Math.abs(((t - 1) % size) - (i % size))), 0);
+  const path = [];
+  const search = (b, g, bound, last) => {
+    const f = g + h(b);
+    if (f > bound) return f;
+    if (b.join() === goal) return true;
+    let min = Infinity;
+    for (const to of moves(b)) {
+      if (to === last) continue;
+      const gap = b.indexOf(0);
+      path.push(to);
+      const t = search(swap(b, to), g + 1, bound, gap);
+      if (t === true) return true;
+      path.pop();
+      if (t < min) min = t;
+    }
+    return min;
+  };
+  for (let bound = h(board); bound < 80; ) {
+    const t = search(board, 0, bound, -1);
+    if (t === true) return path;
+    bound = t;
+  }
+  return null;
+}
+
+/** Tile Slide: read the board off the labels, solve it, and slide the tiles
+ *  one at a time. */
+export async function playTileSlide(page, report) {
+  const cells = await page.evaluate(() =>
+    [...document.querySelectorAll('[aria-label]')]
+      .map((el) => el.getAttribute('aria-label'))
+      .map((l) => l.match(/^(\d+|Gap), row (\d+), column (\d+)/))
+      .filter(Boolean)
+      .map((m) => ({ tile: m[1] === 'Gap' ? 0 : parseInt(m[1], 10), row: +m[2], col: +m[3] })),
+  );
+  const size = Math.round(Math.sqrt(cells.length));
+  if (size * size !== cells.length || size < 2) {
+    report.bug('Tile Slide', `read ${cells.length} cells, not a square`);
+    return;
+  }
+  const board = Array(size * size);
+  for (const c of cells) board[(c.row - 1) * size + (c.col - 1)] = c.tile;
+  const path = solveSlide(board, size);
+  if (!path) {
+    report.bug('Tile Slide', 'the board as dealt cannot be solved');
+    return;
+  }
+  report.ok(`${size}x${size}, solved in ${path.length} slides`);
+  for (const cell of path) {
+    const row = Math.floor(cell / size) + 1;
+    const col = (cell % size) + 1;
+    await page.getByLabel(new RegExp(`^\\d+, row ${row}, column ${col}, can slide$`)).click();
+    await page.waitForTimeout(60);
+  }
+}
+
+/** A reader's vocabulary for Word Ladder: the game's own word list, read as
+ *  text — the words a player knows, not the game's rules. */
+function vocabulary() {
+  const source = readFileSync(new URL('../../src/games/wordladder/words.ts', import.meta.url), 'utf8');
+  return [...source.matchAll(/`([^`]*)`/g)].flatMap((m) => m[1].split(/\s+/).filter(Boolean));
+}
+
+/** Word Ladder: from the goal and the rungs left, pick the word that is
+ *  exactly the right number of one-letter steps from the goal. */
+export async function playWordLadder(page, report) {
+  const words = vocabulary();
+  const oneApart = (a, b) => a.length === b.length && [...a].filter((ch, i) => b[i] !== ch).length === 1;
+  const distances = (goal) => {
+    const dist = new Map([[goal, 0]]);
+    let frontier = [goal];
+    while (frontier.length) {
+      const next = [];
+      for (const w of frontier) {
+        for (const n of words) {
+          if (!dist.has(n) && oneApart(w, n)) {
+            dist.set(n, dist.get(w) + 1);
+            next.push(n);
+          }
+        }
+      }
+      frontier = next;
+    }
+    return dist;
+  };
+  for (let t = 0; t < 40; t += 1) {
+    if (await roundResult(page)) break;
+    const title = await page.getByText(/ TO .*, ONE LETTER AT A TIME$/).first().innerText();
+    const goal = title.match(/ TO (\w+),/)[1].toLowerCase();
+    const choices = [];
+    for (const b of await page.getByRole('button').all()) {
+      const label = (await b.getAttribute('aria-label')) ?? '';
+      if (/^[a-z]{3,4}$/.test(label) && !(await b.isDisabled())) choices.push({ b, word: label });
+    }
+    if (choices.length === 0) {
+      await page.waitForTimeout(400);
+      continue;
+    }
+    const dist = distances(goal);
+    const best = Math.min(...choices.map((c) => dist.get(c.word) ?? Infinity));
+    const right = choices.filter((c) => (dist.get(c.word) ?? Infinity) === best);
+    if (right.length !== 1) {
+      report.bug('Word Ladder', `${right.length} words equally close among ${choices.map((c) => c.word).join('/')}`);
+      return;
+    }
+    await right[0].b.click();
+    await page.waitForTimeout(best === 0 ? 1600 : 250);
+  }
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -599,4 +843,9 @@ export const PLAYERS = {
   'Lane Dash': playLaneDash,
   'Odd One Out': playOddOneOut,
   'Memory Grid': playMemoryGrid,
+  'Shadow Match': playShadowMatch,
+  'Which Cup?': playWhichCup,
+  'Big to Small': playBigToSmall,
+  'Tile Slide': playTileSlide,
+  'Word Ladder': playWordLadder,
 };

@@ -21,6 +21,11 @@ import { specForLevel as puddleHopSpec } from '../src/games/puddlehop/logic.ts';
 import { specForLevel as laneDashSpec } from '../src/games/lanedash/logic.ts';
 import { specForLevel as oddOneOutSpec } from '../src/games/oddoneout/logic.ts';
 import { specForLevel as memoryGridSpec } from '../src/games/memorygrid/logic.ts';
+import { specForLevel as shadowMatchSpec } from '../src/games/shadowmatch/logic.ts';
+import { specForLevel as whichCupSpec } from '../src/games/whichcup/logic.ts';
+import { specForLevel as bigToSmallSpec } from '../src/games/bigtosmall/logic.ts';
+import { specForLevel as tileSlideSpec } from '../src/games/tileslide/logic.ts';
+import { specForLevel as wordLadderSpec } from '../src/games/wordladder/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -211,6 +216,28 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
     const spec = oddOneOutSpec(l);
     // A size ratio closer to 1 is a smaller, harder-to-see difference.
     return [spec.items, spec.differences.length, spec.sizeRatio, spec.colourNoise ? 1 : 0];
+  },
+  shadowmatch: (l) => {
+    const spec = shadowMatchSpec(l);
+    return [spec.choices, spec.near, spec.turn];
+  },
+  whichcup: (l) => {
+    const spec = whichCupSpec(l);
+    // Quicker swaps count negatively.
+    return [spec.cups, spec.swaps, -spec.swapMs, spec.reach === 'any' ? 1 : 0];
+  },
+  bigtosmall: (l) => {
+    const spec = bigToSmallSpec(l);
+    // A ratio closer to 1 is a smaller step between sizes.
+    return [spec.items, spec.ratio, spec.turned ? 1 : 0, spec.mixedColours ? 1 : 0];
+  },
+  tileslide: (l) => {
+    const spec = tileSlideSpec(l);
+    return [spec.size, spec.mix];
+  },
+  wordladder: (l) => {
+    const spec = wordLadderSpec(l);
+    return [spec.length, spec.steps, spec.choices, spec.temptation];
   },
   puddlehop: (l) => {
     const spec = puddleHopSpec(l);

@@ -251,10 +251,13 @@ game where reading is the point rather than something to avoid:
 - **Always escapable.** Every game has a large back control that exits
   immediately, with no confirmation dialog to read.
 - **Motion is optional.** The OS "reduce motion" setting is honoured
-  automatically, and can also be set per-profile in Parent Zone. Puddle Hop
-  and Lane Dash are the two games whose play *is* movement — the course has
-  to scroll — so there it takes away everything decorative instead: no spin
-  when the runner trips or the car bumps, no shuffling legs.
+  automatically, and can also be set per-profile in Parent Zone. Puddle Hop,
+  Lane Dash and Which Cup? are the three games whose play *is* movement — a
+  course has to scroll, a cup has to be followed — so there it takes away
+  everything decorative instead: no spin when the runner trips or the car
+  bumps, no shuffling legs. Which Cup? has nothing decorative to take: its
+  cups slide slowly, never quicker than three-quarters of a second a swap,
+  and nothing moves at all while a child is choosing.
 
 ## Nothing here is built to be hard to stop
 

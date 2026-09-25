@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { GAMES_META } from '../src/games/catalog.ts';
 import { join } from 'node:path';
 
 import {
@@ -219,6 +220,7 @@ function sourceFiles(dir: string): string[] {
  */
 const MAY_DRAW_CIRCLES = [
   'src/components/Icon.tsx',
+  'src/components/GameArt.tsx',
   'src/games/shapes/Shape.tsx',
   'src/games/patternplay/PatternMark.tsx',
   'src/games/puddlehop/PuddleHopScreen.tsx',
@@ -253,4 +255,17 @@ test('nothing draws a gradient, and no gradient library is installed', () => {
     !('expo-linear-gradient' in (pkg.dependencies ?? {})),
     'the flat design needs no gradient dependency',
   );
+});
+
+test('every game has its own picture for Home, on its own play colour', () => {
+  // Every tile used to be the same grey box with a small icon. Each game now
+  // shows a tiny version of itself; a new game without one would fall back to
+  // an empty coloured square, so this fails first.
+  const art = readFileSync('src/components/GameArt.tsx', 'utf8');
+  const scenes = art.slice(art.indexOf('const SCENES'), art.indexOf('export const GAMES_WITH_ART'));
+  const colours = Object.values(playPalette) as string[];
+  for (const game of GAMES_META) {
+    assert.match(scenes, new RegExp(`\\n  ${game.id}: \\(u, c\\)`), `${game.title} has no picture`);
+    assert.ok(colours.includes(game.color), `${game.title}'s colour is not a play colour`);
+  }
 });

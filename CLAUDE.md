@@ -45,7 +45,10 @@ adult). Age bands follow the ICO Children's Code.
 2. Build pure logic in `src/games/<id>/logic.ts` with tests, and the screen
    in `<Name>Screen.tsx`. Register it in `catalog.ts` and `registry.ts`.
 3. Add its difficulty dials to `DIALS` in `tests/difficulty.test.ts`.
-4. Add a player to `scripts/playtest/players.mjs` and play it in a browser.
+4. Draw its Home picture in `src/components/GameArt.tsx`: a tiny version of
+   the game on its play colour, objects in the light ground colour, the one
+   live thing in ink. `tests/theme.test.ts` fails until it has one.
+5. Add a player to `scripts/playtest/players.mjs` and play it in a browser.
 
 ## Before calling anything done
 

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { GameArt } from '../components/GameArt';
 import { Icon, type IconName } from '../components/Icon';
 import { Rule } from '../components/Rule';
 import { Screen } from '../components/Screen';
@@ -319,9 +320,9 @@ function CategoryCell({
 }
 
 /**
- * The handoff's 184px hero. Its key-art slot is a drawn mark rather than a
- * photograph: this repository ships no image files, so the game's own icon —
- * geometry the app draws at runtime — is the art.
+ * The handoff's 184px hero. Its key-art slot is the game's own picture — a
+ * tiny version of the game on its colour (`GameArt`), drawn at runtime, since
+ * this repository ships no image files.
  */
 function Hero({
   game,
@@ -337,10 +338,10 @@ function Hero({
       accessibilityRole="button"
       accessibilityLabel={`${game.title}. ${game.skill}. Ages ${game.ages}. Level ${level} of ${MAX_LEVEL}.`}
       onPress={onPress}
-      style={({ pressed }) => [styles.hero, pressed && styles.heroPressed]}
+      style={({ pressed }) => [styles.hero, { backgroundColor: game.color }, pressed && styles.heroPressed]}
     >
       <View style={styles.heroArt}>
-        <Icon name={game.icon} size={96} color={palette.inkSoft} />
+        <GameArt id={game.id} color={game.color} />
       </View>
       <View style={styles.heroPlate}>
         <Text style={[type.mono, styles.heroKicker]}>ON DEVICE · READY TO PLAY</Text>
@@ -375,7 +376,7 @@ function GameCell({
         style={({ pressed }) => [styles.gameCellMain, pressed && styles.pressedTint]}
       >
         <View style={styles.thumb}>
-          <Icon name={game.icon} size={40} color={palette.ink} />
+          <GameArt id={game.id} color={game.color} />
         </View>
         <Text style={styles.gameTitle} numberOfLines={2}>
           {game.title}
@@ -393,7 +394,9 @@ function GameCell({
         hitSlop={16}
         style={styles.pin}
       >
-        <Icon name="star" size={18} color={pinned ? palette.accent : palette.border} />
+        {/* On the game's colour: ink when pinned, the light ground when not.
+            The accent would vanish into the orange tiles. */}
+        <Icon name="star" size={18} color={pinned ? palette.ink : palette.bg} />
       </Pressable>
     </View>
   );
@@ -497,16 +500,15 @@ const styles = StyleSheet.create({
   heroArt: {
     position: 'absolute',
     top: 0,
-    left: 0,
     right: 0,
-    bottom: 0,
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
-    paddingTop: space.lg,
-    paddingRight: space.xl,
+    width: 184,
+    height: 184,
   },
   heroPlate: {
     maxWidth: 310,
+    // Stops short of the picture on the right (184 wide, as tall as the
+    // hero), so the name never covers the game's scene.
+    marginRight: 184,
     alignSelf: 'flex-start',
     backgroundColor: palette.bg,
     paddingLeft: gutter,
@@ -521,7 +523,7 @@ const styles = StyleSheet.create({
   gameCellMain: { padding: space.sm, gap: space.sm, minHeight: 150 },
   thumb: {
     aspectRatio: 1,
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'center',
     backgroundColor: palette.surfaceAlt,
   },

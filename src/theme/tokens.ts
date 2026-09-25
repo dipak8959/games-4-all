@@ -49,7 +49,10 @@ export const palette = {
   accentTintText: '#7c1405',
 
   /** Okabe-Ito derived: distinguishable under all common colour-vision
-   *  types. Used for play objects and profile colours — never for chrome. */
+   *  types. Used for play objects, profile colours and each game's picture
+   *  on Home (`GameArt`) — never for chrome. A tile's picture is a picture
+   *  of the game, which is why it may carry the game's colour; the card
+   *  around it, its name and its star stay chrome. */
   berry: '#E8630A',
   sky: '#0091D6',
   leaf: '#00A97A',
@@ -61,8 +64,9 @@ export const palette = {
 
 export type PaletteColor = (typeof palette)[keyof typeof palette];
 
-/** The colours a profile can be, and the colours a game screen draws its
- *  own objects in. Chrome never reaches into this. */
+/** The colours a profile can be, the colours a game screen draws its own
+ *  objects in, and each game's colour on Home. Chrome never reaches into
+ *  this. */
 export const playPalette = {
   berry: palette.berry,
   sky: palette.sky,

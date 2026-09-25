@@ -349,27 +349,52 @@ export function Icon({
       );
 
     // An open ring with an arrowhead riding its top edge.
-    case 'replay':
+    case 'replay': {
+      // A ring with its top-right quarter open, and the arrowhead sitting on
+      // the end at twelve o'clock, pointing clockwise along the ring.
+      //
+      // The ring is drawn with its top side transparent and then turned 45°.
+      // Unturned, a transparent side on a circle leaves ends cut on the
+      // diagonal, which is what made the old mark look chipped; turned, both
+      // ends fall on radii, so they are square to the stroke — and the gap
+      // lands between twelve and three, where the arrow needs it.
+      const d = size * 0.68;
+      const ringTop = (size - d) / 2;
+      const head = s * 2.8;
       return (
-        <View style={[styles.center, box]} {...hidden}>
+        <View style={box} {...hidden}>
           <View
             style={{
-              width: size * 0.72,
-              height: size * 0.72,
-              borderRadius: size,
+              position: 'absolute',
+              top: ringTop,
+              left: ringTop,
+              width: d,
+              height: d,
+              borderRadius: d / 2,
               borderWidth: s,
               borderColor: color,
               borderTopColor: 'transparent',
+              transform: [{ rotate: '45deg' }],
             }}
           />
-          <Triangle
-            w={size * 0.26}
-            h={size * 0.22}
-            color={color}
-            style={{ position: 'absolute', top: 0, right: size * 0.06 }}
+          <View
+            style={{
+              position: 'absolute',
+              top: ringTop + s / 2 - head / 2,
+              left: size / 2 - s * 0.4,
+              width: 0,
+              height: 0,
+              borderTopWidth: head / 2,
+              borderBottomWidth: head / 2,
+              borderLeftWidth: head * 0.8,
+              borderTopColor: 'transparent',
+              borderBottomColor: 'transparent',
+              borderLeftColor: color,
+            }}
           />
         </View>
       );
+    }
 
     // The one mark drawn as type rather than geometry. A star's tapering
     // points can't be built from rectangles — every attempt reads as a plus

@@ -150,7 +150,7 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
             state={state.revealing ? 'spent' : 'idle'}
             onPress={onReplay}
           >
-            <Icon name="replay" size={30} color={palette.ink} />
+            <Icon name="replay" size={34} color={palette.ink} />
           </AnswerButton>
         </AnswerRow>
       </View>

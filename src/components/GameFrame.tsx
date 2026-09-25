@@ -50,7 +50,7 @@ export function useGamePaused(): boolean {
  * The back control is an arrow with a large hit area and no confirmation — a
  * child must always be able to leave a game immediately, without reading
  * anything or answering a dialog. "How to play" sits opposite it, top right,
- * and closes the same way: one tap.
+ * in words, and closes the same way: one tap.
  */
 export function GameFrame({
   title,
@@ -100,7 +100,7 @@ export function GameFrame({
             onPress={() => setOpen(true)}
             style={({ pressed }) => [styles.help, pressed && styles.pressed]}
           >
-            <Icon name="help" size={30} color={palette.ink} />
+            <Text style={[type.monoStrong, styles.helpText]}>{'HOW TO\nPLAY'}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -194,14 +194,19 @@ const styles = StyleSheet.create({
     borderRightWidth: rule.hair,
     borderRightColor: palette.border,
   },
+  // Words rather than a "?", so a grown-up handing the phone over can see
+  // what it does without guessing — on two lines, so a long game title
+  // still fits beside it on a small phone.
   help: {
-    width: hitTarget,
+    minWidth: hitTarget,
     height: hitTarget,
+    paddingHorizontal: space.md,
     alignItems: 'center',
     justifyContent: 'center',
     borderLeftWidth: rule.hair,
     borderLeftColor: palette.border,
   },
+  helpText: { textAlign: 'center' },
   pressed: { backgroundColor: 'rgba(32,30,29,0.10)' },
   titleWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.sm },
   track: { height: 10, backgroundColor: palette.surface, borderTopWidth: rule.hair, borderTopColor: palette.border },

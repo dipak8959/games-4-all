@@ -315,6 +315,25 @@ export const GAMES_META: readonly GameMeta[] = [
     // real visual search for an adult, not a toddler game they tolerate.
     maxAge: 99,
   },
+  {
+    id: 'memorygrid',
+    title: 'Memory Grid',
+    icon: 'memorygrid',
+    color: palette.teal,
+    skill: "Spatial memory: holding where several things were, all at once, after they've gone",
+    roundEnds: 'Five patterns remembered.',
+    origin: 'public-domain',
+    priorArt:
+      'Block-tapping memory tasks, used in child-development research since the 1970s, and lights-on-a-grid memory games long before screens.',
+    toldApartBy:
+      'Position on the grid. A lit square is filled and says so to a screen reader; a found one keeps a mark.',
+    ages: '4+',
+    category: 'memory',
+    minAge: 4,
+    // Two squares on a small grid is about a four-year-old's span; seven on a
+    // four-by-four is a stretch for an adult. Every round is five patterns.
+    maxAge: 99,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

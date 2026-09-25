@@ -557,6 +557,35 @@ export async function playOddOneOut(page, report) {
   }
 }
 
+/** Memory Grid: watch which squares say they're lit, then tap them back once
+ *  the pattern has gone — five times over. */
+export async function playMemoryGrid(page, report) {
+  for (let pattern = 0; pattern < 6; pattern += 1) {
+    if (await roundResult(page)) break;
+    const seen = new Set();
+    for (let t = 0; t < 120; t += 1) {
+      const lit = await page.evaluate(() =>
+        [...document.querySelectorAll('[role="button"]')]
+          .map((el) => el.getAttribute('aria-label') ?? '')
+          .filter((l) => /, lit$/.test(l))
+          .map((l) => l.replace(/, lit$/, '')),
+      );
+      lit.forEach((l) => seen.add(l));
+      if (seen.size && (await page.getByText('TAP THE ONES THAT LIT UP').count())) break;
+      await page.waitForTimeout(50);
+    }
+    if (seen.size === 0) {
+      report.bug('Memory Grid', 'no square ever lit up');
+      return;
+    }
+    for (const label of seen) {
+      await page.getByLabel(label, { exact: true }).click();
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(300);
+  }
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -569,4 +598,5 @@ export const PLAYERS = {
   'Puddle Hop': playPuddleHop,
   'Lane Dash': playLaneDash,
   'Odd One Out': playOddOneOut,
+  'Memory Grid': playMemoryGrid,
 };

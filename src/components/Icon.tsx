@@ -53,7 +53,8 @@ export type IconName =
   | 'pieces'
   | 'hop'
   | 'race'
-  | 'odd';
+  | 'odd'
+  | 'memorygrid';
 
 export function Icon({
   name,
@@ -536,6 +537,27 @@ export function Icon({
                   width: size * 0.36,
                   height: size * 0.36,
                   backgroundColor: color,
+                }}
+              />
+            ))}
+          </View>
+        </View>
+      );
+
+    case 'memorygrid':
+      // A three-by-three grid with two squares filled in.
+      return (
+        <View style={[styles.center, box]} {...hidden}>
+          <View style={{ width: size * 0.78, flexDirection: 'row', flexWrap: 'wrap', gap: size * 0.06 }}>
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <View
+                key={i}
+                style={{
+                  width: size * 0.22,
+                  height: size * 0.22,
+                  borderWidth: i === 1 || i === 6 ? 0 : s / 2,
+                  borderColor: color,
+                  backgroundColor: i === 1 || i === 6 ? color : 'transparent',
                 }}
               />
             ))}

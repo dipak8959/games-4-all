@@ -63,6 +63,7 @@ await play('How Many?');
 await play('Sort It Out');
 await play('Puddle Hop');
 await play('Odd One Out');
+await play('Memory Grid');
 
 console.log('\n=== age 9 ===');
 await setAge(page, 9);

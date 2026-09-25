@@ -20,6 +20,7 @@ const GAME_SCREENS = [
   'src/games/counting/CountingScreen.tsx',
   'src/games/lanedash/LaneDashScreen.tsx',
   'src/games/memory/MemoryScreen.tsx',
+  'src/games/memorygrid/MemoryGridScreen.tsx',
   'src/games/numbercrunch/NumberCrunchScreen.tsx',
   'src/games/oddoneout/OddOneOutScreen.tsx',
   'src/games/patternplay/PatternPlayScreen.tsx',

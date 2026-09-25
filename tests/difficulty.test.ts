@@ -20,6 +20,7 @@ import { specForLevel as shapeBuilderSpec } from '../src/games/shapebuilder/logi
 import { specForLevel as puddleHopSpec } from '../src/games/puddlehop/logic.ts';
 import { specForLevel as laneDashSpec } from '../src/games/lanedash/logic.ts';
 import { specForLevel as oddOneOutSpec } from '../src/games/oddoneout/logic.ts';
+import { specForLevel as memoryGridSpec } from '../src/games/memorygrid/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -200,6 +201,11 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
     const spec = laneDashSpec(l);
     // Rivals closer behind and less room between rows count negatively.
     return [spec.lanes, spec.speed, spec.rows, spec.kinds.length, spec.doubleChance, -spec.margin, -spec.gapMin];
+  },
+  memorygrid: (l) => {
+    const spec = memoryGridSpec(l);
+    // Less time to look counts negatively.
+    return [spec.size, spec.lit, -spec.showMs];
   },
   oddoneout: (l) => {
     const spec = oddOneOutSpec(l);

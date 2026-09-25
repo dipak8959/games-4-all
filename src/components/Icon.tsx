@@ -64,7 +64,13 @@ export type IconName =
   | 'maze'
   | 'balloons'
   | 'treasure'
-  | 'pipes';
+  | 'pipes'
+  | 'arcade'
+  | 'bricks'
+  | 'worm'
+  | 'peekaboo'
+  | 'hoop'
+  | 'lander';
 
 export function Icon({
   name,
@@ -679,6 +685,83 @@ export function Icon({
         <View style={box} {...hidden}>
           <View style={[at(size, 0.06, 0.28, 0.58, 0.22), { backgroundColor: color }]} />
           <View style={[at(size, 0.42, 0.28, 0.22, 0.64), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'arcade':
+      // A joystick: a base, a stick, and the knob on top.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.14, 0.68, 0.72, 0.2), { backgroundColor: color }]} />
+          <View style={[at(size, 0.5, 0.3, 0, 0.4), { width: s, marginLeft: -s / 2, backgroundColor: color }]} />
+          <View style={[at(size, 0.34, 0.08, 0.32, 0.32), { borderRadius: size, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'bricks':
+      // A wall of bricks, a ball, and the paddle under it.
+      return (
+        <View style={box} {...hidden}>
+          {[0.08, 0.38, 0.68].map((left) => (
+            <View key={left} style={[at(size, left, 0.1, 0.24, 0.14), { backgroundColor: color }]} />
+          ))}
+          {[0.08, 0.68].map((left) => (
+            <View key={left} style={[at(size, left, 0.3, 0.24, 0.14), { backgroundColor: color }]} />
+          ))}
+          <View style={[at(size, 0.42, 0.52, 0.16, 0.16), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.28, 0.82, 0.44, 0), { height: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'worm':
+      // A worm that turns a corner, heading for an apple.
+      return (
+        <View style={box} {...hidden}>
+          {[
+            [0.08, 0.7],
+            [0.28, 0.7],
+            [0.48, 0.7],
+            [0.48, 0.5],
+          ].map(([left, top]) => (
+            <View key={`${left}${top}`} style={[at(size, left, top, 0.18, 0.18), { backgroundColor: color }]} />
+          ))}
+          <View style={[at(size, 0.48, 0.3, 0.18, 0.18), { borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.72, 0.08, 0.2, 0.2), { borderRadius: size, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'peekaboo':
+      // A face peeking up out of a hole.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.24, 0.24, 0.52, 0.5), { borderWidth: s, borderColor: color, borderBottomWidth: 0 }]} />
+          <View style={[at(size, 0.36, 0.4, 0.1, 0.1), { backgroundColor: color }]} />
+          <View style={[at(size, 0.54, 0.4, 0.1, 0.1), { backgroundColor: color }]} />
+          <View style={[at(size, 0.06, 0.74, 0.88, 0.12), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'hoop':
+      // A ball arcing towards a hoop on its board, seen side-on.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.08, 0.1, 0.26, 0.26), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.84, 0.16, 0, 0.5), { width: s, marginLeft: -s, backgroundColor: color }]} />
+          <View style={[at(size, 0.4, 0.46, 0.44, 0), { height: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.46, 0.46, 0.32, 0.26), { borderLeftWidth: s / 2, borderRightWidth: s / 2, borderBottomWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'lander':
+      // A rocket on its legs, just down on the ground.
+      return (
+        <View style={box} {...hidden}>
+          <Triangle w={size * 0.36} h={size * 0.2} color={color} style={{ position: 'absolute', left: size * 0.32, top: size * 0.06 }} />
+          <View style={[at(size, 0.32, 0.26, 0.36, 0.34), { backgroundColor: color }]} />
+          <View style={[at(size, 0.2, 0.6, 0.6, 0), { height: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.2, 0.6, 0, 0.26), { width: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.8, 0.6, 0, 0.26), { width: s, marginLeft: -s, backgroundColor: color }]} />
+          <View style={[at(size, 0.04, 0.86, 0.92, 0), { height: s, backgroundColor: color }]} />
         </View>
       );
 

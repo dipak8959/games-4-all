@@ -206,6 +206,55 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     ],
     grows: 'A bigger grid, with bends, T-pieces and crossings.',
   },
+  bouncebricks: {
+    goal: 'Knock down the wall of bricks with the ball. You have five balls.',
+    steps: [
+      'Tap to send the ball up. Slide your finger to move the paddle.',
+      'Get the paddle under the ball to bounce it back up. Every brick it hits breaks.',
+      'Where the ball lands on the paddle sets where it goes: the middle sends it straight up, the ends send it off to the side.',
+    ],
+    example: 'One brick left, over on the right? Catch the ball on the right end of the paddle.',
+    grows: 'A smaller paddle, a faster ball, a bigger wall, then striped bricks that take two hits.',
+  },
+  hungryworm: {
+    goal: 'Steer the worm to ten apples.',
+    steps: [
+      'Press an arrow to start the worm, and to turn it.',
+      'The worm keeps going the way it faces. Every apple makes it longer.',
+      'Bump into a wall, a rock or its own tail and it stops and waits. Pick another way.',
+    ],
+    example: 'The worm is going right and the apple is above it: press the up arrow before it goes past.',
+    grows: 'A faster worm that grows more with each apple, then rocks in the way.',
+  },
+  peekaboo: {
+    goal: 'Say hello to the pals who peek out of their holes. Twenty pals peek out in a round.',
+    steps: [
+      'Tap a hole to start.',
+      'When a pal with open eyes pops up, tap it to say hello.',
+      'Pals with shut eyes and a nightcap are sleepy. Leave them to sleep.',
+    ],
+    grows: 'More holes, pals who duck back down sooner, more of them up at once, and more sleepy ones.',
+  },
+  hoopshot: {
+    goal: 'Throw the ball through the hoop. You have ten throws.',
+    steps: [
+      'Put your finger on the court and pull back, away from the hoop.',
+      'The dots show where the ball will go. Pull further to throw harder, lower or higher to change the curve.',
+      'Let go to throw. It goes in if it drops down through the hoop.',
+    ],
+    example: 'The dots fall short of the hoop? Pull back a little further before you let go.',
+    grows: 'A smaller hoop, fewer dots to guide you, a hoop that moves between throws, then wind, then a hoop that sways.',
+  },
+  softlanding: {
+    goal: 'Land the rocket gently on the striped pad, three times.',
+    steps: [
+      'Press the up button to start the rocket falling.',
+      'Hold the up button to fire the engine and slow down. Let go and it falls faster.',
+      'Touch down slowly: the speed bar should not reach its line. From level 3, the side buttons push the rocket left and right, over the pad.',
+    ],
+    example: 'The speed bar goes past the line near the ground? Hold the up button until it is back above.',
+    grows: 'Stronger gravity, a smaller pad further away, hills, wind, and less fuel.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

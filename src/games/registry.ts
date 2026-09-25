@@ -1,8 +1,11 @@
 import { GAMES_META } from './catalog';
 import { BalloonCountScreen } from './ballooncount/BalloonCountScreen';
 import { BigToSmallScreen } from './bigtosmall/BigToSmallScreen';
+import { BounceBricksScreen } from './bouncebricks/BounceBricksScreen';
 import { CountingScreen } from './counting/CountingScreen';
 import { FruitCatchScreen } from './fruitcatch/FruitCatchScreen';
+import { HoopShotScreen } from './hoopshot/HoopShotScreen';
+import { HungryWormScreen } from './hungryworm/HungryWormScreen';
 import { LaneDashScreen } from './lanedash/LaneDashScreen';
 import { MazeScreen } from './maze/MazeScreen';
 import { MemoryGridScreen } from './memorygrid/MemoryGridScreen';
@@ -10,10 +13,12 @@ import { MemoryScreen } from './memory/MemoryScreen';
 import { NumberCrunchScreen } from './numbercrunch/NumberCrunchScreen';
 import { OddOneOutScreen } from './oddoneout/OddOneOutScreen';
 import { PatternPlayScreen } from './patternplay/PatternPlayScreen';
+import { PeekabooScreen } from './peekaboo/PeekabooScreen';
 import { PuddleHopScreen } from './puddlehop/PuddleHopScreen';
 import { ShadowMatchScreen } from './shadowmatch/ShadowMatchScreen';
 import { ShapeBuilderScreen } from './shapebuilder/ShapeBuilderScreen';
 import { ShapesScreen } from './shapes/ShapesScreen';
+import { SoftLandingScreen } from './softlanding/SoftLandingScreen';
 import { SudokuScreen } from './sudoku/SudokuScreen';
 import { TileSlideScreen } from './tileslide/TileSlideScreen';
 import { TreasureHuntScreen } from './treasurehunt/TreasureHuntScreen';
@@ -54,6 +59,11 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   ballooncount: BalloonCountScreen,
   treasurehunt: TreasureHuntScreen,
   waterworks: WaterWorksScreen,
+  bouncebricks: BounceBricksScreen,
+  hungryworm: HungryWormScreen,
+  peekaboo: PeekabooScreen,
+  hoopshot: HoopShotScreen,
+  softlanding: SoftLandingScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

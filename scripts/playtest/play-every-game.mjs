@@ -70,6 +70,10 @@ await play('Big to Small');
 await play('Fruit Catch');
 await play('Maze Explorer');
 await play('Balloon Count');
+await play('Peekaboo Pals');
+await play('Bounce Bricks');
+await play('Hungry Worm');
+await play('Hoop Shot');
 
 console.log('\n=== age 9 ===');
 await setAge(page, 9);
@@ -82,6 +86,7 @@ await play('Lane Dash');
 await play('Tile Slide');
 await play('Treasure Hunt');
 await play('Water Works');
+await play('Soft Landing');
 
 console.log('\n=== age 12 ===');
 await setAge(page, 12);
@@ -107,6 +112,10 @@ for (const title of [
   'Word Ladder',
   'Treasure Hunt',
   'Water Works',
+  'Bounce Bricks',
+  'Hungry Worm',
+  'Hoop Shot',
+  'Soft Landing',
 ]) {
   const row = lines.findIndex((l) => l.trim() === title);
   const meta = lines.slice(row, row + 4).join(' ');

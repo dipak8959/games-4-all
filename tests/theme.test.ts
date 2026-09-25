@@ -21,8 +21,11 @@ import {
 const GAME_SCREENS = [
   'src/games/ballooncount/BalloonCountScreen.tsx',
   'src/games/bigtosmall/BigToSmallScreen.tsx',
+  'src/games/bouncebricks/BounceBricksScreen.tsx',
   'src/games/counting/CountingScreen.tsx',
   'src/games/fruitcatch/FruitCatchScreen.tsx',
+  'src/games/hoopshot/HoopShotScreen.tsx',
+  'src/games/hungryworm/HungryWormScreen.tsx',
   'src/games/lanedash/LaneDashScreen.tsx',
   'src/games/maze/MazeScreen.tsx',
   'src/games/memory/MemoryScreen.tsx',
@@ -30,10 +33,12 @@ const GAME_SCREENS = [
   'src/games/numbercrunch/NumberCrunchScreen.tsx',
   'src/games/oddoneout/OddOneOutScreen.tsx',
   'src/games/patternplay/PatternPlayScreen.tsx',
+  'src/games/peekaboo/PeekabooScreen.tsx',
   'src/games/puddlehop/PuddleHopScreen.tsx',
   'src/games/shadowmatch/ShadowMatchScreen.tsx',
   'src/games/shapebuilder/ShapeBuilderScreen.tsx',
   'src/games/shapes/ShapesScreen.tsx',
+  'src/games/softlanding/SoftLandingScreen.tsx',
   'src/games/sudoku/SudokuScreen.tsx',
   'src/games/tileslide/TileSlideScreen.tsx',
   'src/games/treasurehunt/TreasureHuntScreen.tsx',
@@ -229,8 +234,9 @@ function sourceFiles(dir: string): string[] {
  * and the Lane Dash car have round googly eyes (a square eye is not a joke anyone gets), a
  * snowman or a lollipop in Shadow Match is round, and so is the ball under
  * the cup — as are fruit, balloons, the maze explorer's eyes and key ring,
- * and a flower's petals. Everything else in the app is square — the runner's body
- * included.
+ * and a flower's petals — and the arcade games' balls, the worm's eyes and its
+ * apple, and a peeking pal's eyes. Everything else in the app is square — the
+ * runner's body, the rocket and its window included.
  */
 const MAY_DRAW_CIRCLES = [
   'src/components/Icon.tsx',
@@ -245,6 +251,10 @@ const MAY_DRAW_CIRCLES = [
   'src/games/maze/MazeScreen.tsx',
   'src/games/ballooncount/BalloonCountScreen.tsx',
   'src/games/waterworks/WaterWorksScreen.tsx',
+  'src/games/bouncebricks/BounceBricksScreen.tsx',
+  'src/games/hungryworm/HungryWormScreen.tsx',
+  'src/games/peekaboo/PeekabooScreen.tsx',
+  'src/games/hoopshot/HoopShotScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

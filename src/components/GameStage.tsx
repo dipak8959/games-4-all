@@ -139,6 +139,45 @@ export function AnswerButton({
   );
 }
 
+/**
+ * react-native-web's own name for "report a press the instant it starts".
+ * Native Pressable already does; the web build waits 50ms unless told.
+ */
+const PRESS_AT_ONCE = { delayPressIn: 0 } as object;
+
+/**
+ * A button that works for as long as it's held — a thruster, not an answer.
+ * It looks exactly like an answer and is lit while it's held down; `onHold`
+ * hears `true` the instant the finger lands and `false` when it lifts.
+ */
+export function HoldButton({
+  children,
+  onHold,
+  size = hitTarget + 16,
+  accessibilityLabel,
+  testID,
+}: {
+  readonly children: React.ReactNode;
+  readonly onHold: (down: boolean) => void;
+  readonly size?: number;
+  readonly accessibilityLabel: string;
+  readonly testID?: string;
+}) {
+  return (
+    <Pressable
+      {...PRESS_AT_ONCE}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      onPressIn={() => onHold(true)}
+      onPressOut={() => onHold(false)}
+      style={({ pressed }) => [styles.answer, { minWidth: size, minHeight: size }, pressed && styles.answerActive]}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   label: { paddingBottom: space.sm },
   stage: {

@@ -1109,6 +1109,436 @@ export async function playWaterWorks(page, report) {
   }
 }
 
+/**
+ * Bounce Bricks, played from inside the page: every frame it reads the ball,
+ * the paddle and the bricks off the screen and slides the paddle — with the
+ * real mouse, held down on the field — to catch the ball on whichever part
+ * of the paddle sends it towards the nearest brick. A ball resting on the
+ * paddle is served with a fresh press.
+ */
+const bricksHook = new WeakSet();
+const bricksAt = new WeakMap();
+
+export async function playBounceBricks(page, report) {
+  const field = await page.getByTestId('field').boundingBox();
+  bricksAt.set(page, { y: field.y + field.height * 0.6 });
+  if (!bricksHook.has(page)) {
+    bricksHook.add(page);
+    await page.exposeFunction('__bricksMove', (x) => page.mouse.move(x, bricksAt.get(page).y));
+    await page.exposeFunction('__bricksServe', async (x) => {
+      await page.mouse.up();
+      await page.mouse.move(x, bricksAt.get(page).y);
+      await page.mouse.down();
+    });
+  }
+  await page.mouse.move(field.x + field.width / 2, bricksAt.get(page).y);
+  await page.mouse.down();
+
+  const moves = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let moves = 0;
+        let busy = false;
+        let lastServe = 0;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) {
+            resolve(moves);
+            return;
+          }
+          const ball = document.querySelector('[data-testid="ball"]')?.getBoundingClientRect();
+          const paddle = document.querySelector('[data-testid="paddle"]')?.getBoundingClientRect();
+          if (ball && paddle && !busy) {
+            const bx = ball.left + ball.width / 2;
+            const resting = document.body.innerText.includes('TAP TO SERVE');
+            busy = true;
+            if (resting && now - lastServe > 600) {
+              lastServe = now;
+              await window.__bricksServe(bx);
+            } else {
+              // Aim: the paddle's end sends the ball off at up to 60°.
+              const bricks = [...document.querySelectorAll('[data-testid="brick"]')].map((b) => b.getBoundingClientRect());
+              const target = bricks.sort(
+                (a, b) => Math.abs(a.left + a.width / 2 - bx) - Math.abs(b.left + b.width / 2 - bx),
+              )[0];
+              let offset = 0;
+              if (target) {
+                const angle = Math.atan2(target.left + target.width / 2 - bx, paddle.top - target.bottom);
+                offset = Math.max(-0.8, Math.min(0.8, angle / (Math.PI / 3)));
+              }
+              await window.__bricksMove(bx - (offset * paddle.width) / 2);
+              moves += 1;
+            }
+            busy = false;
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  await page.mouse.up();
+  report.ok(`followed the ball with ${moves} paddle moves`);
+}
+
+/**
+ * Hungry Worm, from inside the page: whenever the head moves it finds the
+ * shortest way to the apple around the rocks and its own body, and presses
+ * the arrow for the first step — for real — if that's a turn.
+ */
+const wormHook = new WeakSet();
+const wormArrows = new WeakMap();
+
+export async function playHungryWorm(page, report) {
+  const arrows = {};
+  for (const dir of ['up', 'down', 'left', 'right']) {
+    const box = await page.getByLabel(`Go ${dir}`, { exact: true }).boundingBox();
+    arrows[dir] = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  }
+  wormArrows.set(page, arrows);
+  if (!wormHook.has(page)) {
+    wormHook.add(page);
+    await page.exposeFunction('__wormPress', (dir) => {
+      const at = wormArrows.get(page)[dir];
+      return page.mouse.click(at.x, at.y);
+    });
+  }
+
+  const presses = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
+        let presses = 0;
+        let lastHead = null;
+        let busy = false;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 180000) {
+            resolve(presses);
+            return;
+          }
+          const board = document.querySelector('[data-testid^="worm:"]');
+          if (board && !busy) {
+            const [cols, rows] = board.dataset.testid.split(':')[1].split('x').map(Number);
+            const segs = [...document.querySelectorAll('[data-testid^="seg:"]')].map((e) => Number(e.dataset.testid.split(':')[1]));
+            const rocks = [...document.querySelectorAll('[data-testid^="rock:"]')].map((e) => Number(e.dataset.testid.split(':')[1]));
+            const apple = Number(document.querySelector('[data-testid^="apple:"]')?.dataset.testid.split(':')[1]);
+            const heading = (board.getAttribute('aria-label') ?? '').match(/heading (\w+)/)?.[1];
+            const head = segs[0];
+            const started = !document.body.innerText.includes('PRESS AN ARROW');
+            if (head !== lastHead || !started) {
+              lastHead = head;
+              const next = (cell, dir) => {
+                const r = Math.floor(cell / cols);
+                const c = cell % cols;
+                if (dir === 'up') return r > 0 ? cell - cols : -1;
+                if (dir === 'down') return r < rows - 1 ? cell + cols : -1;
+                if (dir === 'left') return c > 0 ? cell - 1 : -1;
+                return c < cols - 1 ? cell + 1 : -1;
+              };
+              // The tail counts as a wall: it may not move if the worm is growing.
+              const route = (blocked) => {
+                const from = new Map([[head, null]]);
+                let frontier = [head];
+                while (frontier.length && !from.has(apple)) {
+                  const later = [];
+                  for (const cell of frontier) {
+                    for (const d of ['up', 'right', 'down', 'left']) {
+                      const n = next(cell, d);
+                      if (n < 0 || blocked.has(n) || from.has(n)) continue;
+                      if (cell === head && n === segs[1]) continue;
+                      from.set(n, { cell, d });
+                      later.push(n);
+                    }
+                  }
+                  frontier = later;
+                }
+                if (!from.has(apple)) return null;
+                let at = apple;
+                while (from.get(at).cell !== head) at = from.get(at).cell;
+                return from.get(at).d;
+              };
+              const walls = new Set([...segs.slice(1), ...rocks]);
+              let want = route(walls) ?? route(new Set([...segs.slice(1, -1), ...rocks]));
+              if (!want) {
+                // No way to the apple yet: any way that's open.
+                want = ['up', 'right', 'down', 'left'].find((d) => {
+                  const n = next(head, d);
+                  return n >= 0 && !walls.has(n);
+                });
+              }
+              if (want && (want !== heading || !started) && want !== OPP[heading ?? ''] ) {
+                busy = true;
+                presses += 1;
+                await window.__wormPress(want);
+                busy = false;
+              } else if (want && want === OPP[heading ?? ''] && !started) {
+                busy = true;
+                presses += 1;
+                await window.__wormPress(want === 'left' || want === 'right' ? 'up' : 'right');
+                busy = false;
+              }
+            }
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`steered with ${presses} presses`);
+}
+
+/**
+ * Peekaboo Pals, from inside the page: taps — for real — every pal whose
+ * label says it's awake, and never a sleepy one.
+ */
+const peekHook = new WeakSet();
+
+export async function playPeekaboo(page, report) {
+  if (!peekHook.has(page)) {
+    peekHook.add(page);
+    await page.exposeFunction('__peekTap', (x, y) => page.mouse.click(x, y));
+  }
+  await page.getByLabel(/^Hole 1, /).click(); // the first tap starts the round
+  const taps = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let taps = 0;
+        const recent = new Map();
+        const started = performance.now();
+        const frame = (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 120000) {
+            resolve(taps);
+            return;
+          }
+          for (const hole of document.querySelectorAll('[aria-label$=", an awake pal"]')) {
+            const label = hole.getAttribute('aria-label');
+            if (now - (recent.get(label) ?? -1e9) < 400) continue;
+            recent.set(label, now);
+            const r = hole.getBoundingClientRect();
+            taps += 1;
+            window.__peekTap(r.left + r.width / 2, r.top + r.height / 2);
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`said hello ${taps} times`);
+  const woken = await page.getByLabel(/, a woken pal$/).count();
+  if (woken) report.bug('Peekaboo Pals', 'a sleepy pal woke without being tapped');
+}
+
+/**
+ * Hoop Shot, played the way a child learns it: pull, look at the dots, and
+ * work out from how they fall where the ball will go. It takes the first
+ * three dots of a trial pull to learn how hard the ball flies for a pull of
+ * a given length and how fast it drops, then picks the pull whose curve
+ * falls through the middle of the hoop — and lets go.
+ */
+export async function playHoopShot(page, report) {
+  const court = await page.getByTestId('court').boundingBox();
+  const anchor = { x: court.x + court.width * 0.78, y: court.y + court.height * 0.22 };
+  const read = () =>
+    page.evaluate(() => {
+      const box = (el) => el?.getBoundingClientRect();
+      const ball = box(document.querySelector('[data-testid="ball"]'));
+      const hoop = box(document.querySelector('[data-testid="hoop"]'));
+      const dots = [...document.querySelectorAll('[data-testid="dot"]')].map((d) => {
+        const r = d.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      });
+      const label = document.body.innerText;
+      return {
+        ball: ball && { x: ball.left + ball.width / 2, y: ball.top + ball.height / 2, r: ball.width / 2 },
+        hoop: hoop && { left: hoop.left, right: hoop.right, y: hoop.top + hoop.height / 2, edge: hoop.height },
+        dots,
+        ready: /PULL BACK/.test(label),
+        over: !!document.querySelector('[aria-label="Play again"]'),
+      };
+    });
+  const pullTo = async (angle, length) => {
+    await page.mouse.move(anchor.x - length * Math.cos(angle), anchor.y + length * Math.sin(angle), { steps: 3 });
+    await page.waitForTimeout(60);
+  };
+
+  let physics = null;
+  let throws = 0;
+  let aimed = 0;
+  for (let guard = 0; guard < 400 && throws < 10; guard += 1) {
+    const now = await read();
+    if (now.over) break;
+    if (!now.ready || !now.ball || !now.hoop) {
+      await page.waitForTimeout(120);
+      continue;
+    }
+    const hand = { x: now.ball.x, y: now.ball.y };
+    await page.mouse.move(anchor.x, anchor.y);
+    await page.mouse.down();
+    if (!physics) {
+      // A trial pull: how far the ball goes per pixel pulled, and how fast
+      // it falls, read off the first three dots.
+      const trial = { angle: Math.PI / 3, length: 70 };
+      await pullTo(trial.angle, trial.length);
+      const { dots } = await read();
+      if (dots.length >= 3) {
+        const t = 0.06;
+        const vx = (dots[0].x - hand.x) / t;
+        const g = (dots[2].y - 2 * dots[1].y + dots[0].y) / (t * t);
+        const vy = (dots[0].y - hand.y) / t - 0.5 * g * t;
+        physics = { perPixel: Math.hypot(vx, vy) / trial.length, g };
+      }
+    }
+    let chosen = null;
+    if (physics) {
+      const { g, perPixel } = physics;
+      const r = now.ball.r;
+      const edgeL = now.hoop.left + now.hoop.edge;
+      const edgeR = now.hoop.right - now.hoop.edge;
+      const tx = (edgeL + edgeR) / 2;
+      const dx = tx - hand.x;
+      const up = hand.y - now.hoop.y;
+      for (let deg = 60; deg <= 86 && !chosen; deg += 1) {
+        const a = (deg * Math.PI) / 180;
+        const room = dx * Math.tan(a) - up;
+        if (room <= 0) continue;
+        const v = Math.sqrt((g * dx * dx) / (2 * Math.cos(a) ** 2 * room));
+        const length = v / perPixel;
+        if (length > 105 * (now.ball.r / 11)) continue;
+        // Follow the curve it would make: well clear of both edges of the
+        // rim, all the way until it drops through the middle.
+        const vx = v * Math.cos(a);
+        const vy = v * Math.sin(a);
+        let clear = true;
+        for (let t = 0; t < 3; t += 0.01) {
+          const x = hand.x + vx * t;
+          const y = hand.y - vy * t + 0.5 * g * t * t;
+          if (x >= tx) break;
+          for (const ex of [edgeL, edgeR]) {
+            if (Math.hypot(x - ex, y - now.hoop.y) < r + now.hoop.edge * 2 + 6) clear = false;
+          }
+        }
+        if (clear) chosen = { angle: a, length };
+      }
+    }
+    if (chosen) {
+      aimed += 1;
+      await pullTo(chosen.angle, chosen.length);
+    } else {
+      await pullTo(Math.PI / 2.6, 80);
+    }
+    await page.mouse.up();
+    throws += 1;
+    // Wait for the throw to land and the next to be ready.
+    for (let w = 0; w < 60; w += 1) {
+      await page.waitForTimeout(100);
+      const after = await read();
+      if (after.over || after.ready) break;
+    }
+  }
+  report.ok(`threw ${throws} times, ${aimed} of them worked out from the dots`);
+}
+
+/**
+ * Soft Landing, flown from inside the page with one finger, the way a
+ * child on a phone mostly does: it holds whichever button matters most right
+ * now — the engine if it's falling faster than it means to, otherwise a side
+ * button towards the pad — reading the rocket's speed off the screen.
+ */
+const landingHook = new WeakSet();
+const landingButtons = new WeakMap();
+
+export async function playSoftLanding(page, report) {
+  const buttons = {};
+  for (const [name, label] of [
+    ['up', 'Engine: slow down'],
+    ['left', 'Push left'],
+    ['right', 'Push right'],
+  ]) {
+    const control = page.getByLabel(label, { exact: true });
+    if (!(await control.count())) continue;
+    const box = await control.boundingBox();
+    buttons[name] = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  }
+  landingButtons.set(page, { buttons, held: null });
+  if (!landingHook.has(page)) {
+    landingHook.add(page);
+    await page.exposeFunction('__landingHold', async (which) => {
+      const state = landingButtons.get(page);
+      if (state.held === which) return;
+      if (state.held) await page.mouse.up();
+      state.held = null;
+      const at = which && state.buttons[which];
+      if (!at) return;
+      await page.mouse.move(at.x, at.y);
+      await page.mouse.down();
+      state.held = which;
+    });
+  }
+
+  const holds = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let holds = 0;
+        let busy = false;
+        let history = [];
+        let current = null;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 180000) {
+            await window.__landingHold(null);
+            resolve(holds);
+            return;
+          }
+          if (busy) {
+            requestAnimationFrame(frame);
+            return;
+          }
+          const text = document.body.innerText;
+          const rocket = document.querySelector('[data-testid="rocket"]')?.getBoundingClientRect();
+          const padEl = document.querySelector('[data-testid^="pad:"]');
+          const pad = padEl?.getBoundingClientRect();
+          let want = null;
+          if (text.includes('PRESS TO DROP')) {
+            history = [];
+            want = 'up';
+          } else if (rocket && pad && !/SOFT LANDING!|MISSED THE PAD|BUMP!/.test(text)) {
+            const k = rocket.width / 28;
+            history.push({ t: now, x: rocket.left + rocket.width / 2, y: rocket.bottom });
+            history = history.filter((h) => now - h.t < 160);
+            const first = history[0];
+            const last = history[history.length - 1];
+            const span = (last.t - first.t) / 1000;
+            if (span > 0.06) {
+              const vx = (last.x - first.x) / span / k;
+              const vy = (last.y - first.y) / span / k;
+              const height = (pad.top - last.y) / k;
+              const gap = (pad.left + pad.width / 2 - last.x) / k;
+              const over = Math.abs(gap) < pad.width / k / 2 - 18;
+              // Near the ground, slow; not over the pad yet, don't come down
+              // among the hills at all.
+              const wantVy = over ? Math.max(8, Math.min(70, height * 0.28)) : height < 130 ? -6 : 30;
+              const wantVx = Math.max(-35, Math.min(35, gap * 0.7));
+              if (vy > wantVy) want = 'up';
+              else if (vx < wantVx - 5 && !over) want = 'right';
+              else if (vx > wantVx + 5 && !over) want = 'left';
+              else if (over && Math.abs(vx) > 6) want = vx > 0 ? 'left' : 'right';
+            }
+          }
+          if (want !== current) {
+            current = want;
+            if (want) holds += 1;
+            busy = true;
+            await window.__landingHold(want);
+            busy = false;
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`flew three descents with ${holds} presses`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -1132,4 +1562,9 @@ export const PLAYERS = {
   'Balloon Count': playBalloonCount,
   'Treasure Hunt': playTreasureHunt,
   'Water Works': playWaterWorks,
+  'Bounce Bricks': playBounceBricks,
+  'Hungry Worm': playHungryWorm,
+  'Peekaboo Pals': playPeekaboo,
+  'Hoop Shot': playHoopShot,
+  'Soft Landing': playSoftLanding,
 };

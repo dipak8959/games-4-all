@@ -519,6 +519,95 @@ const SCENES: Readonly<Record<string, Draw>> = {
       <Disc u={u} cx={86} cy={63} r={2.5} color={c.hi} />
     </>
   ),
+  // A wall with a brick gone, the ball on its way back up, the paddle.
+  bouncebricks: (u, c) => (
+    <>
+      {[8, 31, 54, 77].map((x) => (
+        <Block key={`a${x}`} u={u} x={x} y={12} w={17} h={9} color={c.fg} />
+      ))}
+      {[8, 31, 77].map((x) => (
+        <Block key={`b${x}`} u={u} x={x} y={25} w={17} h={9} color={c.fg} />
+      ))}
+      <Disc u={u} cx={60} cy={58} r={6} color={c.hi} />
+      <Block u={u} x={28} y={80} w={36} h={6} color={c.fg} />
+    </>
+  ),
+  // A worm turning the corner towards the apple.
+  hungryworm: (u, c) => (
+    <>
+      {[
+        [12, 66],
+        [26, 66],
+        [40, 66],
+        [40, 52],
+        [40, 38],
+      ].map(([x, y]) => (
+        <Block key={`${x}${y}`} u={u} x={x} y={y} w={13} h={13} color={c.fg} />
+      ))}
+      <Block u={u} x={54} y={38} w={13} h={13} color={c.fg} />
+      <Block u={u} x={57} y={41} w={3} h={3} color={c.hi} />
+      <Block u={u} x={62} y={41} w={3} h={3} color={c.hi} />
+      <Disc u={u} cx={82} cy={45} r={8} color={c.hi} />
+      <Block u={u} x={82} y={32} w={7} h={4} color={c.hi} />
+    </>
+  ),
+  // Three holes: a sleepy pal in one, an awake one popping up in the middle.
+  peekaboo: (u, c) => (
+    <>
+      {[6, 37, 68].map((x) => (
+        <Block key={x} u={u} x={x} y={76} w={26} h={7} color={c.fg} />
+      ))}
+      <Peak u={u} cx={19} top={46} w={16} h={12} color={c.fg} />
+      <Block u={u} x={10} y={58} w={18} h={18} color={c.fg} />
+      <Block u={u} x={12} y={65} w={5} h={1.5} color={c.hi} />
+      <Block u={u} x={21} y={65} w={5} h={1.5} color={c.hi} />
+      <Block u={u} x={39} y={34} w={22} h={42} color={c.hi} />
+      <Block u={u} x={42} y={42} w={6} h={6} color={c.fg} />
+      <Block u={u} x={52} y={42} w={6} h={6} color={c.fg} />
+      <Block u={u} x={45} y={56} w={10} h={2} color={c.fg} />
+    </>
+  ),
+  // A ball on its way up, dotted, towards the hoop on its board.
+  hoopshot: (u, c) => (
+    <>
+      {[
+        [10, 70],
+        [13, 58],
+        [18, 47],
+      ].map(([x, y]) => (
+        <Block key={`${x}${y}`} u={u} x={x} y={y} w={3} h={3} color={c.fg} />
+      ))}
+      <Disc u={u} cx={30} cy={34} r={8} color={c.hi} />
+      <Block u={u} x={84} y={16} w={5} h={36} color={c.fg} />
+      <Block u={u} x={85.5} y={52} w={2} h={36} color={c.fg} />
+      <Block u={u} x={56} y={42} w={28} h={3} color={c.fg} />
+      {[60, 69, 78].map((x) => (
+        <Block key={x} u={u} x={x} y={45} w={1.5} h={14} color={c.fg} />
+      ))}
+      <Block u={u} x={58} y={53} w={23} h={1.5} color={c.fg} />
+      <Block u={u} x={6} y={88} w={88} h={3} color={c.fg} />
+    </>
+  ),
+  // A rocket easing down, engine lit, over its striped pad among the hills.
+  softlanding: (u, c) => (
+    <>
+      <Block u={u} x={6} y={86} w={88} h={8} color={c.fg} />
+      <Block u={u} x={6} y={76} w={10} h={10} color={c.fg} />
+      <Block u={u} x={16} y={70} w={10} h={16} color={c.fg} />
+      <Block u={u} x={76} y={74} w={18} h={12} color={c.fg} />
+      <Block u={u} x={34} y={80} w={32} h={6} color={c.fg} />
+      {[38, 46, 54].map((x) => (
+        <Block key={x} u={u} x={x} y={80} w={4} h={6} color={c.hi} />
+      ))}
+      <Peak u={u} cx={50} top={18} w={16} h={10} color={c.hi} />
+      <Block u={u} x={42} y={28} w={16} h={20} color={c.hi} />
+      <Block u={u} x={47} y={32} w={6} h={6} color={c.fg} />
+      <Block u={u} x={39} y={47} w={22} h={2.5} color={c.hi} />
+      <Block u={u} x={39} y={47} w={2.5} h={12} color={c.hi} />
+      <Block u={u} x={58.5} y={47} w={2.5} h={12} color={c.hi} />
+      <Drop u={u} cx={50} top={49} w={8} h={12} color={c.fg} />
+    </>
+  ),
 };
 
 /** Hue of a `#rrggbb` colour, in degrees. */

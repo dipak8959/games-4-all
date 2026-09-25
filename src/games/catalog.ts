@@ -9,7 +9,7 @@ import { tilePalette } from '../theme/tokens';
  * tests — never has to load React Native screens just to read a title.
  */
 
-export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting' | 'timing';
+export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting' | 'timing' | 'arcade';
 
 export type GameCategoryDef = {
   readonly id: GameCategory;
@@ -26,6 +26,7 @@ export const GAME_CATEGORIES: readonly GameCategoryDef[] = [
   { id: 'logic', label: 'Logic', icon: 'grid' },
   { id: 'sorting', label: 'Sorting', icon: 'shapes' },
   { id: 'timing', label: 'Timing', icon: 'hop' },
+  { id: 'arcade', label: 'Arcade', icon: 'arcade' },
 ];
 
 /**
@@ -517,6 +518,98 @@ export const GAMES_META: readonly GameMeta[] = [
     // crossings with no shortcut. The grid is kept to what fits a phone at
     // full size, so it stops at twelve.
     maxAge: 12,
+  },
+  {
+    id: 'bouncebricks',
+    title: 'Bounce Bricks',
+    icon: 'bricks',
+    color: tilePalette.clay,
+    skill: 'Tracking and reacting: following a moving ball, getting the paddle under it, and aiming where it goes next',
+    roundEnds: 'The wall is cleared, or the fifth ball has been played.',
+    origin: 'public-domain',
+    priorArt:
+      'Bat-and-ball wall-breaking games, a genre on arcade machines and home computers since the 1970s and owned by no one.',
+    toldApartBy:
+      'Shape and position: the paddle is a long bar at the bottom, the ball is round, bricks are blocks; a brick that takes two hits is striped.',
+    ages: '5+',
+    category: 'arcade',
+    minAge: 5,
+    // A slow ball over a wide paddle is a five-year-old's; a quick one over
+    // a short paddle, aimed at the last two-hit bricks, is anyone's.
+    maxAge: 99,
+  },
+  {
+    id: 'hungryworm',
+    title: 'Hungry Worm',
+    icon: 'worm',
+    color: tilePalette.jade,
+    skill: 'Steering and planning ahead: choosing turns early so a longer and longer worm reaches the apple without boxing itself in',
+    roundEnds: 'Ten apples eaten.',
+    origin: 'public-domain',
+    priorArt:
+      'Steer-a-growing-line games, played on arcade machines, calculators and phones since the 1970s, owned by no one.',
+    toldApartBy: 'Shape: the worm has eyes and a striped body, apples are round with a leaf, rocks are grey squares.',
+    ages: '5+',
+    category: 'arcade',
+    minAge: 5,
+    // Planning around your own tail, quick, among rocks, is a real puzzle at
+    // any age — and a bump never ends it, so it never punishes.
+    maxAge: 99,
+  },
+  {
+    id: 'peekaboo',
+    title: 'Peekaboo Pals',
+    icon: 'peekaboo',
+    color: tilePalette.fuchsia,
+    skill: 'Paying attention and holding back: tapping the pals who are awake and leaving the sleepy ones alone',
+    roundEnds: 'Twenty pals have peeked out.',
+    origin: 'public-domain',
+    priorArt:
+      'Pop-up target games — fairground and arcade machines where things appear from holes to be tapped — a tradition owned by no one.',
+    toldApartBy: 'Eyes: awake pals have big open eyes, sleepy pals have shut eyes and a nightcap.',
+    ages: '3-10',
+    category: 'arcade',
+    minAge: 3,
+    // Four holes and one pal at a time is a three-year-old's; twelve holes,
+    // three up at once and a third of them sleepy holds a ten-year-old.
+    // Past that it is a little one's game, so it stops there.
+    maxAge: 10,
+  },
+  {
+    id: 'hoopshot',
+    title: 'Hoop Shot',
+    icon: 'hoop',
+    color: tilePalette.copper,
+    skill: 'Judging angle and strength: picking the curve that drops a ball through a hoop, then allowing for wind',
+    roundEnds: 'Ten throws.',
+    origin: 'public-domain',
+    priorArt:
+      'Ball-toss games, from fairground hoop stalls to arcade basketball machines, owned by no one.',
+    toldApartBy: 'Shape: the ball is round, the hoop is a rim and net on a board, the wind is shown by a flag.',
+    ages: '5+',
+    category: 'arcade',
+    minAge: 5,
+    // A wide hoop with the whole throw drawn in dots is a five-year-old's; a
+    // narrow, swaying hoop in the wind with barely a hint is anyone's.
+    maxAge: 99,
+  },
+  {
+    id: 'softlanding',
+    title: 'Soft Landing',
+    icon: 'lander',
+    color: tilePalette.heather,
+    skill: 'Controlling speed: using just enough push, early enough, to bring a falling rocket down gently on its pad',
+    roundEnds: 'Three landings.',
+    origin: 'public-domain',
+    priorArt:
+      'Lander games, played since a text game of 1969 and on arcade machines and computers ever since, owned by no one.',
+    toldApartBy: 'Shape: the rocket has legs and a window, the pad is a flat striped block, the ground is flat or hilly.',
+    ages: '7+',
+    category: 'arcade',
+    minAge: 7,
+    // Holding a button to slow down is a seven-year-old's; strong gravity,
+    // a small pad across the hills, wind and little fuel is anyone's.
+    maxAge: 99,
   },
 ];
 

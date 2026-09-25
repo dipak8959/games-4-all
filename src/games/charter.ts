@@ -213,6 +213,9 @@ const TRADEMARKED = [
   'chrome dino', 'dino game', 't-rex runner', 't-rex game', 'dino run',
   // A toy's name for the press-a-light puzzle; Tile Slide is the one built.
   'lights out',
+  // Arcade names, so an arcade-style game never borrows one.
+  'breakout', 'arkanoid', 'whac-a-mole', 'lunar lander', 'pong', 'frogger',
+  'asteroids', 'galaga', 'centipede', 'crossy road', 'slither.io', 'nokia snake',
 ];
 
 /** The youngest age this app has anything for. */

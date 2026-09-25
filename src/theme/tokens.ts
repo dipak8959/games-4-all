@@ -119,6 +119,11 @@ export const tilePalette = {
   mauve: '#A67498',
   sage: '#628C89',
   heather: '#875AA6',
+  clay: '#AD7F67',
+  jade: '#2D9A69',
+  fuchsia: '#C639C6',
+  copper: '#C97345',
+  mustard: '#A2852F',
 } as const;
 
 /** Resolves one of `playPalette`'s keys, falling back to the first colour so

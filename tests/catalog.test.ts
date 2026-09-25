@@ -57,6 +57,7 @@ test('a young child sees exactly the preschool-appropriate games', () => {
       'memorygrid',
       'oddoneout',
       'patternplay',
+      'peekaboo',
       'puddlehop',
       'shadowmatch',
       'shapes',

@@ -9,7 +9,7 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Twenty-two games spanning early childhood through adulthood — this is a "whole
+Twenty-seven games spanning early childhood through adulthood — this is a "whole
 family shares one device" app, not just a kids' app, so the oldest content
 here is built to actually hold up for a grown-up, not just tolerate one:
 
@@ -37,9 +37,21 @@ here is built to actually hold up for a grown-up, not just tolerate one:
 | **Balloon Count** | Number order: counting on, back, in twos and fives | 3-8 |
 | **Treasure Hunt** | Deduction from clues | 5-12 |
 | **Water Works** | Spatial reasoning: joining pieces into a path | 5-12 |
+| **Bounce Bricks** | Tracking a moving ball, and aiming it | 5+ |
+| **Hungry Worm** | Steering and planning ahead | 5+ |
+| **Peekaboo Pals** | Paying attention, and holding back | 3-10 |
+| **Hoop Shot** | Judging angle and strength | 5+ |
+| **Soft Landing** | Controlling speed | 7+ |
 
-Each also carries a category (Memory, Numbers, Words, Logic, Sorting, Timing) shown
-as filter chips on Home, alongside a search box — with twenty-two games and
+The last five are arcade games — formats old enough to belong to everyone,
+with the parts that make arcade games hard to put down taken out. Nothing
+ends on a bump: the worm stops and waits, a bumpy landing is just a bump. A
+round is a fixed number of turns — five balls, ten apples, twenty pals, ten
+throws, three landings — and there is no score or best to chase, only stars.
+
+Each also carries a category (Memory, Numbers, Words, Logic, Sorting, Timing,
+Arcade) shown as filter chips on Home, alongside a search box — with
+twenty-seven games and
 growing, finding the right one shouldn't require scrolling past all the
 others.
 

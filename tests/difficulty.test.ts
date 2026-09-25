@@ -31,6 +31,11 @@ import { specForLevel as mazeSpec } from '../src/games/maze/logic.ts';
 import { balloonsForLevel, specForLevel as balloonSpec } from '../src/games/ballooncount/logic.ts';
 import { specForLevel as treasureSpec } from '../src/games/treasurehunt/logic.ts';
 import { specForLevel as waterSpec } from '../src/games/waterworks/logic.ts';
+import { specForLevel as bricksSpec } from '../src/games/bouncebricks/logic.ts';
+import { specForLevel as wormSpec } from '../src/games/hungryworm/logic.ts';
+import { specForLevel as peekabooSpec } from '../src/games/peekaboo/logic.ts';
+import { specForLevel as hoopSpec } from '../src/games/hoopshot/logic.ts';
+import { specForLevel as landingSpec } from '../src/games/softlanding/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -270,6 +275,31 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
     const spec = puddleHopSpec(l);
     // Gaps shrink as it gets harder, so they count negatively.
     return [spec.speed, spec.obstacles, spec.kinds.length, -spec.gapMin, -spec.gapMax];
+  },
+  bouncebricks: (l) => {
+    const spec = bricksSpec(l);
+    // A shorter paddle is harder.
+    return [-spec.paddleW, spec.speed, spec.rows * spec.cols, spec.tough];
+  },
+  hungryworm: (l) => {
+    const spec = wormSpec(l);
+    // A shorter tick is a faster worm.
+    return [-spec.tick, spec.growBy, spec.rocks];
+  },
+  peekaboo: (l) => {
+    const spec = peekabooSpec(l);
+    // Less time up is harder.
+    return [spec.cols * spec.rows, -spec.up, spec.together, spec.sleepy];
+  },
+  hoopshot: (l) => {
+    const spec = hoopSpec(l);
+    // A narrower hoop and a shorter guide are harder.
+    return [-spec.rim, -spec.guide, spec.spread, spec.wind, spec.sway];
+  },
+  softlanding: (l) => {
+    const spec = landingSpec(l);
+    // A gentler landing needed, a smaller pad and less fuel are harder.
+    return [spec.gravity, -spec.safeV, -spec.safeH, -spec.padW, spec.offset, spec.hills, spec.wind, -spec.fuel];
   },
 };
 

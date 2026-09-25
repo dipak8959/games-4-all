@@ -237,6 +237,12 @@ game where reading is the point rather than something to avoid:
   or best. And "Play again" deals a new course, never the same stretch to
   throw yourself at again. The charter asks a person to confirm all three
   for any future game that ends on a miss (`endsOnAMiss`).
+  The arcade games keep to the rule the genre usually breaks. Hungry Worm
+  stops at a wall and waits; Soft Landing's bumpy landing is a bump, and the
+  next rocket comes down. Bounce Bricks' five balls are the round's length,
+  like Hoop Shot's ten throws — a ball that falls is served again when the
+  child taps, nothing is taken away, and the stars come from how much of the
+  wall came down.
 - **No zero score.** Completing a round always earns at least one star
   (`starsForMistakes`). Stars reward effort, not perfection.
 - **No engagement mechanics.** No streaks, no daily-login rewards, no
@@ -287,7 +293,10 @@ game where reading is the point rather than something to avoid:
   quicker than three-quarters of a second a swap, and nothing moves at all
   while a child is choosing. Elsewhere it stills what only decorates: the
   balloons in Balloon Count stop bobbing, and the Maze Explorer walker jumps
-  to where it stops instead of walking there.
+  to where it stops instead of walking there. The arcade games are movement
+  through and through, and were built with nothing decorative in them to
+  take away: nothing shakes, flashes or bounces for show — a bumpy landing
+  leaves the rocket leaning, still.
 
 ## Nothing here is built to be hard to stop
 

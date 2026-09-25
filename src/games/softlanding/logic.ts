@@ -34,8 +34,9 @@ export const PAD_Y = BASE_Y - 8;
 /** The ground is drawn and felt as columns this wide. */
 export const COLUMN = 8;
 export const COLUMNS = FIELD_WIDTH / COLUMN;
-/** Highest the rocket can climb: its nose at the top of the field. */
-const CEILING = ROCKET_HEIGHT + 4;
+/** Highest the rocket can climb: where it started, so it never rises into
+ *  the fuel and wind along the top. */
+const CEILING = START_Y;
 /** How long the result shows before the next rocket. */
 export const REST = 1.4;
 /** The engine pushes this many times harder than gravity pulls. */

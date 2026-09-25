@@ -51,7 +51,8 @@ export type IconName =
   | 'sequence'
   | 'math'
   | 'pieces'
-  | 'hop';
+  | 'hop'
+  | 'race';
 
 export function Icon({
   name,
@@ -538,6 +539,44 @@ export function Icon({
               />
             ))}
           </View>
+        </View>
+      );
+
+    case 'race':
+      // A car from above — a block with four wheels — beside a lane line.
+      return (
+        <View style={box} {...hidden}>
+          <View
+            style={{
+              position: 'absolute',
+              left: size * 0.28,
+              top: size * 0.18,
+              width: size * 0.3,
+              height: size * 0.5,
+              backgroundColor: color,
+            }}
+          />
+          {[0.22, 0.54].map((top) =>
+            [0.18, 0.58].map((left) => (
+              <View
+                key={`${top}${left}`}
+                style={{
+                  position: 'absolute',
+                  top: size * top,
+                  left: size * left,
+                  width: size * 0.1,
+                  height: size * 0.14,
+                  backgroundColor: color,
+                }}
+              />
+            )),
+          )}
+          {[0.12, 0.44, 0.76].map((top) => (
+            <View
+              key={top}
+              style={{ position: 'absolute', left: size * 0.8, top: size * top, width: s, height: size * 0.16, backgroundColor: color }}
+            />
+          ))}
         </View>
       );
 

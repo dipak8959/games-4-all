@@ -18,6 +18,7 @@ import {
 import { givensForLevel, sizeForLevel } from '../src/games/sudoku/logic.ts';
 import { specForLevel as shapeBuilderSpec } from '../src/games/shapebuilder/logic.ts';
 import { specForLevel as puddleHopSpec } from '../src/games/puddlehop/logic.ts';
+import { specForLevel as laneDashSpec } from '../src/games/lanedash/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -193,6 +194,11 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
   shapebuilder: (l) => {
     const spec = shapeBuilderSpec(l);
     return [spec.blocks, spec.pieces, spec.maxPiece, spec.rotation ? 1 : 0];
+  },
+  lanedash: (l) => {
+    const spec = laneDashSpec(l);
+    // Rivals closer behind and less room between rows count negatively.
+    return [spec.lanes, spec.speed, spec.rows, spec.kinds.length, spec.doubleChance, -spec.margin, -spec.gapMin];
   },
   puddlehop: (l) => {
     const spec = puddleHopSpec(l);

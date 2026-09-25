@@ -274,6 +274,26 @@ export const GAMES_META: readonly GameMeta[] = [
     // first bump, whichever comes first.
     maxAge: 99,
   },
+  {
+    id: 'lanedash',
+    title: 'Lane Dash',
+    icon: 'race',
+    color: palette.berry,
+    skill: "Steering and looking ahead: choosing a lane early enough to get round what's coming",
+    roundEnds: 'Your car crosses the chequered flag at the end of a fixed track.',
+    origin: 'public-domain',
+    priorArt:
+      'Top-down lane racing — toy car tracks and arcade road games long before this one, owned by no one.',
+    toldApartBy:
+      'Shape: your car has googly eyes, rivals carry a number, cones are triangles, puddles are flat pools and roadworks are long striped blocks.',
+    ages: '5+',
+    category: 'timing',
+    minAge: 5,
+    // Two taps, left and right, so a five-year-old can race; three lanes,
+    // a fast road and rivals close behind a clean race make the top level a
+    // real test of looking ahead for anyone. Every race ends at the flag.
+    maxAge: 99,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

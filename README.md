@@ -9,7 +9,7 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Nine games spanning early childhood through adulthood — this is a "whole
+Ten games spanning early childhood through adulthood — this is a "whole
 family shares one device" app, not just a kids' app, so the oldest content
 here is built to actually hold up for a grown-up, not just tolerate one:
 
@@ -24,9 +24,10 @@ here is built to actually hold up for a grown-up, not just tolerate one:
 | **Number Crunch** | Mental arithmetic: +, −, ×, ÷ | 6+ |
 | **Shape Builder** | Spatial reasoning and rotation | 6+ |
 | **Puddle Hop** | Timing and anticipation | 4+ |
+| **Lane Dash** | Steering and looking ahead | 5+ |
 
 Each also carries a category (Memory, Numbers, Words, Logic, Sorting, Timing) shown
-as filter chips on Home, alongside a search box — with nine games and
+as filter chips on Home, alongside a search box — with ten games and
 growing, finding the right one shouldn't require scrolling past all the
 others.
 

@@ -1,5 +1,6 @@
 import { GAMES_META } from './catalog';
 import { CountingScreen } from './counting/CountingScreen';
+import { LaneDashScreen } from './lanedash/LaneDashScreen';
 import { MemoryScreen } from './memory/MemoryScreen';
 import { NumberCrunchScreen } from './numbercrunch/NumberCrunchScreen';
 import { PatternPlayScreen } from './patternplay/PatternPlayScreen';
@@ -28,6 +29,7 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   numbercrunch: NumberCrunchScreen,
   shapebuilder: ShapeBuilderScreen,
   puddlehop: PuddleHopScreen,
+  lanedash: LaneDashScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

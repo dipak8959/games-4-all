@@ -459,6 +459,74 @@ export async function playPuddleHop(page, report) {
   report.ok(`hopped ${hops} times on the way to the flag`);
 }
 
+/**
+ * Lane Dash, played from inside the page like Puddle Hop: it reads the road
+ * off the screen — how many lanes, where your car is, where each obstacle is
+ * and which lane it blocks — picks a clear lane for the next row, and steers
+ * with real taps on the left and right halves of the road.
+ */
+const steerHook = new WeakSet();
+const steerAt = new WeakMap();
+
+export async function playLaneDash(page, report) {
+  const left = await page.getByLabel('Steer left').boundingBox();
+  const right = await page.getByLabel('Steer right').boundingBox();
+  steerAt.set(page, {
+    left: { x: left.x + left.width / 2, y: left.y + left.height / 2 },
+    right: { x: right.x + right.width / 2, y: right.y + right.height / 2 },
+  });
+  if (!steerHook.has(page)) {
+    steerHook.add(page);
+    await page.exposeFunction('__laneDashSteer', (side) => {
+      const at = steerAt.get(page)[side];
+      return page.mouse.click(at.x, at.y);
+    });
+  }
+  await page.getByLabel('Steer right').click(); // the first tap starts the race
+
+  const presses = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const road = document.querySelector('[data-testid^="road:"]');
+        const lanes = Number(road.dataset.testid.split(':')[1]);
+        let lane = Math.floor(lanes / 2);
+        let presses = 0;
+        let busyUntil = 0;
+        const started = performance.now();
+        const frame = (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 90000) {
+            resolve(presses);
+            return;
+          }
+          const car = document.querySelector('[data-testid="player-car"]').getBoundingClientRect();
+          const things = [...document.querySelectorAll('[data-testid^="obstacle:"]')].map((el) => ({
+            lane: Number(el.dataset.testid.split(':')[1]),
+            box: el.getBoundingClientRect(),
+          }));
+          // Anything level with the car right now: don't swerve into it.
+          const alongside = things.some((t) => t.box.bottom > car.top && t.box.top < car.bottom);
+          const ahead = things.filter((t) => t.box.bottom <= car.top);
+          if (!alongside && ahead.length && now >= busyUntil) {
+            const nearest = Math.max(...ahead.map((t) => t.box.bottom));
+            const blocked = ahead.filter((t) => Math.abs(t.box.bottom - nearest) < 4).map((t) => t.lane);
+            if (blocked.includes(lane)) {
+              const free = Array.from({ length: lanes }, (_, l) => l).filter((l) => !blocked.includes(l));
+              const target = free.reduce((a, b) => (Math.abs(b - lane) < Math.abs(a - lane) ? b : a));
+              const side = target < lane ? 'left' : 'right';
+              lane += target < lane ? -1 : 1;
+              presses += 1;
+              busyUntil = now + 60;
+              window.__laneDashSteer(side);
+            }
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`steered ${presses} times on the way to the flag`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -469,4 +537,5 @@ export const PLAYERS = {
   Sudoku: playSudoku,
   'Shape Builder': playShapeBuilder,
   'Puddle Hop': playPuddleHop,
+  'Lane Dash': playLaneDash,
 };

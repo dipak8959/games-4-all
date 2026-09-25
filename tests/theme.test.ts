@@ -18,6 +18,7 @@ import {
 /** Every game screen, which is where a design drifts first. */
 const GAME_SCREENS = [
   'src/games/counting/CountingScreen.tsx',
+  'src/games/lanedash/LaneDashScreen.tsx',
   'src/games/memory/MemoryScreen.tsx',
   'src/games/numbercrunch/NumberCrunchScreen.tsx',
   'src/games/patternplay/PatternPlayScreen.tsx',
@@ -210,8 +211,8 @@ function sourceFiles(dir: string): string[] {
 
 /**
  * Circles are geometry, not rounded corners: the icon set draws rings and
- * dots, Sort It Out draws an actual circle to sort, and Puddle Hop's runner
- * has round googly eyes (a square eye is not a joke anyone gets). Everything
+ * dots, Sort It Out draws an actual circle to sort, and the Puddle Hop runner
+ * and the Lane Dash car have round googly eyes (a square eye is not a joke anyone gets). Everything
  * else in the app is square — the runner's body included.
  */
 const MAY_DRAW_CIRCLES = [
@@ -219,6 +220,7 @@ const MAY_DRAW_CIRCLES = [
   'src/games/shapes/Shape.tsx',
   'src/games/patternplay/PatternMark.tsx',
   'src/games/puddlehop/PuddleHopScreen.tsx',
+  'src/games/lanedash/LaneDashScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

@@ -57,6 +57,8 @@ report.ok(`Home lists: ${(await listed()).join(', ')}`);
 for (const title of ['Find the Pairs', 'How Many?', 'Sort It Out']) await round(title, 'age 3');
 await setAge(page, 4);
 await round('Puddle Hop', 'age 4');
+await setAge(page, 5);
+await round('Lane Dash', 'age 5');
 
 console.log('\n=== age 17: every game at full difficulty ===');
 await setAge(page, 17);
@@ -65,7 +67,7 @@ for (let i = 0; i < 6; i += 1) {
   await page.waitForTimeout(150);
 }
 report.ok(`Home lists: ${(await listed()).join(', ')}`);
-for (const title of ['Pattern Play', 'Number Crunch', 'Sudoku', 'Shape Builder', 'Puddle Hop']) await round(title, 'age 17');
+for (const title of ['Pattern Play', 'Number Crunch', 'Sudoku', 'Shape Builder', 'Puddle Hop', 'Lane Dash']) await round(title, 'age 17');
 
 console.log('\n=== getting it wrong on purpose ===');
 await setAge(page, 9);
@@ -164,6 +166,22 @@ if (await openGame(page, 'Puddle Hop')) {
     }
   }
   await backHome(page, report, 'Puddle Hop');
+}
+
+console.log('\n=== Lane Dash: driving into everything ===');
+if (await openGame(page, 'Lane Dash')) {
+  await page.getByLabel('Steer right').click(); // start, then never steer
+  const result = await waitForRound(page, 60000);
+  if (!result) report.bug('Lane Dash', 'a race full of bumps never reached the flag');
+  else {
+    const label = (await page.getByText(/^YOU CAME /).first().innerText()).trim();
+    report.ok(`bumped all the way and still finished: ${label.toLowerCase()}, ${result.stars} star${result.stars === 1 ? '' : 's'}`);
+    if (result.stars < 1) report.bug('Lane Dash', 'last place earned no star');
+    const text = await page.locator('body').innerText();
+    if (/\b(best|record|lap|time:|seconds)\b/i.test(text)) report.bug('Lane Dash', 'a time or record is on screen');
+    else report.ok('no clock, lap time or record anywhere');
+  }
+  await backHome(page, report, 'Lane Dash');
 }
 
 console.log('\n=== leaving a round part-way through ===');

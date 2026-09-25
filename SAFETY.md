@@ -252,9 +252,9 @@ game where reading is the point rather than something to avoid:
   immediately, with no confirmation dialog to read.
 - **Motion is optional.** The OS "reduce motion" setting is honoured
   automatically, and can also be set per-profile in Parent Zone. Puddle Hop
-  is the one game whose play *is* movement — the course has to scroll — so
-  there it takes away everything decorative instead: no spin when the
-  runner trips, no shuffling legs.
+  and Lane Dash are the two games whose play *is* movement — the course has
+  to scroll — so there it takes away everything decorative instead: no spin
+  when the runner trips or the car bumps, no shuffling legs.
 
 ## Nothing here is built to be hard to stop
 

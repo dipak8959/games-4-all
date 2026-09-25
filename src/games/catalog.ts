@@ -294,6 +294,27 @@ export const GAMES_META: readonly GameMeta[] = [
     // real test of looking ahead for anyone. Every race ends at the flag.
     maxAge: 99,
   },
+  {
+    id: 'oddoneout',
+    title: 'Odd One Out',
+    icon: 'odd',
+    color: palette.grape,
+    skill: 'Visual discrimination: spotting the one thing that differs, among more and more things that differ less and less',
+    roundEnds: 'Six groups looked through.',
+    origin: 'public-domain',
+    priorArt:
+      'Odd-one-out puzzles — a staple of picture books, classroom worksheets and reasoning tests for over a century, owned by no one.',
+    toldApartBy:
+      'Shape, size and which way up — never colour alone. Colour only ever adds to a difference the shape already shows.',
+    ages: '3+',
+    category: 'sorting',
+    minAge: 3,
+    // A deliberate 3-99, confirmed by the owner when the charter asked:
+    // three shapes and a glaring difference at level 1, sixteen shapes in a
+    // jumble of colours with one slightly smaller at level 6. The top is a
+    // real visual search for an adult, not a toddler game they tolerate.
+    maxAge: 99,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

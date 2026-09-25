@@ -54,7 +54,7 @@ async function listed() {
 console.log('=== age 3: every game at its gentlest ===');
 await setAge(page, 3);
 report.ok(`Home lists: ${(await listed()).join(', ')}`);
-for (const title of ['Find the Pairs', 'How Many?', 'Sort It Out']) await round(title, 'age 3');
+for (const title of ['Find the Pairs', 'How Many?', 'Sort It Out', 'Odd One Out']) await round(title, 'age 3');
 await setAge(page, 4);
 await round('Puddle Hop', 'age 4');
 await setAge(page, 5);
@@ -67,7 +67,7 @@ for (let i = 0; i < 6; i += 1) {
   await page.waitForTimeout(150);
 }
 report.ok(`Home lists: ${(await listed()).join(', ')}`);
-for (const title of ['Pattern Play', 'Number Crunch', 'Sudoku', 'Shape Builder', 'Puddle Hop', 'Lane Dash']) await round(title, 'age 17');
+for (const title of ['Pattern Play', 'Number Crunch', 'Sudoku', 'Shape Builder', 'Puddle Hop', 'Lane Dash', 'Odd One Out']) await round(title, 'age 17');
 
 console.log('\n=== getting it wrong on purpose ===');
 await setAge(page, 9);

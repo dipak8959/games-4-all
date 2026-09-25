@@ -52,7 +52,8 @@ export type IconName =
   | 'math'
   | 'pieces'
   | 'hop'
-  | 'race';
+  | 'race'
+  | 'odd';
 
 export function Icon({
   name,
@@ -538,6 +539,18 @@ export function Icon({
                 }}
               />
             ))}
+          </View>
+        </View>
+      );
+
+    case 'odd':
+      // Three squares in a row and one circle: the one that doesn't belong.
+      return (
+        <View style={[styles.center, box]} {...hidden}>
+          <View style={[styles.row, { gap: size * 0.08, alignItems: 'center' }]}>
+            <View style={{ width: size * 0.2, height: size * 0.2, backgroundColor: color }} />
+            <View style={{ width: size * 0.2, height: size * 0.2, backgroundColor: color }} />
+            <Dot d={size * 0.24} color={color} hollow stroke={s} />
           </View>
         </View>
       );

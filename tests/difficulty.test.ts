@@ -19,6 +19,7 @@ import { givensForLevel, sizeForLevel } from '../src/games/sudoku/logic.ts';
 import { specForLevel as shapeBuilderSpec } from '../src/games/shapebuilder/logic.ts';
 import { specForLevel as puddleHopSpec } from '../src/games/puddlehop/logic.ts';
 import { specForLevel as laneDashSpec } from '../src/games/lanedash/logic.ts';
+import { specForLevel as oddOneOutSpec } from '../src/games/oddoneout/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -199,6 +200,11 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
     const spec = laneDashSpec(l);
     // Rivals closer behind and less room between rows count negatively.
     return [spec.lanes, spec.speed, spec.rows, spec.kinds.length, spec.doubleChance, -spec.margin, -spec.gapMin];
+  },
+  oddoneout: (l) => {
+    const spec = oddOneOutSpec(l);
+    // A size ratio closer to 1 is a smaller, harder-to-see difference.
+    return [spec.items, spec.differences.length, spec.sizeRatio, spec.colourNoise ? 1 : 0];
   },
   puddlehop: (l) => {
     const spec = puddleHopSpec(l);

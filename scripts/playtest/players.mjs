@@ -527,6 +527,36 @@ export async function playLaneDash(page, report) {
   report.ok(`steered ${presses} times on the way to the flag`);
 }
 
+/** Odd One Out, played by ear: each shape's label says its size, which way
+ *  up it is, its colour and its shape. The odd one is the only one that
+ *  differs from all the rest on shape, size or turn. Colour is ignored
+ *  entirely, so the game has to be winnable the way a colour-blind child
+ *  plays it. */
+export async function playOddOneOut(page, report) {
+  for (let q = 0; q < 8; q += 1) {
+    if (await roundResult(page)) break;
+    const buttons = await page.getByRole('button').all();
+    const shapes = [];
+    for (const b of buttons) {
+      const label = (await b.getAttribute('aria-label')) ?? '';
+      const m = label.match(/^(small )?(upside-down )?(orange|blue|green|yellow|pink) (circle|square|triangle|star|diamond|heart)$/);
+      if (m) shapes.push({ b, small: !!m[1], turned: !!m[2], shape: m[4] });
+    }
+    const unique = (key) => {
+      const counts = new Map();
+      for (const s of shapes) counts.set(s[key], (counts.get(s[key]) ?? 0) + 1);
+      return counts.size === 2 ? shapes.find((s) => counts.get(s[key]) === 1) : null;
+    };
+    const odd = unique('shape') ?? unique('small') ?? unique('turned');
+    if (!odd) {
+      report.bug('Odd One Out', `no shape differs by anything but colour among ${shapes.length}`);
+      return;
+    }
+    await odd.b.click();
+    await page.waitForTimeout(350);
+  }
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -538,4 +568,5 @@ export const PLAYERS = {
   'Shape Builder': playShapeBuilder,
   'Puddle Hop': playPuddleHop,
   'Lane Dash': playLaneDash,
+  'Odd One Out': playOddOneOut,
 };

@@ -15,6 +15,7 @@ import {
 } from '../src/games/numbercrunch/logic.ts';
 import { givensForLevel, sizeForLevel } from '../src/games/sudoku/logic.ts';
 import { specForLevel as shapeBuilderSpec } from '../src/games/shapebuilder/logic.ts';
+import { specForLevel as puddleHopSpec } from '../src/games/puddlehop/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -140,4 +141,15 @@ test('Shape Builder deals more pieces and more to fill, then asks for turning', 
   // Blocks rise at every level, so no promotion repeats a puzzle.
   const blocks = LEVELS.map((level) => shapeBuilderSpec(level).blocks);
   assert.equal(new Set(blocks).size, LEVELS.length, `repeated tier: ${blocks.join(', ')}`);
+});
+
+test('Puddle Hop runs faster, with more in the way and less room between, as level rises', () => {
+  climbs('puddle hop speed', (level) => puddleHopSpec(level).speed);
+  climbs('puddle hop obstacles', (level) => puddleHopSpec(level).obstacles);
+  climbs('puddle hop kinds', (level) => puddleHopSpec(level).kinds.length);
+  // Gaps shrink, so the measure that climbs is how *little* room there is.
+  climbs('puddle hop tightness', (level) => -puddleHopSpec(level).gapMin);
+  climbs('puddle hop tightness at most', (level) => -puddleHopSpec(level).gapMax);
+  const speeds = LEVELS.map((level) => puddleHopSpec(level).speed);
+  assert.equal(new Set(speeds).size, LEVELS.length, `repeated tier: ${speeds.join(', ')}`);
 });

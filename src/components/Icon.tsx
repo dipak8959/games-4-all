@@ -50,7 +50,8 @@ export type IconName =
   | 'grid'
   | 'sequence'
   | 'math'
-  | 'pieces';
+  | 'pieces'
+  | 'hop';
 
 export function Icon({
   name,
@@ -537,6 +538,43 @@ export function Icon({
               />
             ))}
           </View>
+        </View>
+      );
+
+    case 'hop':
+      // A block in mid-hop over a smaller one, above a ground line.
+      return (
+        <View style={box} {...hidden}>
+          <View
+            style={{
+              position: 'absolute',
+              left: size * 0.12,
+              top: size * 0.14,
+              width: size * 0.34,
+              height: size * 0.34,
+              backgroundColor: color,
+            }}
+          />
+          <View
+            style={{
+              position: 'absolute',
+              right: size * 0.14,
+              bottom: size * 0.16 + s,
+              width: size * 0.2,
+              height: size * 0.2,
+              backgroundColor: color,
+            }}
+          />
+          <View
+            style={{
+              position: 'absolute',
+              left: size * 0.08,
+              right: size * 0.08,
+              bottom: size * 0.16,
+              height: s,
+              backgroundColor: color,
+            }}
+          />
         </View>
       );
 

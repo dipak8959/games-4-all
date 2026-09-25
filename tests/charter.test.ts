@@ -101,6 +101,39 @@ test('it blocks a borrowed name, wherever it is hiding', () => {
   rejects({ origin: 'public-domain', priorArt: '' }, 'ORIGINAL');
 });
 
+test('it blocks the endless runner, and lets the bounded one through', () => {
+  // The famous offline browser game, described the way it actually plays:
+  // it runs until you crash and keeps your best distance. Both halves are
+  // the loop this app exists to keep away from children.
+  const endless = reviewProposal(
+    {
+      ...SOUND,
+      title: 'Jumpy Run',
+      roundEnds: 'When you hit an obstacle. Speed keeps rising and your distance is your score — beat your high score.',
+      origin: 'public-domain',
+      priorArt: 'Side-scrolling jump games, like the Chrome dino game.',
+    },
+    [],
+  );
+  const blocked = endless.filter((f) => f.severity === 'blocks').map((f) => f.principle);
+  assert.ok(blocked.includes('IT_ENDS'), 'an endless run must be refused');
+  assert.ok(blocked.includes('NOTHING_TO_CHASE'), 'a high score must be refused');
+  assert.ok(blocked.includes('ORIGINAL'), 'naming the Chrome game must be refused');
+
+  // The same jumping, with a finish line, no score and nothing to lose, is
+  // fine — which is how Puddle Hop ships.
+  const bounded = reviewProposal(
+    {
+      ...SOUND,
+      roundEnds: 'The runner reaches the finish flag.',
+      origin: 'public-domain',
+      priorArt: 'Jump-the-obstacle running games, a playground race long before a screen.',
+    },
+    [],
+  );
+  assert.ok(isAccepted(bounded));
+});
+
 test('it blocks an age range that is not a real claim', () => {
   rejects({ minAge: 1 }, 'HONEST_AGE');
   rejects({ minAge: 12, maxAge: 6 }, 'HONEST_AGE');

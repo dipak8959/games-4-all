@@ -9,7 +9,7 @@ import { palette } from '../theme/tokens';
  * tests — never has to load React Native screens just to read a title.
  */
 
-export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting';
+export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting' | 'timing';
 
 export type GameCategoryDef = {
   readonly id: GameCategory;
@@ -25,6 +25,7 @@ export const GAME_CATEGORIES: readonly GameCategoryDef[] = [
   { id: 'words', label: 'Words', icon: 'letters' },
   { id: 'logic', label: 'Logic', icon: 'grid' },
   { id: 'sorting', label: 'Sorting', icon: 'shapes' },
+  { id: 'timing', label: 'Timing', icon: 'hop' },
 ];
 
 /**
@@ -242,6 +243,25 @@ export const GAMES_META: readonly GameMeta[] = [
     // Five pieces that must be pictured turned before they fit an irregular
     // outline is real spatial work for an adult too, and the outline is cut
     // fresh every round, so there is no ceiling of memorised layouts.
+    maxAge: 99,
+  },
+  {
+    id: 'puddlehop',
+    title: 'Puddle Hop',
+    icon: 'hop',
+    color: palette.sky,
+    skill: 'Timing and anticipation: judging when something arrives, and acting at that moment',
+    roundEnds: 'The runner reaches the finish flag.',
+    origin: 'public-domain',
+    priorArt:
+      'Jump-the-obstacle running games — a playground race long before a screen, and a side-scrolling staple since the earliest home computers.',
+    toldApartBy: 'The shape of each obstacle: squat, tall, long and flat, or a pair.',
+    ages: '4+',
+    category: 'timing',
+    minAge: 4,
+    // One button, so a four-year-old can play it; speed, tighter gaps and a
+    // pair of stones that needs a longer hop make the top level a real test
+    // of timing for anyone — and every run is short and ends at a flag.
     maxAge: 99,
   },
 ];

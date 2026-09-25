@@ -376,6 +376,85 @@ export async function playShapeBuilder(page, report) {
   }
 }
 
+/**
+ * Puddle Hop, played from inside the page: a real-time game needs a player
+ * that reacts every frame, and a round trip from the test runner per frame
+ * is too slow to time a hop honestly. The player still only uses what's on
+ * screen — where the runner is, where each obstacle is and how wide, and
+ * how fast they're coming (measured, not read from the game) — and it
+ * presses the stage the way a finger would.
+ */
+/** A page can only be given the tap hook once, and a pass may play more
+ *  than one round on the same page. */
+const exposed = new WeakSet();
+const tapAt = new WeakMap();
+
+export async function playPuddleHop(page, report) {
+  const stage = page.getByLabel('Start running');
+  const box = await stage.boundingBox();
+  const tapX = box.x + box.width / 2;
+  const tapY = box.y + box.height * 0.85;
+  // Presses are real mouse presses, sent from here: react-native-web ignores
+  // pointer events a script fabricates inside the page, as it should. The
+  // page only decides *when*.
+  tapAt.set(page, { x: tapX, y: tapY });
+  if (!exposed.has(page)) {
+    exposed.add(page);
+    await page.exposeFunction('__puddleHopTap', () => {
+      const at = tapAt.get(page);
+      return page.mouse.click(at.x, at.y);
+    });
+  }
+  await page.mouse.click(tapX, tapY);
+
+  const hops = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const AIRTIME = (2 * 820) / 2600; // how long a hop lasts, learned by feel
+        let last = null;
+        let speed = null;
+        let hops = 0;
+        let busy = false;
+        const started = performance.now();
+        const frame = (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 90000) {
+            resolve(hops);
+            return;
+          }
+          const runner = document.querySelector('[data-testid="runner"]')?.getBoundingClientRect();
+          const next = [...document.querySelectorAll('[data-testid^="obstacle:"]')]
+            .map((el) => ({
+              left: el.getBoundingClientRect().left,
+              width: Number(el.dataset.testid.split(':')[1]),
+            }))
+            .filter((o) => runner && o.left + o.width > runner.left)
+            .sort((a, b) => a.left - b.left)[0];
+          if (next && runner) {
+            // How fast things are coming, measured off the obstacle itself.
+            if (last && last.width === next.width && last.left > next.left) {
+              speed = (last.left - next.left) / ((now - last.at) / 1000);
+            }
+            last = { ...next, at: now };
+            // Hop so the middle of the hop is over the middle of the
+            // obstacle, then wait the hop out before deciding again.
+            const gap = next.left + next.width / 2 - (runner.left + runner.width / 2);
+            if (!busy && speed && gap <= (speed * AIRTIME) / 2 && gap > -next.width / 2) {
+              busy = true;
+              hops += 1;
+              window.__puddleHopTap();
+              setTimeout(() => {
+                busy = false;
+              }, AIRTIME * 1000 + 40);
+            }
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`hopped ${hops} times on the way to the flag`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -385,4 +464,5 @@ export const PLAYERS = {
   'Number Crunch': playNumberCrunch,
   Sudoku: playSudoku,
   'Shape Builder': playShapeBuilder,
+  'Puddle Hop': playPuddleHop,
 };

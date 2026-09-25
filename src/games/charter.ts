@@ -202,6 +202,8 @@ const TRADEMARKED = [
   'simon says', 'simon', 'monopoly', 'scrabble', 'connect four', 'uno',
   'pac-man', 'pacman', 'space invaders', 'bejeweled', 'subway surfers',
   'temple run', 'clash of clans', 'fruit ninja', 'flappy bird', '2048',
+  // Chrome's offline game, under the names people actually call it.
+  'chrome dino', 'dino game', 't-rex runner', 't-rex game', 'dino run',
 ];
 
 /** The youngest age this app has anything for. */

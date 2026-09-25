@@ -396,13 +396,17 @@ export async function playPuddleHop(page, report) {
   const tapY = box.y + box.height * 0.85;
   // Presses are real mouse presses, sent from here: react-native-web ignores
   // pointer events a script fabricates inside the page, as it should. The
-  // page only decides *when*.
+  // page only decides *when*. Every hop is held the whole way up — the one
+  // size that clears everything.
   tapAt.set(page, { x: tapX, y: tapY });
   if (!exposed.has(page)) {
     exposed.add(page);
-    await page.exposeFunction('__puddleHopTap', () => {
+    // A long press, for the biggest hop: down now, up once the climb is done.
+    await page.exposeFunction('__puddleHopTap', async () => {
       const at = tapAt.get(page);
-      return page.mouse.click(at.x, at.y);
+      await page.mouse.move(at.x, at.y);
+      await page.mouse.down();
+      setTimeout(() => page.mouse.up().catch(() => {}), 560);
     });
   }
   await page.mouse.click(tapX, tapY);
@@ -410,7 +414,7 @@ export async function playPuddleHop(page, report) {
   const hops = await page.evaluate(
     () =>
       new Promise((resolve) => {
-        const AIRTIME = (2 * 820) / 2600; // how long a hop lasts, learned by feel
+        const AIRTIME = 0.826; // how long a held hop lasts, learned by feel
         let last = null;
         let speed = null;
         let hops = 0;

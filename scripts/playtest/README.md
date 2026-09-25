@@ -39,3 +39,7 @@ Each pass exits non-zero if it finds a bug or the page logs an error.
   `accessibilityState.selected` is not a valid ARIA state on a button, so
   react-native-web dropped it and the web build had no accessible equivalent.
   The lit state is now part of the tile's accessible name.
+- Puddle Hop lost quick taps on the web. react-native-web holds back
+  `onPressIn` for 50ms by default, and a tap released inside that window is
+  never reported, so the hop never happened — and every hop that did landed
+  50ms after the child meant it. The stage now asks for presses at once.

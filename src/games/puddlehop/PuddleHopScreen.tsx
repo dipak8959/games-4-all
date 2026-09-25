@@ -16,6 +16,7 @@ import {
   STUMBLE_TIME,
   createGame,
   hop,
+  release,
   step,
   type Obstacle,
   type PuddleHopState,
@@ -178,6 +179,13 @@ function Thing({
   );
 }
 
+/**
+ * react-native-web's own name for "report a press the instant it starts".
+ * It isn't in React Native's types because native Pressable already reports
+ * press-in at once; the web build is the one that needs telling.
+ */
+const PRESS_AT_ONCE = { delayPressIn: 0 } as object;
+
 export function PuddleHopScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
   // The prop only seeds the first round; "Play again" adapts locally, like
@@ -220,21 +228,14 @@ export function PuddleHopScreen({ level: initialLevel, onRoundComplete, onExit }
     });
   }, [settings]);
 
-  // A hop fires on touch-down, so it lands when the child decides rather
-  // than when the finger lifts. But on the web a quick tap — down and up
-  // inside the same moment — can finish without `onPressIn` ever firing, and
-  // the tap is simply lost. So the release is a fallback: it hops only if
-  // the press didn't already. Either way, one tap is one hop.
-  // Timestamped rather than a flag, so a press that never reaches `onPress`
-  // (held long enough to count as a long press) can't swallow the next tap.
-  const lastPressIn = useRef(0);
-  const onPressIn = useCallback(() => {
-    lastPressIn.current = Date.now();
-    onHop();
-  }, [onHop]);
-  const onPress = useCallback(() => {
-    if (Date.now() - lastPressIn.current > 1000) onHop();
-  }, [onHop]);
+  // Pressing launches the hop and lifting the finger ends its climb, so the
+  // hop is as big as the press is long. `PRESS_AT_ONCE` below matters:
+  // react-native-web waits 50ms before reporting a press by default, and a
+  // tap shorter than that was never reported at all — the hop was simply
+  // lost, and every other hop landed 50ms after the child meant it.
+  const onPressOut = useCallback(() => {
+    setState(release);
+  }, []);
 
   const restart = useCallback((atLevel: number) => {
     setLevel(atLevel);
@@ -253,15 +254,16 @@ export function PuddleHopScreen({ level: initialLevel, onRoundComplete, onExit }
 
   return (
     <GameFrame title="Puddle Hop" icon="hop" onExit={onExit} progress={progress}>
-      <StageLabel live>{state.started ? 'TAP TO HOP' : 'TAP TO START'}</StageLabel>
+      <StageLabel live>{state.started ? 'HOLD TO HOP HIGHER' : 'TAP TO START'}</StageLabel>
 
       {/* The whole stage is the button — the biggest target on any screen in
-          the app. See `onPressIn` above for why a hop fires on touch-down. */}
+          the app. See `onPressOut` above for how a press becomes a hop. */}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={state.started ? 'Hop' : 'Start running'}
-        onPressIn={onPressIn}
-        onPress={onPress}
+        {...PRESS_AT_ONCE}
+        onPressIn={onHop}
+        onPressOut={onPressOut}
         onLayout={(e) => setStageHeight(e.nativeEvent.layout.height)}
         style={styles.stage}
       >

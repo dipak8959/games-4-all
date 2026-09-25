@@ -3,8 +3,9 @@ import { randInt, shuffle, type Rng } from '../../util/random';
 /**
  * Puddle Hop.
  *
- * A small runner trots across the park towards a flag. Tap anywhere to hop
- * over what's in the way — stones, bushes, puddles. That is the whole game,
+ * A small runner trots across the park towards a flag. Press anywhere to
+ * hop over what's in the way — a tap for a stone, a longer press for a bush,
+ * a puddle or a pair of stones. That is the whole game,
  * and it is the same one-button jumping everyone knows from the browser's
  * offline screen, rebuilt around this app's rules:
  *
@@ -32,12 +33,34 @@ export const STAGE_WIDTH = 320;
 export const RUNNER_X = 56;
 export const RUNNER_SIZE = 34;
 
-/** Hop physics. A hop lasts about 0.6s and rises about four runner-heights
- *  — high enough to clear anything on the course with room to spare, so
- *  the skill is all in the timing, never in having to hold the button. */
+/**
+ * Hop physics: the longer the press, the bigger the hop.
+ *
+ * A hop launches at `HOP_SPEED`. While the finger stays down and the runner
+ * is still rising, gravity is light (`GRAVITY_HELD`), so it keeps climbing;
+ * the moment the finger lifts, full gravity takes over and brings it down.
+ * So a tap is a small hop — about a stone and a half high, just enough for a
+ * single stone — and holding for up to half a second makes a big one that
+ * clears a bush, a puddle or a pair of stones. Choosing the size of the hop
+ * is now part of the skill, alongside choosing the moment.
+ */
 export const GRAVITY = 2600;
-export const HOP_SPEED = 820;
-const AIRTIME = (2 * HOP_SPEED) / GRAVITY;
+export const GRAVITY_HELD = 1000;
+export const HOP_SPEED = 510;
+
+/** A hop's time in the air, from launch to landing, if held for `held`
+ *  seconds (capped at the top of the climb). */
+export function airtime(held: number): number {
+  const climbHeld = Math.min(held, HOP_SPEED / GRAVITY_HELD);
+  const riseLeft = HOP_SPEED - GRAVITY_HELD * climbHeld;
+  const heightAtRelease = HOP_SPEED * climbHeld - 0.5 * GRAVITY_HELD * climbHeld * climbHeld;
+  const climbFree = riseLeft / GRAVITY;
+  const top = heightAtRelease + (riseLeft * riseLeft) / (2 * GRAVITY);
+  return climbHeld + climbFree + Math.sqrt((2 * top) / GRAVITY);
+}
+
+/** The biggest hop there is: held all the way to the top. */
+const FULL_AIRTIME = airtime(Infinity);
 
 /** How long a stumble plays for, in seconds. */
 export const STUMBLE_TIME = 0.6;
@@ -55,7 +78,7 @@ type ObstacleShape = { readonly width: number; readonly height: number };
  *  needs one long hop rather than two short ones. */
 export const OBSTACLE_SHAPES: Readonly<Record<ObstacleKind, ObstacleShape>> = {
   stone: { width: 26, height: 26 },
-  bush: { width: 30, height: 46 },
+  bush: { width: 30, height: 56 },
   puddle: { width: 72, height: 6 },
   stones: { width: 70, height: 26 },
 };
@@ -81,6 +104,8 @@ export type PuddleHopState = {
   /** Height above the ground, and vertical speed. */
   readonly height: number;
   readonly rise: number;
+  /** The finger is still down on the hop that's in progress. */
+  readonly holding: boolean;
   /** Nothing moves until the first tap: the child starts the run. */
   readonly started: boolean;
   /** Seconds of stumble left to play, 0 when running normally. */
@@ -120,9 +145,10 @@ export function specForLevel(level: number): LevelSpec {
   return LEVELS[index];
 }
 
-/** Ground covered during one hop at this speed. */
+/** Ground covered during the biggest hop at this speed. Gaps are measured
+ *  in these, so there is always room to land and set up the next one. */
 export function hopReach(speed: number): number {
-  return speed * AIRTIME;
+  return speed * FULL_AIRTIME;
 }
 
 /** Lays the course out before the run: every obstacle in place, the flag at
@@ -159,6 +185,7 @@ export function createGame(rng: Rng, level: number): PuddleHopState {
     speed: spec.speed,
     height: 0,
     rise: 0,
+    holding: false,
     started: false,
     stumbling: 0,
     lastBump: null,
@@ -168,15 +195,21 @@ export function createGame(rng: Rng, level: number): PuddleHopState {
 }
 
 /**
- * A tap. The first one starts the run; after that, a tap while on the ground
- * hops. A tap in the air does nothing — there is no double jump to learn and
- * no way to float, so the only thing that matters is *when*.
+ * A press. The first one starts the run; after that, a press while on the
+ * ground launches a hop that keeps climbing for as long as the finger stays
+ * down (see `release`). A press in the air does nothing — no double hop to
+ * learn, no way to stay up forever.
  */
 export function hop(state: PuddleHopState): PuddleHopState {
   if (state.complete) return state;
   if (!state.started) return { ...state, started: true };
   if (state.height > 0 || state.rise > 0) return state;
-  return { ...state, rise: HOP_SPEED };
+  return { ...state, rise: HOP_SPEED, holding: true };
+}
+
+/** The finger lifts: from here the hop is on its way down. */
+export function release(state: PuddleHopState): PuddleHopState {
+  return state.holding ? { ...state, holding: false } : state;
 }
 
 /** The runner's footprint on the course, trimmed a little on every side so
@@ -209,11 +242,17 @@ function tick(state: PuddleHopState, dt: number): PuddleHopState {
   if (!state.started || state.complete) return state;
 
   const distance = Math.min(state.finish, state.distance + state.speed * dt);
-  let rise = state.rise - GRAVITY * dt;
-  let height = state.height + state.rise * dt - 0.5 * GRAVITY * dt * dt;
+  // Held and still climbing: light gravity. Otherwise, full.
+  const held = state.holding && state.rise > 0;
+  const gravity = held ? GRAVITY_HELD : GRAVITY;
+  let rise = state.rise - gravity * dt;
+  let height = state.height + state.rise * dt - 0.5 * gravity * dt * dt;
+  // Past the top of the climb, holding no longer does anything.
+  let holding = state.holding && rise > 0;
   if (height <= 0) {
     height = 0;
     rise = 0;
+    holding = false;
   }
 
   let next: PuddleHopState = {
@@ -221,6 +260,7 @@ function tick(state: PuddleHopState, dt: number): PuddleHopState {
     distance,
     height,
     rise,
+    holding,
     stumbling: Math.max(0, state.stumbling - dt),
   };
 

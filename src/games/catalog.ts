@@ -429,6 +429,95 @@ export const GAMES_META: readonly GameMeta[] = [
     // right one are Carroll's puzzle for grown-ups too.
     maxAge: 99,
   },
+  {
+    id: 'fruitcatch',
+    title: 'Fruit Catch',
+    icon: 'catch',
+    color: tilePalette.fern,
+    skill: 'Hand-eye coordination: tracking falling things and getting there in time',
+    roundEnds: 'Twenty things have fallen.',
+    origin: 'public-domain',
+    priorArt: 'Catch-the-falling-object games — a fairground and early home-computer staple, owned by no one.',
+    toldApartBy: 'Shape: round fruit to catch, spiky pine cones to let fall.',
+    ages: '3-10',
+    category: 'timing',
+    minAge: 3,
+    // Two columns of slow fruit is a three-year-old's; four columns, quick,
+    // with a third of what falls to be avoided, holds a ten-year-old. Past
+    // that it is a toddler's catching game, so it stops there.
+    maxAge: 10,
+  },
+  {
+    id: 'maze',
+    title: 'Maze Explorer',
+    icon: 'maze',
+    color: tilePalette.periwinkle,
+    skill: 'Spatial planning: finding a route and seeing dead ends before walking into them',
+    roundEnds: 'Two mazes walked to the flag.',
+    origin: 'public-domain',
+    priorArt: 'Mazes and labyrinths, drawn and walked for thousands of years.',
+    toldApartBy: 'Walls are solid lines; the explorer has googly eyes; the goal is a flag shape.',
+    ages: '3-12',
+    category: 'logic',
+    minAge: 3,
+    // Three by three with one turn, up to thirteen rows of ten with a key to
+    // fetch before the door opens. A whole maze fits on one screen, so it
+    // stops at twelve rather than pretending to be an adult puzzle.
+    maxAge: 12,
+  },
+  {
+    id: 'ballooncount',
+    title: 'Balloon Count',
+    icon: 'balloons',
+    color: tilePalette.mauve,
+    skill: 'Number order: counting on, then counting back and in twos and fives',
+    roundEnds: 'Four bunches of balloons popped in order.',
+    origin: 'original',
+    toldApartBy: 'The dots or numeral on each balloon.',
+    ages: '3-8',
+    category: 'numbers',
+    minAge: 3,
+    // One-two-three in dots, up to counting back and in fives and tens with
+    // balloons that don't belong — the counting of the first school years.
+    maxAge: 8,
+  },
+  {
+    id: 'treasurehunt',
+    title: 'Treasure Hunt',
+    icon: 'treasure',
+    color: tilePalette.khaki,
+    skill: 'Deduction: using clues from each dig to work out where the treasure must be',
+    roundEnds: 'Three treasures found.',
+    origin: 'public-domain',
+    priorArt: 'Hot-and-cold hide-and-seek, and grid guessing games played on paper for over a century.',
+    toldApartBy: 'Arrows and step counts on each dug square.',
+    ages: '5-12',
+    category: 'logic',
+    minAge: 5,
+    // Arrows on a small map, up to working out a square from two or three
+    // distances. Four squares across is all a phone fits at full size, so
+    // the map stays small and the game stops at twelve.
+    maxAge: 12,
+  },
+  {
+    id: 'waterworks',
+    title: 'Water Works',
+    icon: 'pipes',
+    color: tilePalette.sage,
+    skill: 'Spatial reasoning: turning pieces so they join into one connected path',
+    roundEnds: 'Three flowers watered.',
+    origin: 'public-domain',
+    priorArt:
+      'Connect-the-path tile puzzles — rotating pieces into a network — a paper and wooden-toy puzzle tradition with no single owner.',
+    toldApartBy: 'The shape of each pipe piece: straight, bend, T or cross.',
+    ages: '5-12',
+    category: 'logic',
+    minAge: 5,
+    // Three straight pipes, up to a four-by-six grid of bends, Ts and
+    // crossings with no shortcut. The grid is kept to what fits a phone at
+    // full size, so it stops at twelve.
+    maxAge: 12,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

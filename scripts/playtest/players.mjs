@@ -833,6 +833,282 @@ export async function playWordLadder(page, report) {
   }
 }
 
+/**
+ * Fruit Catch, played from inside the page like Lane Dash: it watches what
+ * is falling, and taps the column of whatever will land next — or, if
+ * that's a pine cone over the basket, the column beside it.
+ */
+const catchHook = new WeakSet();
+const catchAt = new WeakMap();
+export async function playFruitCatch(page, report) {
+  const columns = [];
+  for (const button of await page.getByLabel(/^Column \d+ of \d+/).all()) {
+    const box = await button.boundingBox();
+    columns.push({ x: box.x + box.width / 2, y: box.y + box.height / 3 });
+  }
+  columns.sort((a, b) => a.x - b.x);
+  catchAt.set(page, columns);
+  if (!catchHook.has(page)) {
+    catchHook.add(page);
+    await page.exposeFunction('__fruitCatchTap', (column) => {
+      const at = catchAt.get(page)[column];
+      return page.mouse.click(at.x, at.y);
+    });
+  }
+  await page.getByLabel(/^Column 1 of/).click(); // the first tap starts the round
+
+  const taps = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const field = document.querySelector('[data-testid^="field:"]');
+        const columns = Number(field.dataset.testid.split(':')[1]);
+        let target = -1;
+        let taps = 0;
+        const started = performance.now();
+        const frame = (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 120000) {
+            resolve(taps);
+            return;
+          }
+          const falling = [...document.querySelectorAll('[data-testid^="falling:"]')].map((el) => {
+            const [, kind, column] = el.dataset.testid.split(':');
+            return { kind, column: Number(column), bottom: el.getBoundingClientRect().bottom };
+          });
+          falling.sort((a, b) => b.bottom - a.bottom);
+          const next = falling[0];
+          if (next) {
+            const fruit = falling.find((f) => f.kind === 'fruit');
+            let want = target;
+            if (next.kind === 'fruit') want = next.column;
+            else if (target === next.column || target === -1) {
+              // Out from under the cone, towards the next fruit if there is one.
+              const toward = fruit && fruit.column !== next.column ? fruit.column : next.column === 0 ? 1 : next.column - 1;
+              want = Math.max(0, Math.min(columns - 1, toward));
+            }
+            if (want !== target && want >= 0) {
+              target = want;
+              taps += 1;
+              window.__fruitCatchTap(want);
+            }
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`moved the basket ${taps} times`);
+}
+
+/**
+ * Maze Explorer: explores like someone who can't see the whole maze —
+ * only where they are, which ways are open and which way they came in,
+ * all from the maze's description. Depth-first: an untried way if there is
+ * one, otherwise back the way it came. That finds the key and the flag in
+ * any maze with no loops.
+ */
+export async function playMaze(page, report) {
+  let presses = 0;
+  let tried = new Map();
+  let parent = new Map();
+  let current = '';
+  let hadKeyToFind = false;
+  for (let t = 0; t < 600; t += 1) {
+    if (await roundResult(page)) break;
+    const maze = page.locator('[data-testid^="maze:"]').first();
+    if ((await page.getByText('YOU MADE IT', { exact: true }).count()) || !(await maze.count())) {
+      await page.waitForTimeout(300);
+      continue;
+    }
+    // Which maze this is: a new one starts with a fresh memory.
+    const id = (await maze.getAttribute('data-testid')).split(':').slice(0, 3).join(':');
+    if (id !== current) {
+      current = id;
+      tried = new Map();
+      parent = new Map();
+    }
+    const label = (await maze.getAttribute('aria-label')) ?? '';
+    // Picking up the key opens a door somewhere already explored: start
+    // exploring afresh from here, the way a person would go back to look.
+    const keyShown = /The key is at/.test(label);
+    if (hadKeyToFind && !keyShown) {
+      tried = new Map();
+      parent = new Map();
+    }
+    hadKeyToFind = keyShown;
+    const at = label.match(/You are at (row \d+, column \d+)/)[1];
+    const open = (label.match(/Open: ([a-z, ]+)\./)?.[1] ?? '').split(', ').filter(Boolean);
+    const came = label.match(/You came in from (?:the )?(above|below|left|right)/)?.[1];
+    const back = came === 'above' ? 'up' : came === 'below' ? 'down' : came;
+    if (!tried.has(at)) {
+      tried.set(at, new Set());
+      parent.set(at, back ?? null);
+    }
+    const done = tried.get(at);
+    const way = open.find((d) => !done.has(d) && d !== parent.get(at)) ?? parent.get(at);
+    if (!way) {
+      report.bug('Maze Explorer', `stuck at ${at} with nowhere left to try`);
+      return;
+    }
+    done.add(way);
+    await page.getByLabel(new RegExp(`^Go ${way}(, wall)?$`)).click();
+    presses += 1;
+    await page.waitForTimeout(90);
+  }
+  report.ok(`explored with ${presses} presses`);
+}
+
+/** Balloon Count: works out what comes next from the string at the top —
+ *  its last number and its step — and pops that balloon. */
+export async function playBalloonCount(page, report) {
+  for (let t = 0; t < 80; t += 1) {
+    if (await roundResult(page)) break;
+    const string = await page.getByLabel(/^On the string:/).first().getAttribute('aria-label');
+    const on = (string.match(/^On the string: ([^.]*)\./)?.[1] ?? '')
+      .split(', ')
+      .filter((x) => /^\d+$/.test(x))
+      .map(Number);
+    const balloons = [];
+    for (const b of await page.getByRole('button').all()) {
+      const label = (await b.getAttribute('aria-label')) ?? '';
+      const m = label.match(/^Balloon (?:with )?(\d+)(?: dots?)?$/);
+      if (m) balloons.push({ b, value: Number(m[1]) });
+    }
+    if (balloons.length === 0 || /0 more to go/.test(string)) {
+      await page.waitForTimeout(300);
+      continue;
+    }
+    const want =
+      on.length === 0
+        ? Math.min(...balloons.map((x) => x.value))
+        : on.length === 1
+          ? on[0] + 1
+          : on[on.length - 1] + (on[on.length - 1] - on[on.length - 2]);
+    const hit = balloons.find((x) => x.value === want);
+    if (!hit) {
+      report.bug('Balloon Count', `after ${on.join(', ')} there is no balloon ${want}`);
+      return;
+    }
+    await hit.b.click();
+    await page.waitForTimeout(160);
+  }
+}
+
+/** Treasure Hunt: reads every dug square's clue, keeps only the squares that
+ *  agree with all of them, and digs one of those. */
+export async function playTreasureHunt(page, report) {
+  for (let t = 0; t < 80; t += 1) {
+    if (await roundResult(page)) break;
+    const cells = [];
+    for (const b of await page.getByRole('button').all()) {
+      const label = (await b.getAttribute('aria-label')) ?? '';
+      const m = label.match(/^Row (\d+), column (\d+)(.*)$/);
+      if (m) cells.push({ b, r: Number(m[1]), c: Number(m[2]), rest: m[3] });
+    }
+    if (cells.some((x) => /treasure!/.test(x.rest)) || cells.length === 0) {
+      await page.waitForTimeout(400);
+      continue;
+    }
+    const dug = cells.filter((x) => !/not dug/.test(x.rest));
+    const fits = (x, d) => {
+      const steps = d.rest.match(/(\d+) steps? away/);
+      if (steps) return Math.abs(x.r - d.r) + Math.abs(x.c - d.c) === Number(steps[1]);
+      const up = /up/.test(d.rest) ? -1 : /down/.test(d.rest) ? 1 : 0;
+      const across = /left/.test(d.rest) ? -1 : /right/.test(d.rest) ? 1 : 0;
+      return Math.sign(x.r - d.r) === up && Math.sign(x.c - d.c) === across;
+    };
+    const possible = cells.filter((x) => /not dug/.test(x.rest) && dug.every((d) => fits(x, d)));
+    if (possible.length === 0) {
+      report.bug('Treasure Hunt', 'the clues rule out every square');
+      return;
+    }
+    await possible[Math.floor(possible.length / 2)].b.click();
+    await page.waitForTimeout(200);
+  }
+}
+
+/** Water Works: reads each piece and which way it faces, finds the cheapest
+ *  way from the tap to the flower, and turns each piece on it until it
+ *  fits. */
+export async function playWaterWorks(page, report) {
+  const BIT = { up: 1, right: 2, down: 4, left: 8 };
+  const OPP = { 1: 4, 2: 8, 4: 1, 8: 2 };
+  const turn = (s) => ((s << 1) | (s >> 3)) & 15;
+  const turnsToFit = (sides, need) => {
+    let s = sides;
+    for (let t = 0; t < 4; t += 1) {
+      if ((s & need) === need) return t;
+      s = turn(s);
+    }
+    return -1;
+  };
+  for (let round = 0; round < 6; round += 1) {
+    if (await roundResult(page)) break;
+    if (await page.getByText('THE FLOWER HAS WATER', { exact: true }).count()) {
+      await page.waitForTimeout(500);
+      continue;
+    }
+    const tapRow = Number((await page.getByLabel(/^The tap, at row/).getAttribute('aria-label')).match(/\d+/)[0]) - 1;
+    const flowerRow = Number((await page.getByLabel(/^The flower, at row/).getAttribute('aria-label')).match(/\d+/)[0]) - 1;
+    const pieces = [];
+    for (const b of await page.getByRole('button').all()) {
+      const label = (await b.getAttribute('aria-label')) ?? '';
+      const m = label.match(/^Row (\d+), column (\d+): \w+, open ([a-z ]+?)(, water in it)?$/);
+      if (m) pieces.push({ b, r: Number(m[1]) - 1, c: Number(m[2]) - 1, sides: m[3].split(' and ').reduce((s, n) => s | BIT[n], 0) });
+    }
+    const cols = Math.max(...pieces.map((p) => p.c)) + 1;
+    const rows = Math.max(...pieces.map((p) => p.r)) + 1;
+    // The grid on screen has to be the grid the puzzle is: a piece that
+    // wraps onto the wrong row breaks every join between squares.
+    const lefts = new Set();
+    for (const p of pieces) lefts.add(Math.round((await p.b.boundingBox()).x));
+    if (lefts.size !== cols) {
+      report.bug('Water Works', `the ${cols}-wide grid is drawn ${lefts.size} across`);
+      return;
+    }
+    const at = (r, c) => pieces.find((p) => p.r === r && p.c === c);
+    // Cheapest way, never through a square twice.
+    const queue = [{ cost: 0, r: tapRow, c: 0, from: 8, used: new Set([`${tapRow},0`]), steps: [] }];
+    let best = null;
+    const seen = new Map();
+    while (queue.length) {
+      queue.sort((a, b) => a.cost - b.cost);
+      const n = queue.shift();
+      if (n.done) {
+        best = n;
+        break;
+      }
+      const key = `${n.r},${n.c},${n.from},${[...n.used].sort().join('|')}`;
+      if (seen.has(key)) continue;
+      seen.set(key, true);
+      for (const out of [1, 2, 4, 8]) {
+        if (out === n.from) continue;
+        const need = n.from | out;
+        const t = turnsToFit(at(n.r, n.c).sides, need);
+        if (t < 0) continue;
+        const steps = [...n.steps, { r: n.r, c: n.c, t }];
+        if (n.r === flowerRow && n.c === cols - 1 && out === 2) {
+          queue.push({ cost: n.cost + t, done: true, steps });
+          continue;
+        }
+        const [r, c] = out === 1 ? [n.r - 1, n.c] : out === 4 ? [n.r + 1, n.c] : out === 8 ? [n.r, n.c - 1] : [n.r, n.c + 1];
+        if (r < 0 || r >= rows || c < 0 || c >= cols || n.used.has(`${r},${c}`)) continue;
+        queue.push({ cost: n.cost + t, r, c, from: OPP[out], used: new Set([...n.used, `${r},${c}`]), steps });
+      }
+    }
+    if (!best) {
+      report.bug('Water Works', 'no way from the tap to the flower');
+      return;
+    }
+    for (const { r, c, t } of best.steps) {
+      for (let i = 0; i < t; i += 1) {
+        await at(r, c).b.click();
+        await page.waitForTimeout(50);
+      }
+    }
+    await page.waitForTimeout(1500);
+  }
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -851,4 +1127,9 @@ export const PLAYERS = {
   'Big to Small': playBigToSmall,
   'Tile Slide': playTileSlide,
   'Word Ladder': playWordLadder,
+  'Fruit Catch': playFruitCatch,
+  'Maze Explorer': playMaze,
+  'Balloon Count': playBalloonCount,
+  'Treasure Hunt': playTreasureHunt,
+  'Water Works': playWaterWorks,
 };

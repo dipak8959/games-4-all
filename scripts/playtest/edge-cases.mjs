@@ -55,7 +55,18 @@ async function listed() {
 console.log('=== age 3: every game at its gentlest ===');
 await setAge(page, 3);
 report.ok(`Home lists: ${(await listed()).join(', ')}`);
-for (const title of ['Find the Pairs', 'How Many?', 'Sort It Out', 'Odd One Out', 'Shadow Match', 'Which Cup?', 'Big to Small']) {
+for (const title of [
+  'Find the Pairs',
+  'How Many?',
+  'Sort It Out',
+  'Odd One Out',
+  'Shadow Match',
+  'Which Cup?',
+  'Big to Small',
+  'Fruit Catch',
+  'Maze Explorer',
+  'Balloon Count',
+]) {
   await round(title, 'age 3');
 }
 await setAge(page, 4);
@@ -65,9 +76,14 @@ await setAge(page, 5);
 await round('Lane Dash', 'age 5');
 await setAge(page, 7);
 for (const title of ['Shadow Match', 'Big to Small', 'Tile Slide']) await round(title, 'age 7');
+await setAge(page, 8);
+await round('Balloon Count', 'age 8');
 await setAge(page, 10);
 await round('Which Cup?', 'age 10');
 await round('Word Ladder', 'age 10');
+await round('Fruit Catch', 'age 10');
+await setAge(page, 12);
+for (const title of ['Maze Explorer', 'Treasure Hunt', 'Water Works']) await round(title, 'age 12');
 
 console.log('\n=== age 17: every game at full difficulty ===');
 await setAge(page, 17);

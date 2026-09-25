@@ -145,6 +145,27 @@ function Glyph({
   );
 }
 
+/** A downward triangle whose point is at (cx, top + h). */
+function Drop({ u, cx, top, w, h, color }: { u: number; cx: number; top: number; w: number; h: number; color: string }) {
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        left: (cx - w / 2) * u,
+        top: top * u,
+        width: 0,
+        height: 0,
+        borderLeftWidth: (w / 2) * u,
+        borderRightWidth: (w / 2) * u,
+        borderTopWidth: h * u,
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent',
+        borderTopColor: color,
+      }}
+    />
+  );
+}
+
 /** An upside-down cup: a trapezoid, narrow at the top, its base at `y + h`. */
 function Cup({ u, cx, y, top, bottom, h, color }: { u: number; cx: number; y: number; top: number; bottom: number; h: number; color: string }) {
   const side = ((bottom - top) / 2) * u;
@@ -428,6 +449,74 @@ const SCENES: Readonly<Record<string, Draw>> = {
       {[22, 40, 58, 76].map((y) => (
         <Block key={y} u={u} x={30} y={y} w={40} h={4} color={y === 40 ? c.hi : c.fg} />
       ))}
+    </>
+  ),
+  // A basket under a falling apple, a pine cone falling past.
+  fruitcatch: (u, c) => (
+    <>
+      <Disc u={u} cx={34} cy={30} r={10} color={c.hi} />
+      <Block u={u} x={33} y={16} w={2} h={6} color={c.hi} />
+      <Drop u={u} cx={72} top={36} w={12} h={18} color={c.fg} />
+      <Frame u={u} x={18} y={62} w={32} h={20} color={c.fg} line={3} />
+      <Block u={u} x={18} y={70} w={32} h={2.5} color={c.fg} />
+      <Block u={u} x={8} y={86} w={84} h={3} color={c.fg} />
+    </>
+  ),
+  // A few maze walls, the explorer inside and the flag in the corner.
+  maze: (u, c) => (
+    <>
+      <Frame u={u} x={12} y={12} w={76} h={76} color={c.fg} line={3} />
+      <Block u={u} x={12} y={36} w={50} h={3} color={c.fg} />
+      <Block u={u} x={38} y={60} w={50} h={3} color={c.fg} />
+      <Block u={u} x={62} y={12} w={3} h={24} color={c.fg} />
+      <Block u={u} x={30} y={60} w={3} h={28} color={c.fg} />
+      <Block u={u} x={16} y={68} w={12} h={12} color={c.body} />
+      <Block u={u} x={72} y={18} w={2.5} h={14} color={c.hi} />
+      <Block u={u} x={74.5} y={18} w={9} h={6} color={c.hi} />
+    </>
+  ),
+  // Three balloons on strings, the one to pop next with a 3 on it.
+  ballooncount: (u, c) => (
+    <>
+      {[
+        [26, 34],
+        [74, 34],
+      ].map(([x, y]) => (
+        <React.Fragment key={x}>
+          <Disc u={u} cx={x} cy={y} r={14} color={c.fg} />
+          <Block u={u} x={x - 0.5} y={y + 14} w={1.5} h={34} color={c.fg} />
+        </React.Fragment>
+      ))}
+      <Disc u={u} cx={50} cy={46} r={15} color={c.hi} />
+      <Block u={u} x={49.5} y={61} w={1.5} h={26} color={c.fg} />
+      <Glyph u={u} x={36} y={36} w={28} size={17} color={c.field}>
+        3
+      </Glyph>
+    </>
+  ),
+  // A map of sand squares, two already dug, and the chest.
+  treasurehunt: (u, c) => (
+    <>
+      {Array.from({ length: 9 }, (_, i) => {
+        const x = 17 + (i % 3) * 23;
+        const y = 17 + Math.floor(i / 3) * 23;
+        return i === 8 ? null : <Frame key={i} u={u} x={x} y={y} w={20} h={20} color={c.fg} line={2.5} />;
+      })}
+      <Block u={u} x={21} y={21} w={12} h={12} color={c.fg} />
+      <Block u={u} x={44} y={44} w={12} h={12} color={c.fg} />
+      <Block u={u} x={63} y={67} w={20} h={6} color={c.hi} />
+      <Block u={u} x={63} y={74} w={20} h={9} color={c.hi} />
+    </>
+  ),
+  // Pipes from a tap to a flower, water in the joined ones.
+  waterworks: (u, c) => (
+    <>
+      <Block u={u} x={6} y={30} w={12} h={10} color={c.fg} />
+      <Block u={u} x={18} y={31} w={40} h={8} color={c.hi} />
+      <Block u={u} x={50} y={31} w={8} h={36} color={c.hi} />
+      <Block u={u} x={50} y={59} w={30} h={8} color={c.fg} />
+      <Disc u={u} cx={86} cy={63} r={6} color={c.fg} />
+      <Disc u={u} cx={86} cy={63} r={2.5} color={c.hi} />
     </>
   ),
 };

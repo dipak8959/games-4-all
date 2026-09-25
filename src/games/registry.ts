@@ -1,7 +1,10 @@
 import { GAMES_META } from './catalog';
+import { BalloonCountScreen } from './ballooncount/BalloonCountScreen';
 import { BigToSmallScreen } from './bigtosmall/BigToSmallScreen';
 import { CountingScreen } from './counting/CountingScreen';
+import { FruitCatchScreen } from './fruitcatch/FruitCatchScreen';
 import { LaneDashScreen } from './lanedash/LaneDashScreen';
+import { MazeScreen } from './maze/MazeScreen';
 import { MemoryGridScreen } from './memorygrid/MemoryGridScreen';
 import { MemoryScreen } from './memory/MemoryScreen';
 import { NumberCrunchScreen } from './numbercrunch/NumberCrunchScreen';
@@ -13,7 +16,9 @@ import { ShapeBuilderScreen } from './shapebuilder/ShapeBuilderScreen';
 import { ShapesScreen } from './shapes/ShapesScreen';
 import { SudokuScreen } from './sudoku/SudokuScreen';
 import { TileSlideScreen } from './tileslide/TileSlideScreen';
+import { TreasureHuntScreen } from './treasurehunt/TreasureHuntScreen';
 import type { GameDefinition } from './types';
+import { WaterWorksScreen } from './waterworks/WaterWorksScreen';
 import { WhichCupScreen } from './whichcup/WhichCupScreen';
 import { WordBuilderScreen } from './wordbuilder/WordBuilderScreen';
 import { WordLadderScreen } from './wordladder/WordLadderScreen';
@@ -44,6 +49,11 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   bigtosmall: BigToSmallScreen,
   tileslide: TileSlideScreen,
   wordladder: WordLadderScreen,
+  fruitcatch: FruitCatchScreen,
+  maze: MazeScreen,
+  ballooncount: BalloonCountScreen,
+  treasurehunt: TreasureHuntScreen,
+  waterworks: WaterWorksScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

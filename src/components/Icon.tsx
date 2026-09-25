@@ -59,7 +59,12 @@ export type IconName =
   | 'cups'
   | 'bigsmall'
   | 'slide'
-  | 'ladder';
+  | 'ladder'
+  | 'catch'
+  | 'maze'
+  | 'balloons'
+  | 'treasure'
+  | 'pipes';
 
 export function Icon({
   name,
@@ -623,6 +628,57 @@ export function Icon({
           {[0.24, 0.48, 0.72].map((top) => (
             <View key={top} style={[at(size, 0.22, top, 0.56, 0), { height: s, backgroundColor: color }]} />
           ))}
+        </View>
+      );
+
+    case 'catch':
+      // A basket, and a round thing falling into it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.38, 0.08, 0.24, 0.24), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.14, 0.5, 0.72, 0.36), { borderWidth: s, borderTopWidth: 0, borderColor: color }]} />
+          <View style={[at(size, 0.14, 0.66, 0.72, 0), { height: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'maze':
+      // Walls that turn in on themselves, and a way in.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.1, 0.1, 0.8, 0.8), { borderWidth: s, borderColor: color, borderLeftWidth: 0 }]} />
+          <View style={[at(size, 0.1, 0.1, 0, 0.5), { width: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.3, 0.3, 0.4, 0.4), { borderWidth: s, borderColor: color, borderRightWidth: 0 }]} />
+          <View style={[at(size, 0.3, 0.1, 0, 0.2), { width: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'balloons':
+      // Two balloons on strings.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.1, 0.1, 0.38, 0.44), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.5, 0.2, 0.38, 0.44), { borderRadius: size, borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.28, 0.54, 0, 0.38), { width: s / 2, backgroundColor: color }]} />
+          <View style={[at(size, 0.68, 0.64, 0, 0.28), { width: s / 2, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'treasure':
+      // A chest: a lid over a box.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.12, 0.2, 0.76, 0.22), { backgroundColor: color }]} />
+          <View style={[at(size, 0.12, 0.46, 0.76, 0.36), { borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.44, 0.38, 0.12, 0.2), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'pipes':
+      // A pipe that comes in from the left and turns down.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.06, 0.28, 0.58, 0.22), { backgroundColor: color }]} />
+          <View style={[at(size, 0.42, 0.28, 0.22, 0.64), { backgroundColor: color }]} />
         </View>
       );
 

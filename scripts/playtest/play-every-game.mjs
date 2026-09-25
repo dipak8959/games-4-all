@@ -67,6 +67,9 @@ await play('Memory Grid');
 await play('Shadow Match');
 await play('Which Cup?');
 await play('Big to Small');
+await play('Fruit Catch');
+await play('Maze Explorer');
+await play('Balloon Count');
 
 console.log('\n=== age 9 ===');
 await setAge(page, 9);
@@ -77,6 +80,8 @@ await play('Sudoku');
 await play('Shape Builder');
 await play('Lane Dash');
 await play('Tile Slide');
+await play('Treasure Hunt');
+await play('Water Works');
 
 console.log('\n=== age 12 ===');
 await setAge(page, 12);
@@ -91,7 +96,18 @@ for (let i = 0; i < 8; i += 1) {
   await page.waitForTimeout(180);
 }
 const lines = (await page.locator('body').innerText()).split('\n');
-for (const title of ['Spell It!', 'Sudoku', 'Pattern Play', 'Number Crunch', 'Shape Builder', 'Lane Dash', 'Tile Slide', 'Word Ladder']) {
+for (const title of [
+  'Spell It!',
+  'Sudoku',
+  'Pattern Play',
+  'Number Crunch',
+  'Shape Builder',
+  'Lane Dash',
+  'Tile Slide',
+  'Word Ladder',
+  'Treasure Hunt',
+  'Water Works',
+]) {
   const row = lines.findIndex((l) => l.trim() === title);
   const meta = lines.slice(row, row + 4).join(' ');
   if (/\b0 ROUNDS\b/.test(meta)) {

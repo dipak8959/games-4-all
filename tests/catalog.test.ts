@@ -48,8 +48,11 @@ test('a young child sees exactly the preschool-appropriate games', () => {
   assert.deepEqual(
     ids,
     [
+      'ballooncount',
       'bigtosmall',
       'counting',
+      'fruitcatch',
+      'maze',
       'memory',
       'memorygrid',
       'oddoneout',

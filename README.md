@@ -9,7 +9,7 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Seventeen games spanning early childhood through adulthood — this is a "whole
+Twenty-two games spanning early childhood through adulthood — this is a "whole
 family shares one device" app, not just a kids' app, so the oldest content
 here is built to actually hold up for a grown-up, not just tolerate one:
 
@@ -32,9 +32,14 @@ here is built to actually hold up for a grown-up, not just tolerate one:
 | **Big to Small** | Putting a set in order of size | 3-7 |
 | **Tile Slide** | Planning a sequence of moves | 7+ |
 | **Word Ladder** | Reading and vocabulary, one letter at a time | 10+ |
+| **Fruit Catch** | Hand-eye coordination | 3-10 |
+| **Maze Explorer** | Planning a route, seeing dead ends | 3-12 |
+| **Balloon Count** | Number order: counting on, back, in twos and fives | 3-8 |
+| **Treasure Hunt** | Deduction from clues | 5-12 |
+| **Water Works** | Spatial reasoning: joining pieces into a path | 5-12 |
 
 Each also carries a category (Memory, Numbers, Words, Logic, Sorting, Timing) shown
-as filter chips on Home, alongside a search box — with seventeen games and
+as filter chips on Home, alongside a search box — with twenty-two games and
 growing, finding the right one shouldn't require scrolling past all the
 others.
 

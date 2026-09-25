@@ -26,6 +26,11 @@ import { specForLevel as whichCupSpec } from '../src/games/whichcup/logic.ts';
 import { specForLevel as bigToSmallSpec } from '../src/games/bigtosmall/logic.ts';
 import { specForLevel as tileSlideSpec } from '../src/games/tileslide/logic.ts';
 import { specForLevel as wordLadderSpec } from '../src/games/wordladder/logic.ts';
+import { specForLevel as fruitCatchSpec } from '../src/games/fruitcatch/logic.ts';
+import { specForLevel as mazeSpec } from '../src/games/maze/logic.ts';
+import { balloonsForLevel, specForLevel as balloonSpec } from '../src/games/ballooncount/logic.ts';
+import { specForLevel as treasureSpec } from '../src/games/treasurehunt/logic.ts';
+import { specForLevel as waterSpec } from '../src/games/waterworks/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -216,6 +221,28 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
     const spec = oddOneOutSpec(l);
     // A size ratio closer to 1 is a smaller, harder-to-see difference.
     return [spec.items, spec.differences.length, spec.sizeRatio, spec.colourNoise ? 1 : 0];
+  },
+  fruitcatch: (l) => {
+    const spec = fruitCatchSpec(l);
+    // Falling faster, and less time between things, count negatively.
+    return [spec.columns, -spec.fallTime, -spec.spawnGap, spec.cones];
+  },
+  maze: (l) => {
+    const spec = mazeSpec(l);
+    return [spec.cols, spec.rows, spec.key ? 1 : 0];
+  },
+  ballooncount: (l) => {
+    const spec = balloonSpec(l);
+    return [balloonsForLevel(l), spec.max, spec.decoys, spec.steps.length, spec.down ? 1 : 0];
+  },
+  treasurehunt: (l) => {
+    const spec = treasureSpec(l);
+    // A step count says less than an arrow.
+    return [spec.cols * spec.rows, spec.clue === 'steps' ? 1 : 0];
+  },
+  waterworks: (l) => {
+    const spec = waterSpec(l);
+    return [spec.cols * spec.rows, spec.kinds.length];
   },
   shadowmatch: (l) => {
     const spec = shadowMatchSpec(l);

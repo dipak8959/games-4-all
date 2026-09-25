@@ -19,9 +19,12 @@ import {
 
 /** Every game screen, which is where a design drifts first. */
 const GAME_SCREENS = [
+  'src/games/ballooncount/BalloonCountScreen.tsx',
   'src/games/bigtosmall/BigToSmallScreen.tsx',
   'src/games/counting/CountingScreen.tsx',
+  'src/games/fruitcatch/FruitCatchScreen.tsx',
   'src/games/lanedash/LaneDashScreen.tsx',
+  'src/games/maze/MazeScreen.tsx',
   'src/games/memory/MemoryScreen.tsx',
   'src/games/memorygrid/MemoryGridScreen.tsx',
   'src/games/numbercrunch/NumberCrunchScreen.tsx',
@@ -33,6 +36,8 @@ const GAME_SCREENS = [
   'src/games/shapes/ShapesScreen.tsx',
   'src/games/sudoku/SudokuScreen.tsx',
   'src/games/tileslide/TileSlideScreen.tsx',
+  'src/games/treasurehunt/TreasureHuntScreen.tsx',
+  'src/games/waterworks/WaterWorksScreen.tsx',
   'src/games/whichcup/WhichCupScreen.tsx',
   'src/games/wordbuilder/WordBuilderScreen.tsx',
   'src/games/wordladder/WordLadderScreen.tsx',
@@ -223,7 +228,8 @@ function sourceFiles(dir: string): string[] {
  * dots, Sort It Out draws an actual circle to sort, and the Puddle Hop runner
  * and the Lane Dash car have round googly eyes (a square eye is not a joke anyone gets), a
  * snowman or a lollipop in Shadow Match is round, and so is the ball under
- * the cup. Everything else in the app is square — the runner's body
+ * the cup — as are fruit, balloons, the maze explorer's eyes and key ring,
+ * and a flower's petals. Everything else in the app is square — the runner's body
  * included.
  */
 const MAY_DRAW_CIRCLES = [
@@ -235,6 +241,10 @@ const MAY_DRAW_CIRCLES = [
   'src/games/lanedash/LaneDashScreen.tsx',
   'src/games/shadowmatch/Figure.tsx',
   'src/games/whichcup/WhichCupScreen.tsx',
+  'src/games/fruitcatch/FruitCatchScreen.tsx',
+  'src/games/maze/MazeScreen.tsx',
+  'src/games/ballooncount/BalloonCountScreen.tsx',
+  'src/games/waterworks/WaterWorksScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

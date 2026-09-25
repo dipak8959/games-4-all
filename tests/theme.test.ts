@@ -11,6 +11,7 @@ import {
   palette,
   playColor,
   playPalette,
+  tilePalette,
   radius,
   rule,
   space,
@@ -257,15 +258,48 @@ test('nothing draws a gradient, and no gradient library is installed', () => {
   );
 });
 
-test('every game has its own picture for Home, on its own play colour', () => {
+test('every game has its own picture for Home', () => {
   // Every tile used to be the same grey box with a small icon. Each game now
   // shows a tiny version of itself; a new game without one would fall back to
   // an empty coloured square, so this fails first.
   const art = readFileSync('src/components/GameArt.tsx', 'utf8');
-  const scenes = art.slice(art.indexOf('const SCENES'), art.indexOf('export const GAMES_WITH_ART'));
-  const colours = Object.values(playPalette) as string[];
+  const scenes = art.slice(art.indexOf('const SCENES'), art.indexOf('/** Hue of a'));
   for (const game of GAMES_META) {
     assert.match(scenes, new RegExp(`\\n  ${game.id}: \\(u, c\\)`), `${game.title} has no picture`);
-    assert.ok(colours.includes(game.color), `${game.title}'s colour is not a play colour`);
+  }
+});
+
+/** WCAG relative luminance and contrast, for the tile checks below. */
+function luminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+function contrast(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+test('no two games share a tile colour', () => {
+  const colours = GAMES_META.map((g) => g.color);
+  const repeated = colours.filter((c, i) => colours.indexOf(c) !== i);
+  assert.deepEqual(repeated, [], `tile colours used twice: ${repeated.join(', ')}`);
+  const allowed = Object.values(tilePalette) as string[];
+  for (const game of GAMES_META) {
+    assert.ok(allowed.includes(game.color), `${game.title}'s colour is not from the tile palette`);
+  }
+  // Room for at least one more game before the palette needs to grow.
+  assert.ok(allowed.length > GAMES_META.length, 'the tile palette is full; add a colour for the next game');
+});
+
+test('every tile colour lets both the picture and its detail show', () => {
+  // The picture is drawn in the light ground colour with its live detail in
+  // ink, so a tile has to clear the WCAG 3:1 for graphics against both. The
+  // old yellow tile left white dots at 1.8:1.
+  for (const [name, colour] of Object.entries(tilePalette)) {
+    assert.ok(contrast(colour, palette.bg) >= 3, `${name}: ${contrast(colour, palette.bg).toFixed(2)}:1 against the picture`);
+    assert.ok(contrast(colour, palette.ink) >= 3, `${name}: ${contrast(colour, palette.ink).toFixed(2)}:1 against the ink detail`);
   }
 });

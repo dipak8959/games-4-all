@@ -49,10 +49,8 @@ export const palette = {
   accentTintText: '#7c1405',
 
   /** Okabe-Ito derived: distinguishable under all common colour-vision
-   *  types. Used for play objects, profile colours and each game's picture
-   *  on Home (`GameArt`) — never for chrome. A tile's picture is a picture
-   *  of the game, which is why it may carry the game's colour; the card
-   *  around it, its name and its star stay chrome. */
+   *  types. Used for play objects and profile colours — never for chrome.
+   *  Game tiles on Home have their own colours: see `tilePalette`. */
   berry: '#E8630A',
   sky: '#0091D6',
   leaf: '#00A97A',
@@ -64,9 +62,8 @@ export const palette = {
 
 export type PaletteColor = (typeof palette)[keyof typeof palette];
 
-/** The colours a profile can be, the colours a game screen draws its own
- *  objects in, and each game's colour on Home. Chrome never reaches into
- *  this. */
+/** The colours a profile can be, and the colours a game screen draws its
+ *  own objects in. Chrome never reaches into this. */
 export const playPalette = {
   berry: palette.berry,
   sky: palette.sky,
@@ -78,6 +75,38 @@ export const playPalette = {
 } as const;
 
 export type PlayColorKey = keyof typeof playPalette;
+
+/**
+ * Each game's tile colour on Home — one per game, never repeated.
+ *
+ * Kept apart from `playPalette` because the job is different. Play colours
+ * are bright, because a four-year-old sorts by them. A tile colour is the
+ * ground under a picture drawn in the light ground colour with one detail in
+ * ink, so it has to sit in a mid band: at least 3:1 against both (the WCAG
+ * minimum for graphics). Several play colours don't — white dots on the old
+ * yellow How Many? tile were 1.8:1 — and there were only seven of them for
+ * twelve games, so tiles repeated.
+ *
+ * Fourteen, for twelve games and room for two more; `tests/theme.test.ts`
+ * holds every game to a colour of its own that clears both contrasts. None
+ * is red, which is the accent's.
+ */
+export const tilePalette = {
+  indigo: '#5361C6',
+  ochre: '#A86A00',
+  green: '#2F8A3A',
+  rose: '#C0467A',
+  teal: '#0E8272',
+  violet: '#7F55C4',
+  orange: '#C25A12',
+  olive: '#6F7A12',
+  blue: '#2767C9',
+  slate: '#56708A',
+  magenta: '#A8489A',
+  pine: '#3C7A5A',
+  cyan: '#0B7FA6',
+  brown: '#8E6034',
+} as const;
 
 /** Resolves one of `playPalette`'s keys, falling back to the first colour so
  *  an unrecognised value (a colour stored by an older build, say) never

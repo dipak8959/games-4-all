@@ -46,8 +46,10 @@ adult). Age bands follow the ICO Children's Code.
    in `<Name>Screen.tsx`. Register it in `catalog.ts` and `registry.ts`.
 3. Add its difficulty dials to `DIALS` in `tests/difficulty.test.ts`.
 4. Draw its Home picture in `src/components/GameArt.tsx`: a tiny version of
-   the game on its play colour, objects in the light ground colour, the one
-   live thing in ink. `tests/theme.test.ts` fails until it has one.
+   the game, objects in the light ground colour, the one live thing in ink.
+   Give it an unused colour from `tilePalette` — no two games share one, and
+   every colour clears 3:1 against both the picture and its ink detail.
+   `tests/theme.test.ts` fails until both are true.
 5. Add a player to `scripts/playtest/players.mjs` and play it in a browser.
 
 ## Before calling anything done

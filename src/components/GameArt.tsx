@@ -19,9 +19,9 @@ import { fonts } from '../theme/type';
  * and no drawing library. Every scene is laid out on a 100-unit square and
  * scaled to whatever size the tile is.
  *
- * Colour: the game's own colour fills the ground, which is the one place on
- * Home a play colour appears — a picture of the game rather than chrome (see
- * `playPalette` in the tokens). The game's objects are drawn in the light
+ * Colour: the game's own tile colour fills the ground — one per game, never
+ * repeated, each clearing 3:1 against the light objects and the ink detail
+ * drawn on it (see `tilePalette` in the tokens). The game's objects are drawn in the light
  * ground colour, and the one live thing in each — the lit tile, the turned
  * card, the odd one out — in ink, the same way the games themselves save
  * emphasis for the thing that matters. Colour is never what tells two tiles
@@ -346,6 +346,23 @@ const SCENES: Readonly<Record<string, Draw>> = {
   ),
 };
 
+/** Hue of a `#rrggbb` colour, in degrees. */
+function hueOf(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  if (max === min) return 0;
+  const d = max - min;
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return (h * 60 + 360) % 360;
+}
+
+/** How far apart two colours are round the colour wheel. */
+export function hueGap(a: string, b: string): number {
+  const gap = Math.abs(hueOf(a) - hueOf(b));
+  return Math.min(gap, 360 - gap);
+}
+
 /** Game ids that have a scene — exported so the tests can hold every game in
  *  the catalogue to having one. */
 export const GAMES_WITH_ART: readonly string[] = Object.keys(SCENES);
@@ -365,9 +382,9 @@ export function GameArt({ id, color }: { readonly id: string; readonly color: st
     fg: palette.bg,
     hi: palette.ink,
     field: color,
-    // The runner and the car keep their red, except on the one tile the
-    // same red would vanish into, where they turn ink.
-    body: color === palette.berry ? palette.ink : palette.accent,
+    // The runner and the car keep their red, except on a tile close enough
+    // to red that they would vanish into it, where they turn ink.
+    body: hueGap(color, palette.accent) < 45 ? palette.ink : palette.accent,
   };
   return (
     <View style={[styles.fill, { backgroundColor: color }]} onLayout={onLayout} {...hidden}>

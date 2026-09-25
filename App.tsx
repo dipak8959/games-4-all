@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 
+import { GameSession } from './src/components/GameFrame';
 import { findGame } from './src/games/registry';
 import type { RoundResult } from './src/games/types';
 import { ParentGateModal } from './src/safety/ParentGateModal';
@@ -156,11 +157,13 @@ function Root() {
       const { Screen: GameScreen } = game;
       return (
         <>
-          <GameScreen
-            level={levelForGame(game.id)}
-            onRoundComplete={(result) => onRoundComplete(game.id, result)}
-            onExit={() => setRoute({ name: 'home' })}
-          />
+          <GameSession key={game.id} gameId={game.id}>
+            <GameScreen
+              level={levelForGame(game.id)}
+              onRoundComplete={(result) => onRoundComplete(game.id, result)}
+              onExit={() => setRoute({ name: 'home' })}
+            />
+          </GameSession>
           {gate}
         </>
       );

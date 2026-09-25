@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { StageLabel } from '../../components/GameStage';
-import { GameFrame } from '../../components/GameFrame';
+import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
@@ -109,12 +109,14 @@ function ThingView({ kind, size }: { readonly kind: ThingKind; readonly size: nu
 
 export function FruitCatchScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  // How to play is open: the clock stops, and nothing moves.
+  const paused = useGamePaused();
   const [level, setLevel] = useState(initialLevel);
   const [state, setState] = useState<FruitCatchState>(() => createGame(systemRng, level));
   const [stage, setStage] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    if (!state.started || state.complete) return undefined;
+    if (!state.started || state.complete || paused) return undefined;
     let frame = 0;
     let last: number | null = null;
     const loop = (now: number) => {
@@ -125,7 +127,7 @@ export function FruitCatchScreen({ level: initialLevel, onRoundComplete, onExit 
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
-  }, [state.started, state.complete]);
+  }, [state.started, state.complete, paused]);
 
   // A catch gets the little "yes" every right answer gets, a miss the gentle
   // nudge. Counted from the landings, so each is felt exactly once.

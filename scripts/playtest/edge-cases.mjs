@@ -356,6 +356,44 @@ if (!adminPassword) {
 }
 await setAge(page, 9);
 
+console.log('\n=== How to play ===');
+// Still age 9 here. Every game on Home has it, and it closes in one tap.
+for (const title of await listed()) {
+  if (!(await openGame(page, title))) continue;
+  const button = page.getByLabel(`How to play ${title}`);
+  if (!(await button.count())) {
+    report.bug(title, 'no "How to play" button');
+  } else {
+    await button.click();
+    await page.waitForTimeout(250);
+    const opened = (await page.getByText('THE GOAL', { exact: true }).count()) > 0;
+    await page.getByLabel('Close how to play').click();
+    await page.waitForTimeout(250);
+    const closed = (await page.getByText('THE GOAL', { exact: true }).count()) === 0;
+    if (!opened) report.bug(title, '"How to play" did not open');
+    else if (!closed) report.bug(title, '"How to play" did not close');
+  }
+  await backHome(page, report, title);
+}
+report.ok(`"How to play" opens and closes in every game at age 9`);
+
+if (await openGame(page, 'Fruit Catch')) {
+  await page.getByLabel(/^Column 1 of/).click();
+  await page.waitForTimeout(3000);
+  const progress = async () => page.getByText(/^\d+%$/).first().innerText();
+  await page.getByLabel('How to play Fruit Catch').click();
+  const before = await progress();
+  await page.waitForTimeout(4000);
+  const during = await progress();
+  await page.getByLabel('Back to the game').click();
+  await page.waitForTimeout(5000);
+  const after = await progress();
+  if (during !== before) report.bug('Fruit Catch', `kept going under "How to play": ${before} to ${during}`);
+  else if (after === during) report.bug('Fruit Catch', 'did not carry on after "How to play" closed');
+  else report.ok(`Fruit Catch holds still while "How to play" is open (${before}), and carries on after (${after})`);
+  await backHome(page, report, 'Fruit Catch');
+}
+
 console.log('\n=== leaving a round part-way through ===');
 if (await openGame(page, 'Number Crunch')) {
   const first = await page.getByLabel(/^\d+ [-+×÷−] \d+$/).first().getAttribute('aria-label');

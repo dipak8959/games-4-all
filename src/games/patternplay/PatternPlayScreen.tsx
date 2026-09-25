@@ -5,7 +5,7 @@ import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage'
 import { Icon } from '../../components/Icon';
 import { PatternMark } from './PatternMark';
 import { MARK_LABELS, markFor } from './marks';
-import { GameFrame } from '../../components/GameFrame';
+import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
@@ -35,6 +35,9 @@ const REVEAL_LEAD_IN_MS = 900;
 
 export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  // How to play is open: the reveal stops, and plays again from the start
+  // when the game comes back.
+  const paused = useGamePaused();
   // The prop only seeds the first round; from here the screen adapts locally
   // each round (via `nextLevel`) so "Play again" reflects the new difficulty
   // immediately, without waiting on a round-trip through app-level state.
@@ -57,6 +60,7 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
     if (!state.revealing) return;
     clearTimers();
     setRevealIndex(null);
+    if (paused) return;
 
     state.sequence.forEach((tile, i) => {
       const onAt = REVEAL_LEAD_IN_MS + i * (REVEAL_ON_MS + REVEAL_GAP_MS);
@@ -74,7 +78,7 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
     return clearTimers;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.revealing, state.sequence]);
+  }, [state.revealing, state.sequence, paused]);
 
   const onTapTile = useCallback(
     (tileIndex: number) => {

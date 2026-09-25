@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 
 import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
-import { GameFrame } from '../../components/GameFrame';
+import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
@@ -17,6 +17,7 @@ import {
   cupPlaces,
   next,
   pick,
+  showAgain,
   specForLevel,
   startShuffle,
   stopShuffle,
@@ -40,6 +41,9 @@ const LABELS = {
 
 export function WhichCupScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  // How to play is open: the cups stop. A shuffle cut short is shown again
+  // from the start — the ball first — when the game comes back.
+  const paused = useGamePaused();
   const [level, setLevel] = useState(initialLevel);
   const [state, setState] = useState<WhichCupState>(() => createGame(systemRng, level));
   // The cups are lifted while the ball is on show, then set down.
@@ -51,7 +55,11 @@ export function WhichCupScreen({ level: initialLevel, onRoundComplete, onExit }:
   const { question, phase } = state;
 
   useEffect(() => {
-    if (phase !== 'show') return undefined;
+    if (paused) setState(showAgain);
+  }, [paused]);
+
+  useEffect(() => {
+    if (phase !== 'show' || paused) return undefined;
     setLifted(true);
     setMs(0);
     const down = setTimeout(() => setLifted(false), SHOW_MS);
@@ -60,10 +68,10 @@ export function WhichCupScreen({ level: initialLevel, onRoundComplete, onExit }:
       clearTimeout(down);
       clearTimeout(go);
     };
-  }, [phase, state.questionIndex]);
+  }, [phase, state.questionIndex, paused]);
 
   useEffect(() => {
-    if (phase !== 'shuffle') return undefined;
+    if (phase !== 'shuffle' || paused) return undefined;
     const total = question.swaps.length * swapMs;
     let frame = 0;
     let begun: number | null = null;
@@ -80,7 +88,7 @@ export function WhichCupScreen({ level: initialLevel, onRoundComplete, onExit }:
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [phase, question, swapMs]);
+  }, [phase, question, swapMs, paused]);
 
   useEffect(() => {
     if (phase !== 'found') return undefined;

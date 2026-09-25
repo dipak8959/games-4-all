@@ -146,6 +146,12 @@ export function createGame(rng: Rng, level: number): WhichCupState {
   };
 }
 
+/** Back to showing the ball, for the same question — after the game was
+ *  paused mid-shuffle, so a child who looked away isn't asked to guess. */
+export function showAgain(state: WhichCupState): WhichCupState {
+  return state.phase === 'shuffle' ? { ...state, phase: 'show' } : state;
+}
+
 /** The screen calls this once the ball has been seen. */
 export function startShuffle(state: WhichCupState): WhichCupState {
   return state.phase === 'show' ? { ...state, phase: 'shuffle' } : state;

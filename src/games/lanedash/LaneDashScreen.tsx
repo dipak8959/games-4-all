@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { StageLabel } from '../../components/GameStage';
-import { GameFrame } from '../../components/GameFrame';
+import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
@@ -190,13 +190,15 @@ function Thing({ o, lanes, k, bottom }: { readonly o: Obstacle; readonly lanes: 
 
 export function LaneDashScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  // How to play is open: the clock stops, and nothing moves.
+  const paused = useGamePaused();
   const [level, setLevel] = useState(initialLevel);
   const [state, setState] = useState<LaneDashState>(() => createGame(systemRng, level));
   const [stage, setStage] = useState({ width: 0, height: 0 });
 
   // The race: one animation frame at a time, only while it's running.
   useEffect(() => {
-    if (!state.started || state.complete) return undefined;
+    if (!state.started || state.complete || paused) return undefined;
     let frame = 0;
     let last: number | null = null;
     const loop = (now: number) => {
@@ -207,7 +209,7 @@ export function LaneDashScreen({ level: initialLevel, onRoundComplete, onExit }:
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
-  }, [state.started, state.complete]);
+  }, [state.started, state.complete, paused]);
 
   // A bump gets the same gentle nudge a wrong answer does elsewhere.
   const bumps = useRef(0);

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 
 import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
-import { GameFrame } from '../../components/GameFrame';
+import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { Icon } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
@@ -26,6 +26,9 @@ const LEAD_IN_MS = 700;
 
 export function MemoryGridScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  // How to play is open: the pattern waits, and is shown again from the
+  // start when the game comes back.
+  const paused = useGamePaused();
   const [level, setLevel] = useState(initialLevel);
   const [state, setState] = useState<MemoryGridState>(() => createGame(systemRng, level));
   // The pattern is only drawn once the lead-in is over.
@@ -34,6 +37,7 @@ export function MemoryGridScreen({ level: initialLevel, onRoundComplete, onExit 
   useEffect(() => {
     if (!state.showing) return undefined;
     setVisible(false);
+    if (paused) return undefined;
     const show = setTimeout(() => setVisible(true), LEAD_IN_MS);
     const hide = setTimeout(() => {
       setVisible(false);
@@ -43,7 +47,7 @@ export function MemoryGridScreen({ level: initialLevel, onRoundComplete, onExit 
       clearTimeout(show);
       clearTimeout(hide);
     };
-  }, [state.showing, state.patternIndex, level]);
+  }, [state.showing, state.patternIndex, level, paused]);
 
   const onTap = useCallback(
     (cell: number) => {

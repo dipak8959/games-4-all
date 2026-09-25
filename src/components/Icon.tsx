@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { palette } from '../theme/tokens';
+import { fonts } from '../theme/type';
 
 /**
  * The app's icon set, drawn from plain `View`s.
@@ -64,7 +65,9 @@ export type IconName =
   | 'maze'
   | 'balloons'
   | 'treasure'
-  | 'pipes';
+  | 'pipes'
+  // "How to play": a question mark in a ring.
+  | 'help';
 
 export function Icon({
   name,
@@ -415,6 +418,25 @@ export function Icon({
     // sign — and ★ (U+2605) is a monochrome text glyph that takes its colour
     // from the stylesheet like any letter, so it is typography, not an
     // emoji. Sort It Out already draws its suits the same way.
+    case 'help':
+      return (
+        <View style={[styles.center, box]} {...hidden}>
+          <View
+            style={[
+              styles.center,
+              { width: size * 0.84, height: size * 0.84, borderRadius: size, borderWidth: s, borderColor: color },
+            ]}
+          >
+            <Text
+              allowFontScaling={false}
+              style={{ fontFamily: fonts.heavy, fontSize: size * 0.52, lineHeight: size * 0.62, color }}
+            >
+              ?
+            </Text>
+          </View>
+        </View>
+      );
+
     case 'star':
       return (
         <View style={[styles.center, box]} {...hidden}>

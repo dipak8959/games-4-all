@@ -49,7 +49,8 @@ export type IconName =
   | 'letters'
   | 'grid'
   | 'sequence'
-  | 'math';
+  | 'math'
+  | 'pieces';
 
 export function Icon({
   name,
@@ -488,6 +489,32 @@ export function Icon({
       );
 
     // A run of marks with the next one still to come — Pattern Play.
+    case 'pieces':
+      // An L of three blocks with a gap between them — a piece, not a grid.
+      return (
+        <View style={[styles.center, box]} {...hidden}>
+          <View style={{ width: size * 0.8, height: size * 0.8 }}>
+            {[
+              [0, 0],
+              [1, 0],
+              [1, 1],
+            ].map(([row, col]) => (
+              <View
+                key={`${row}${col}`}
+                style={{
+                  position: 'absolute',
+                  top: row * size * 0.42,
+                  left: col * size * 0.42,
+                  width: size * 0.36,
+                  height: size * 0.36,
+                  backgroundColor: color,
+                }}
+              />
+            ))}
+          </View>
+        </View>
+      );
+
     case 'sequence':
       return (
         <View style={[styles.center, box]} {...hidden}>

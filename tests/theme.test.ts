@@ -21,6 +21,7 @@ const GAME_SCREENS = [
   'src/games/memory/MemoryScreen.tsx',
   'src/games/numbercrunch/NumberCrunchScreen.tsx',
   'src/games/patternplay/PatternPlayScreen.tsx',
+  'src/games/shapebuilder/ShapeBuilderScreen.tsx',
   'src/games/shapes/ShapesScreen.tsx',
   'src/games/sudoku/SudokuScreen.tsx',
   'src/games/wordbuilder/WordBuilderScreen.tsx',

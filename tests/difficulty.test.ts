@@ -14,6 +14,7 @@ import {
   termRangeForLevel,
 } from '../src/games/numbercrunch/logic.ts';
 import { givensForLevel, sizeForLevel } from '../src/games/sudoku/logic.ts';
+import { specForLevel as shapeBuilderSpec } from '../src/games/shapebuilder/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -129,4 +130,14 @@ test('Sudoku gets bigger and emptier as level rises, with no repeated tier', () 
       `level ${LEVELS[i]} more than doubles the empty cells: ${blanks.join(', ')}`,
     );
   }
+});
+
+test('Shape Builder deals more pieces and more to fill, then asks for turning', () => {
+  climbs('shape builder blocks', (level) => shapeBuilderSpec(level).blocks);
+  climbs('shape builder pieces', (level) => shapeBuilderSpec(level).pieces);
+  climbs('shape builder largest piece', (level) => shapeBuilderSpec(level).maxPiece);
+  climbs('shape builder turning', (level) => (shapeBuilderSpec(level).rotation ? 1 : 0));
+  // Blocks rise at every level, so no promotion repeats a puzzle.
+  const blocks = LEVELS.map((level) => shapeBuilderSpec(level).blocks);
+  assert.equal(new Set(blocks).size, LEVELS.length, `repeated tier: ${blocks.join(', ')}`);
 });

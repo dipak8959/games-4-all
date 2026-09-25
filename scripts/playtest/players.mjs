@@ -273,6 +273,104 @@ export async function playSudoku(page, report) {
   }
 }
 
+/** A piece as the screen draws it in the tray: each block's position,
+ *  worked out from where it sits inside the button. */
+async function trayPieces(page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('[role="button"]')]
+      .filter((el) => /^Piece of/.test(el.getAttribute('aria-label') ?? ''))
+      .map((el) => {
+        const blocks = [...el.querySelectorAll('[data-testid="piece-block"]')].map((b) =>
+          b.getBoundingClientRect(),
+        );
+        const top = Math.min(...blocks.map((b) => b.top));
+        const left = Math.min(...blocks.map((b) => b.left));
+        const size = blocks[0].width;
+        return {
+          label: el.getAttribute('aria-label'),
+          placed: el.getAttribute('aria-disabled') === 'true',
+          cells: blocks
+            .map((b) => [Math.round((b.top - top) / size), Math.round((b.left - left) / size)])
+            .sort((a, b) => a[0] - b[0] || a[1] - b[1]),
+        };
+      }),
+  );
+}
+
+const norm = (cells) => {
+  const r0 = Math.min(...cells.map(([r]) => r));
+  const c0 = Math.min(...cells.map(([, c]) => c));
+  return cells.map(([r, c]) => [r - r0, c - c0]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+};
+const turn = (cells) => norm(cells.map(([r, c]) => [c, -r]));
+const k = ([r, c]) => `${r},${c}`;
+
+/** Backtracking over the first open cell: which piece, which way round,
+ *  which of its blocks covers it. Returns [{ piece, turns, at }]. */
+function packOutline(outline, pieces, canTurn) {
+  const open = new Set(outline.map(k));
+  const plan = [];
+  const go = (left) => {
+    if (open.size === 0) return true;
+    const target = outline.find((cell) => open.has(k(cell)));
+    for (const i of left) {
+      let cells = pieces[i];
+      for (let t = 0; t < (canTurn ? 4 : 1); t += 1) {
+        for (const [r, c] of cells) {
+          const at = [target[0] - r, target[1] - c];
+          const covers = cells.map(([pr, pc]) => [pr + at[0], pc + at[1]]);
+          if (covers.every((cell) => open.has(k(cell)))) {
+            covers.forEach((cell) => open.delete(k(cell)));
+            plan.push({ piece: i, turns: t, at, first: cells[0] });
+            if (go(left.filter((j) => j !== i))) return true;
+            plan.pop();
+            covers.forEach((cell) => open.add(k(cell)));
+          }
+        }
+        cells = turn(cells);
+      }
+    }
+    return false;
+  };
+  return go(pieces.map((_, i) => i)) ? plan : null;
+}
+
+export async function playShapeBuilder(page, report) {
+  const outline = [];
+  for (const cell of await page.getByLabel(/^Row \d+, column \d+, /).all()) {
+    const [, r, c] = (await cell.getAttribute('aria-label')).match(/^Row (\d+), column (\d+)/);
+    outline.push([Number(r) - 1, Number(c) - 1]);
+  }
+  const tray = await trayPieces(page);
+  const canTurn = (await page.getByLabel('Turn the piece').count()) > 0;
+  const blocks = tray.reduce((n, p) => n + p.cells.length, 0);
+  if (blocks !== outline.length) {
+    report.bug('Shape Builder', `the pieces make ${blocks} blocks but the outline has ${outline.length}`);
+    return;
+  }
+  report.ok(`${tray.length} pieces for a ${outline.length}-block outline${canTurn ? ', turning on' : ''}`);
+
+  const plan = packOutline(outline, tray.map((p) => p.cells), canTurn);
+  if (!plan) {
+    report.bug('Shape Builder', 'the outline cannot be filled with the pieces shown');
+    return;
+  }
+
+  for (const step of plan) {
+    await page.getByLabel(/^Piece of/).nth(step.piece).click();
+    await page.waitForTimeout(120);
+    for (let t = 0; t < step.turns; t += 1) {
+      await page.getByLabel('Turn the piece').click();
+      await page.waitForTimeout(80);
+    }
+    // The piece's first block goes on the tapped cell, so tap where the plan
+    // puts that block.
+    const [r, c] = [step.at[0] + step.first[0], step.at[1] + step.first[1]];
+    await page.getByLabel(new RegExp(`^Row ${r + 1}, column ${c + 1}, empty$`)).click();
+    await page.waitForTimeout(160);
+  }
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -281,4 +379,5 @@ export const PLAYERS = {
   'Pattern Play': playPatternPlay,
   'Number Crunch': playNumberCrunch,
   Sudoku: playSudoku,
+  'Shape Builder': playShapeBuilder,
 };

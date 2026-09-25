@@ -3,6 +3,7 @@ import { CountingScreen } from './counting/CountingScreen';
 import { MemoryScreen } from './memory/MemoryScreen';
 import { NumberCrunchScreen } from './numbercrunch/NumberCrunchScreen';
 import { PatternPlayScreen } from './patternplay/PatternPlayScreen';
+import { ShapeBuilderScreen } from './shapebuilder/ShapeBuilderScreen';
 import { ShapesScreen } from './shapes/ShapesScreen';
 import { SudokuScreen } from './sudoku/SudokuScreen';
 import type { GameDefinition } from './types';
@@ -24,6 +25,7 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   sudoku: SudokuScreen,
   patternplay: PatternPlayScreen,
   numbercrunch: NumberCrunchScreen,
+  shapebuilder: ShapeBuilderScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

@@ -225,6 +225,25 @@ export const GAMES_META: readonly GameMeta[] = [
     // has real headroom rather than topping out at what a young child needs.
     maxAge: 99,
   },
+  {
+    id: 'shapebuilder',
+    title: 'Shape Builder',
+    icon: 'pieces',
+    color: palette.leaf,
+    skill: 'Spatial reasoning and rotation',
+    roundEnds: 'The outline is completely filled.',
+    origin: 'public-domain',
+    priorArt:
+      'Dissection puzzles — fitting a fixed set of flat pieces into an outline — a tradition several centuries old with no single owner.',
+    toldApartBy: 'The shape of each piece, and how many sides it has.',
+    ages: '6+',
+    category: 'logic',
+    minAge: 6,
+    // Five pieces that must be pictured turned before they fit an irregular
+    // outline is real spatial work for an adult too, and the outline is cut
+    // fresh every round, so there is no ceiling of memorised layouts.
+    maxAge: 99,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

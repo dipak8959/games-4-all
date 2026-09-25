@@ -164,7 +164,7 @@ any good; it tells you whether it is the kind of thing that belongs here.
 
 `GameMeta` is `GameProposal` plus presentation, so **a shipped game is a
 passed proposal by construction**, and `tests/charter.test.ts` runs the same
-gate over the entire live catalogue on every CI run. A principle the seven
+gate over the entire live catalogue on every CI run. A principle the
 existing games cannot satisfy is a wrong principle and fails the build
 immediately. The catalogue is the gate's fixture set, which is what stops it
 drifting into a document nobody applies.
@@ -183,7 +183,7 @@ game where reading is the point rather than something to avoid:
   notifications, no "come back tomorrow" pressure. Nothing here is designed to
   maximise time-in-app — the screen-time limits point the other way.
 - **Reading is never required to navigate or play, except where it's the
-  explicit skill.** Home, Parent Zone, and six of the seven games are
+  explicit skill.** Home, Parent Zone, and every game but one is
   navigated entirely by icon, colour, shape, and number — no child needs to
   read anything to use this app. "Spell It!" is the deliberate exception: it
   teaches reading and spelling, so reading its own picture clue is the task,

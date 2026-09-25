@@ -68,6 +68,7 @@ await play('Spell It!');
 await play('Pattern Play');
 await play('Number Crunch');
 await play('Sudoku');
+await play('Shape Builder');
 
 console.log('\nParent Zone');
 await page.getByLabel('Parent zone, grown-ups only').click();
@@ -78,7 +79,7 @@ for (let i = 0; i < 8; i += 1) {
   await page.waitForTimeout(180);
 }
 const lines = (await page.locator('body').innerText()).split('\n');
-for (const title of ['Spell It!', 'Sudoku', 'Pattern Play', 'Number Crunch']) {
+for (const title of ['Spell It!', 'Sudoku', 'Pattern Play', 'Number Crunch', 'Shape Builder']) {
   const row = lines.findIndex((l) => l.trim() === title);
   const meta = lines.slice(row, row + 4).join(' ');
   if (/\b0 ROUNDS\b/.test(meta)) {

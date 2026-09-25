@@ -63,7 +63,7 @@ for (let i = 0; i < 6; i += 1) {
   await page.waitForTimeout(150);
 }
 report.ok(`Home lists: ${(await listed()).join(', ')}`);
-for (const title of ['Pattern Play', 'Number Crunch', 'Sudoku']) await round(title, 'age 17');
+for (const title of ['Pattern Play', 'Number Crunch', 'Sudoku', 'Shape Builder']) await round(title, 'age 17');
 
 console.log('\n=== getting it wrong on purpose ===');
 await setAge(page, 9);

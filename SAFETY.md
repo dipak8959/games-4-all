@@ -100,6 +100,33 @@ settings. It is not a secret and deliberately guards nothing whose disclosure
 would matter — worst case, a determined older child changes their own screen
 time limit.
 
+## Admin mode (the owner, testing)
+
+The owner asked for a way to see and test every game whatever the active
+profile's age. **Admin mode** is at the bottom of Parent Zone, so it sits
+behind the parent gate *and* an admin password. While it is on:
+
+- Home lists every game on the device, with a banner across the top saying
+  so and a one-tap **Turn off**.
+- Every game can be opened at one chosen level, 1 to 6, to test a level
+  directly rather than climbing to it.
+- Nothing is recorded against the active profile: no rounds, no levels, no
+  play time, and play-time limits don't apply. A child's profile is exactly
+  as it was before the owner tested on their device.
+- It is **never saved.** It lives in memory and ends when the app closes, so
+  it can't be left on for a child by accident.
+
+The repository is public, so the password is not in it. Only a salted
+PBKDF2-SHA256 digest is stored (`src/safety/adminLock.ts`), computed with a
+small built-in SHA-256 checked against the published test vectors
+(`tests/adminLock.test.ts`) rather than a new dependency.
+
+Like the parent gate, this is a convenience lock, not security. The app is
+offline and its code is on the device: someone determined could edit the
+check out, or try guesses against the digest on their own computer. What it
+unlocks is harmless — which games are listed, at what level — but the admin
+password should never be one that is used anywhere else.
+
 ## The charter: what a game has to be
 
 Eleven principles, in one place, in `src/games/charter.ts`. That file is the

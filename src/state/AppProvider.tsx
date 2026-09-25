@@ -34,6 +34,21 @@ import {
   type ProfilesState,
 } from './profiles';
 import { DEFAULT_LEVEL, startingLevelForAge } from '../games/types';
+import { isAdminPassword } from '../safety/adminLock';
+
+/**
+ * Admin mode, for the owner testing the app: every game listed whatever the
+ * age, optionally all at one level, and nothing recorded — no rounds, no
+ * levels, no play time — against the profile that happens to be active.
+ * Held in memory only, never saved: closing the app turns it off.
+ */
+export type AdminState = {
+  readonly on: boolean;
+  /** Open every game at this level, or `null` for the profile's own. */
+  readonly level: number | null;
+};
+
+const ADMIN_OFF: AdminState = { on: false, level: null };
 
 /**
  * Single source of truth for profiles, settings, progress, and screen-time
@@ -76,6 +91,11 @@ type AppContextValue = {
   readonly stopPlaying: () => void;
   /** Wipes every profile and every byte this app has ever stored. */
   readonly resetEverything: () => Promise<void>;
+  readonly admin: AdminState;
+  /** Turns admin mode on if the password is right; says whether it was. */
+  readonly unlockAdmin: (password: string) => boolean;
+  readonly setAdminLevel: (level: number | null) => void;
+  readonly lockAdmin: () => void;
   /** Creates a profile and returns its new id. The very first profile ever
    *  created becomes active automatically. */
   readonly addProfile: (input: ProfileInput) => string;
@@ -97,6 +117,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [progressById, setProgressById] = useState<ById<Progress>>({});
   const [usageById, setUsageById] = useState<ById<UsageState>>({});
   const [freshnessById, setFreshnessById] = useState<ById<Freshness>>({});
+
+  const [admin, setAdmin] = useState<AdminState>(ADMIN_OFF);
+  // Read by the play-time ticker and by `finishRound`, which must not charge
+  // an admin's testing to whichever profile is active.
+  const adminRef = useRef(admin);
+  adminRef.current = admin;
 
   /** Whether a game screen is currently mounted and foregrounded. */
   const playingRef = useRef(false);
@@ -233,7 +259,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const finishRound = useCallback((gameId: string, result: { stars: number; level: number }) => {
     const id = activeIdRef.current;
-    if (!id) return;
+    if (!id || adminRef.current.on) return;
     setProgressById((prev) => {
       const next = recordRound(prev[id] ?? EMPTY_PROGRESS, gameId, result);
       const merged = { ...prev, [id]: next };
@@ -244,7 +270,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const startPlaying = useCallback(() => {
     lastTickRef.current = Date.now();
-    playingRef.current = true;
+    // An admin's testing is not a child's play time.
+    playingRef.current = !adminRef.current.on;
   }, []);
 
   const stopPlaying = useCallback(() => {
@@ -255,10 +282,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const levelForGame = useCallback(
     (gameId: string) =>
+      (admin.on ? admin.level : null) ??
       progressFor(progress, gameId).currentLevel ??
       (activeProfile ? startingLevelForAge(activeProfile.age) : DEFAULT_LEVEL),
-    [progress, activeProfile],
+    [progress, activeProfile, admin],
   );
+
+  const unlockAdmin = useCallback((password: string) => {
+    if (!isAdminPassword(password)) return false;
+    setAdmin({ on: true, level: null });
+    return true;
+  }, []);
+
+  const setAdminLevel = useCallback((level: number | null) => {
+    setAdmin((prev) => (prev.on ? { ...prev, level } : prev));
+  }, []);
+
+  const lockAdmin = useCallback(() => setAdmin(ADMIN_OFF), []);
 
   const getFreshness = useCallback((gameId: string) => freshnessFor(freshness, gameId), [freshness]);
 
@@ -327,7 +367,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [persistUsage],
   );
 
-  const verdict = useMemo(() => evaluate(usage, settings), [usage, settings]);
+  // Limits are for the child whose profile is active, not for an admin
+  // testing on their device.
+  const verdict = useMemo<LimitVerdict>(
+    () => (admin.on ? { kind: 'ok', remainingMs: null } : evaluate(usage, settings)),
+    [usage, settings, admin.on],
+  );
 
   const value = useMemo<AppContextValue>(
     () => ({
@@ -350,6 +395,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateProfileInfo,
       removeProfileById,
       switchActiveProfile,
+      admin,
+      unlockAdmin,
+      setAdminLevel,
+      lockAdmin,
     }),
     [
       ready,
@@ -371,6 +420,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateProfileInfo,
       removeProfileById,
       switchActiveProfile,
+      admin,
+      unlockAdmin,
+      setAdminLevel,
+      lockAdmin,
     ],
   );
 

@@ -8,6 +8,7 @@ import { Screen } from '../components/Screen';
 import { SectionHeader } from '../components/SectionHeader';
 import { TabBar, type TabKey } from '../components/TabBar';
 import {
+  GAMES_META,
   GAME_CATEGORIES,
   gamesByCategory,
   gamesForAge,
@@ -49,16 +50,18 @@ export function HomeScreen({
   readonly onOpenProfiles: () => void;
   readonly onOpenPlayTime: () => void;
 }) {
-  const { progress, settings, profiles, activeProfile, updateSettings, levelForGame } = useApp();
+  const { progress, settings, profiles, activeProfile, updateSettings, levelForGame, admin, lockAdmin } = useApp();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<GameCategory | null>(null);
   const age = activeProfile?.age ?? DEFAULT_AGE;
 
+  // Admin mode (for testing, see Parent Zone) lists every game on the
+  // device, whatever the age.
+  const shelf = useMemo(() => (admin.on ? GAMES_META : gamesForAge(age)), [admin.on, age]);
   const games = useMemo(() => {
-    const forAge = gamesForAge(age);
-    const byCategory = gamesByCategory(forAge, category);
+    const byCategory = gamesByCategory(shelf, category);
     return searchGames(byCategory, query);
-  }, [age, category, query]);
+  }, [shelf, category, query]);
 
   // Browsing (no active search or category filter) is when the hero and the
   // favourites row earn their space — the whole point of pinning is reaching
@@ -108,6 +111,25 @@ export function HomeScreen({
         </View>
         <Rule weight="major" />
 
+        {admin.on ? (
+          <>
+            <View style={styles.adminRow}>
+              <Text style={[type.monoStrong, styles.adminText]}>
+                {`ADMIN MODE · ALL ${GAMES_META.length} GAMES${admin.level ? ` · LEVEL ${admin.level}` : ''}`}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Turn off admin mode"
+                onPress={lockAdmin}
+                style={({ pressed }) => [styles.adminOff, pressed && styles.pressedTint]}
+              >
+                <Text style={[type.monoStrong, styles.adminText]}>TURN OFF</Text>
+              </Pressable>
+            </View>
+            <Rule weight="major" />
+          </>
+        ) : null}
+
         <View style={styles.offlineRow}>
           <Icon name="offline" size={16} color={palette.accentText} />
           <Text style={type.secondary}>Works with no internet. No ads, no chat, no purchases.</Text>
@@ -120,7 +142,7 @@ export function HomeScreen({
             <TextInput
               value={query}
               onChangeText={setQuery}
-              placeholder={`Search ${games.length === 1 ? '1 game' : `${gamesForAge(age).length} games`} on this device`}
+              placeholder={`Search ${shelf.length === 1 ? '1 game' : `${shelf.length} games`} on this device`}
               placeholderTextColor={palette.inkSoft}
               style={styles.searchInput}
               accessibilityLabel="Search games"
@@ -455,6 +477,23 @@ const styles = StyleSheet.create({
     gap: space.md,
     paddingHorizontal: gutter,
     paddingVertical: 11,
+  },
+  // Admin mode says so at the top of Home for as long as it's on, so it is
+  // never handed to a child by accident.
+  adminRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: gutter,
+    backgroundColor: palette.accentTint,
+  },
+  adminText: { color: palette.accentTintText },
+  adminOff: {
+    minHeight: hitTarget,
+    paddingHorizontal: gutter,
+    justifyContent: 'center',
+    borderLeftWidth: rule.hair,
+    borderLeftColor: palette.border,
   },
   searchWrap: { paddingHorizontal: gutter, paddingTop: space.lg, paddingBottom: space.xs },
   search: {

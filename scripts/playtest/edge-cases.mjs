@@ -13,6 +13,7 @@ import {
   backHome,
   openApp,
   openGame,
+  passParentGate,
   reporter,
   roundResult,
   setAge,
@@ -276,6 +277,68 @@ if (await openGame(page, 'Tile Slide')) {
   else report.ok('a tile out of line with the gap stays put');
   await backHome(page, report, 'Tile Slide');
 }
+
+console.log('\n=== admin mode ===');
+await setAge(page, 3);
+const listedAt3 = (await listed()).length;
+await page.getByLabel('Parent zone, grown-ups only').click();
+await page.waitForTimeout(500);
+await passParentGate(page);
+const passwordBox = page.getByLabel('Admin password');
+for (let i = 0; i < 12 && !(await passwordBox.count()); i += 1) {
+  await page.mouse.wheel(0, 700);
+  await page.waitForTimeout(150);
+}
+await passwordBox.fill('not the password');
+await page.getByLabel('Turn on admin mode').click();
+await page.waitForTimeout(800);
+if (!(await page.getByText("That isn't the admin password.").count())) {
+  report.bug('admin', 'a wrong password was not turned away');
+} else {
+  report.ok('a wrong admin password is turned away');
+}
+// The real password is never in the repository: pass it in to test it.
+const adminPassword = process.env.PLAYTEST_ADMIN_PASSWORD;
+if (!adminPassword) {
+  report.ok('PLAYTEST_ADMIN_PASSWORD not set: skipping the unlock itself');
+  await page.getByLabel('Done').click();
+  await page.waitForTimeout(600);
+} else {
+  await passwordBox.fill(adminPassword);
+  await page.getByLabel('Turn on admin mode').click();
+  await page.waitForTimeout(1500);
+  if (!(await page.getByLabel('Level 6').count())) {
+    report.bug('admin', 'the right password did not turn admin mode on');
+  } else {
+    await page.getByLabel('Level 6').click();
+    await page.waitForTimeout(200);
+    await page.getByLabel('Done').click();
+    await page.waitForTimeout(600);
+    for (let i = 0; i < 8; i += 1) {
+      await page.mouse.wheel(0, 700);
+      await page.waitForTimeout(150);
+    }
+    const all = (await listed()).length;
+    if (all <= listedAt3) report.bug('admin', `admin mode lists ${all} games, a 3-year-old ${listedAt3}`);
+    else report.ok(`admin mode lists all ${all} games (a 3-year-old sees ${listedAt3})`);
+    if (await openGame(page, 'Tile Slide')) {
+      const tiles = await page.getByLabel(/^\d+, row \d+, column \d+/).count();
+      if (tiles !== 15) report.bug('admin', `Tile Slide opened with ${tiles} tiles, not level 6's 15`);
+      else report.ok('with level 6 chosen, Tile Slide opens as a 4x4 for a 3-year-old profile');
+      await backHome(page, report, 'Tile Slide');
+    }
+    await page.getByLabel('Turn off admin mode').click();
+    await page.waitForTimeout(500);
+    for (let i = 0; i < 8; i += 1) {
+      await page.mouse.wheel(0, 700);
+      await page.waitForTimeout(150);
+    }
+    const after = (await listed()).length;
+    if (after !== listedAt3) report.bug('admin', `turning admin mode off left ${after} games listed`);
+    else report.ok('turning it off puts Home back to the profile\'s own games');
+  }
+}
+await setAge(page, 9);
 
 console.log('\n=== leaving a round part-way through ===');
 if (await openGame(page, 'Number Crunch')) {

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { Avatar } from '../components/Avatar';
 import { BigButton } from '../components/BigButton';
@@ -15,7 +15,7 @@ import { MAX_LEVEL } from '../games/types';
 import { LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
 import { useApp } from '../state/AppProvider';
 import { progressFor } from '../state/progress';
-import { gutter, hitTarget, palette, rule, space } from '../theme/tokens';
+import { font, gutter, hitTarget, palette, rule, space } from '../theme/tokens';
 import { type } from '../theme/type';
 
 /**
@@ -182,6 +182,9 @@ export function ParentZoneScreen({
         })}
         <Rule weight="major" />
 
+        <AdminPanel />
+        <Rule weight="major" />
+
         <SectionHeader label="PRIVACY" />
         <View style={styles.block}>
           <Text style={type.secondary}>
@@ -209,6 +212,115 @@ export function ParentZoneScreen({
         onCancel={() => setConfirmingErase(false)}
       />
     </Screen>
+  );
+}
+
+/**
+ * Admin mode, for the owner testing the app — behind the parent gate that
+ * got you here and a password as well. See `src/safety/adminLock.ts`.
+ */
+function AdminPanel() {
+  const { admin, unlockAdmin, setAdminLevel, lockAdmin } = useApp();
+  const [password, setPassword] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [wrong, setWrong] = useState(false);
+
+  const tryUnlock = useCallback(() => {
+    if (checking || password.length === 0) return;
+    setChecking(true);
+    setWrong(false);
+    // The check takes a moment on purpose; let "Checking" draw first.
+    setTimeout(() => {
+      const ok = unlockAdmin(password);
+      setChecking(false);
+      setWrong(!ok);
+      setPassword('');
+    }, 30);
+  }, [checking, password, unlockAdmin]);
+
+  if (!admin.on) {
+    return (
+      <>
+        <SectionHeader label="ADMIN" />
+        <View style={styles.block}>
+          <Text style={type.secondary}>
+            For testing: every game on Home whatever the age, at any level, with nothing recorded
+            against this profile. Needs the admin password, and turns itself off when the app is
+            closed.
+          </Text>
+          <TextInput
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              setWrong(false);
+            }}
+            onSubmitEditing={tryUnlock}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="Admin password"
+            placeholderTextColor={palette.inkSoft}
+            accessibilityLabel="Admin password"
+            style={styles.password}
+          />
+          {wrong ? (
+            <Text style={[type.secondary, styles.wrong]} accessibilityLiveRegion="polite">
+              That isn't the admin password.
+            </Text>
+          ) : null}
+          <BigButton
+            label={checking ? 'Checking…' : 'Turn on admin mode'}
+            icon="lock"
+            tone="quiet"
+            disabled={checking || password.length === 0}
+            onPress={tryUnlock}
+          />
+        </View>
+      </>
+    );
+  }
+
+  const levels: readonly (number | null)[] = [null, 1, 2, 3, 4, 5, 6];
+  return (
+    <>
+      <SectionHeader label="ADMIN" meta="ON UNTIL THE APP CLOSES" />
+      <View style={styles.block}>
+        <Text style={type.secondary}>
+          Every game shows on Home, whatever the age. Rounds, levels and play time aren't recorded,
+          and play-time limits don't apply.
+        </Text>
+      </View>
+      <View style={styles.limit}>
+        <Text style={[type.mono, styles.limitLabel]}>OPEN EVERY GAME AT</Text>
+        <View style={styles.chips}>
+          {levels.map((level) => {
+            const selected = admin.level === level;
+            const name = level == null ? 'Their own level' : `Level ${level}`;
+            return (
+              <Pressable
+                key={String(level)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                accessibilityLabel={`${name}${selected ? ', selected' : ''}`}
+                onPress={() => setAdminLevel(level)}
+                style={({ pressed }) => [
+                  styles.chip,
+                  selected && styles.chipSelected,
+                  pressed && !selected && styles.pressedTint,
+                ]}
+              >
+                <Text style={[type.rowTitle, selected && styles.onAccent]}>
+                  {level == null ? 'Own' : `L${level}`}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+      <View style={styles.block}>
+        <BigButton label="Turn off admin mode" icon="lock" tone="quiet" onPress={lockAdmin} />
+      </View>
+    </>
   );
 }
 
@@ -361,4 +473,14 @@ const styles = StyleSheet.create({
   },
   gameText: { flex: 1, gap: 2 },
   gap: { marginTop: space.md },
+  password: {
+    minHeight: hitTarget,
+    paddingHorizontal: space.md,
+    fontSize: font.body,
+    color: palette.ink,
+    backgroundColor: palette.surface,
+    borderWidth: rule.hair,
+    borderColor: palette.border,
+  },
+  wrong: { color: palette.accentText },
 });

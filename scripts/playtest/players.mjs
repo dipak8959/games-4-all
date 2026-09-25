@@ -158,8 +158,8 @@ async function litTile(page) {
   });
 }
 
-export async function playPatternPlay(page, report) {
-  // Watch: poll for the lit tile and record the order it lights up in.
+/** Watches one reveal through and returns the tiles in the order they lit. */
+export async function watchPattern(page, report) {
   const seen = [];
   let last = null;
   for (let t = 0; t < 400; t += 1) {
@@ -175,6 +175,11 @@ export async function playPatternPlay(page, report) {
     if (await page.getByText('NOW REPEAT IT BACK').count()) break;
     await page.waitForTimeout(50);
   }
+  return seen;
+}
+
+export async function playPatternPlay(page, report) {
+  const seen = await watchPattern(page, report);
   if (seen.length === 0) {
     report.bug('Pattern Play', 'no tile ever lit up during the reveal');
     return;

@@ -2,16 +2,17 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { Icon } from '../../components/Icon';
 import { PatternMark } from './PatternMark';
 import { MARK_LABELS, markFor } from './marks';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
-import { correct, nudge } from '../../feedback/feedback';
+import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { hitTarget, palette, rule } from '../../theme/tokens';
+import { hitTarget, palette, rule, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
-import { createGame, startInput, tapTile, type PatternPlayState } from './logic';
+import { createGame, replay, startInput, tapTile, type PatternPlayState } from './logic';
 
 
 /** How long each tile stays highlighted during the reveal, and the gap
@@ -88,6 +89,11 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
     [settings],
   );
 
+  const onReplay = useCallback(() => {
+    tap(settings);
+    setState(replay);
+  }, [settings]);
+
   const restart = useCallback((atLevel: number) => {
     setLevel(atLevel);
     setState(createGame(systemRng, atLevel));
@@ -132,6 +138,21 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
             );
           })}
         </AnswerRow>
+
+        {/* Watch it again. A picture, not a word — the same replay mark the
+            round-complete card uses — so a child who can't read yet still
+            finds it. Inert while the pattern is already playing. */}
+        <AnswerRow style={styles.replay}>
+          <AnswerButton
+            accessibilityLabel="Watch the pattern again"
+            size={hitTarget}
+            disabled={state.revealing}
+            state={state.revealing ? 'spent' : 'idle'}
+            onPress={onReplay}
+          >
+            <Icon name="replay" size={30} color={palette.ink} />
+          </AnswerButton>
+        </AnswerRow>
       </View>
 
       {state.complete ? (
@@ -155,4 +176,5 @@ export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit
 const styles = StyleSheet.create({
   stage: { flex: 1, justifyContent: 'center' },
   grid: { alignSelf: 'center' },
+  replay: { paddingTop: space.lg },
 });

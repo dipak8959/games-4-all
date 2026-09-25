@@ -16,6 +16,11 @@ import { randInt, type Rng } from '../../util/random';
  * mistake and nothing else — the child stays exactly where they were in the
  * sequence and tries that step again, so there's no way to "lose" a round
  * partway through.
+ *
+ * And a child who has lost the thread can always watch it again (`replay`).
+ * That is free — it costs no mistake and no star — but it does mean
+ * repeating the sequence from the start, since the point of watching again
+ * is to see it whole.
  */
 
 export type PatternPlayState = {
@@ -72,4 +77,17 @@ export function tapTile(state: PatternPlayState, tileIndex: number): PatternPlay
 
   const inputIndex = state.inputIndex + 1;
   return { ...state, inputIndex, complete: inputIndex >= state.sequence.length };
+}
+
+/**
+ * Shows the same sequence again, from the top.
+ *
+ * Input goes back to the first step: having watched it again, the child
+ * repeats it whole rather than resuming from somewhere in the middle of a
+ * sequence they just re-learned. Mistakes already made stay made — replaying
+ * doesn't erase them, and it doesn't add to them either.
+ */
+export function replay(state: PatternPlayState): PatternPlayState {
+  if (state.complete || state.revealing) return state;
+  return { ...state, revealing: true, inputIndex: 0 };
 }

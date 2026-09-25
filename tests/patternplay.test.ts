@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { seededRng } from '../src/util/random.ts';
 import {
   createGame,
+  replay,
   sequenceLengthForLevel,
   startInput,
   tapTile,
@@ -147,4 +148,38 @@ test('a lit tile says it is lit, rather than only looking it', () => {
     /accessibilityLabel=\{`\$\{MARK_LABELS\[mark\]\} tile\$\{lit \? ', lit' : ''\}`\}/,
     'the lit state is missing from the tile\'s accessible name',
   );
+});
+
+test('watching again replays the same sequence and starts the repeat over', () => {
+  let state = startInput(createGame(seededRng(21), 4));
+  state = tapTile(state, state.sequence[0]);
+  state = tapTile(state, (state.sequence[1] + 1) % state.tileCount); // one slip
+  assert.equal(state.inputIndex, 1);
+  assert.equal(state.mistakes, 1);
+
+  const again = replay(state);
+  assert.equal(again.revealing, true, 'the pattern plays again');
+  assert.deepEqual(again.sequence, state.sequence, 'the same pattern, not a new one');
+  assert.equal(again.inputIndex, 0, 'repeating starts from the first step');
+  assert.equal(again.mistakes, 1, 'watching again is free — and does not erase a slip either');
+
+  // It can be finished normally afterwards.
+  let done = startInput(again);
+  for (const tile of done.sequence) done = tapTile(done, tile);
+  assert.equal(done.complete, true);
+  assert.equal(done.mistakes, 1);
+});
+
+test('there is nothing to replay while the pattern is playing or once it is done', () => {
+  const fresh = createGame(seededRng(22), 2);
+  assert.equal(replay(fresh), fresh, 'already playing');
+  let done = startInput(fresh);
+  for (const tile of done.sequence) done = tapTile(done, tile);
+  assert.equal(replay(done), done, 'round is over');
+});
+
+test('the replay control is on screen, drawn as a picture, and inert mid-reveal', () => {
+  assert.match(SCREEN, /accessibilityLabel="Watch the pattern again"/);
+  assert.match(SCREEN, /<Icon name="replay"/, 'a child who cannot read must still find it');
+  assert.match(SCREEN, /disabled=\{state\.revealing\}/);
 });

@@ -19,7 +19,7 @@ import {
   summarise,
   waitForRound,
 } from './harness.mjs';
-import { PLAYERS, playPatternPlay } from './players.mjs';
+import { PLAYERS, playPatternPlay, watchPattern } from './players.mjs';
 
 const report = reporter();
 const { browser, page, errors } = await openApp();
@@ -107,6 +107,38 @@ if (await openGame(page, 'Pattern Play')) {
   } else {
     report.bug('Pattern Play', 'repeating the sequence correctly did not complete the round');
   }
+  await backHome(page, report, 'Pattern Play');
+}
+
+console.log('\n=== watching the pattern again ===');
+if (await openGame(page, 'Pattern Play')) {
+  const replayButton = page.getByLabel('Watch the pattern again');
+  if (await replayButton.isEnabled()) {
+    report.bug('Pattern Play', 'the replay control is live while the pattern is already playing');
+  }
+  const first = await watchPattern(page, report);
+  // Get one step in, then ask to see it again.
+  await page.getByLabel(first[0], { exact: true }).first().click();
+  await page.waitForTimeout(200);
+  if (!(await replayButton.isEnabled())) {
+    report.bug('Pattern Play', 'the replay control cannot be pressed once the child is repeating');
+  }
+  await replayButton.click();
+  const second = await watchPattern(page, report);
+  if (second.join('|') !== first.join('|')) {
+    report.bug('Pattern Play', `replay showed a different pattern: ${first.join(', ')} then ${second.join(', ')}`);
+  } else {
+    report.ok(`replay shows the same ${second.length}-step pattern again`);
+  }
+  // Repeating it whole from the start should now finish the round.
+  for (const label of second) {
+    await page.getByLabel(label, { exact: true }).first().click();
+    await page.waitForTimeout(170);
+  }
+  const result = await waitForRound(page, 3000);
+  if (!result) report.bug('Pattern Play', 'repeating the whole pattern after a replay did not finish the round');
+  else if (result.stars !== 3) report.bug('Pattern Play', `a replay cost stars: ${result.stars}`);
+  else report.ok('repeated from the start after a replay: round complete, 3 stars');
   await backHome(page, report, 'Pattern Play');
 }
 

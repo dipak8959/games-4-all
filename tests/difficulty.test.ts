@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { readdirSync, readFileSync } from 'node:fs';
 
 import { seededRng } from '../src/util/random.ts';
+import { GAMES_META } from '../src/games/catalog.ts';
 import { MAX_LEVEL, MIN_LEVEL } from '../src/games/types.ts';
 import { pairsForLevel } from '../src/games/memory/logic.ts';
-import { rangeForLevel } from '../src/games/counting/logic.ts';
+import { choicesForLevel, rangeForLevel } from '../src/games/counting/logic.ts';
 import { basketsForLevel, sortRuleForLevel } from '../src/games/shapes/logic.ts';
-import { wordPoolForLevel } from '../src/games/wordbuilder/logic.ts';
+import { decoysForLevel, wordPoolForLevel } from '../src/games/wordbuilder/logic.ts';
 import { sequenceLengthForLevel, tileCountForLevel } from '../src/games/patternplay/logic.ts';
 import {
   factorRangeForLevel,
@@ -152,4 +154,82 @@ test('Puddle Hop runs faster, with more in the way and less room between, as lev
   climbs('puddle hop tightness at most', (level) => -puddleHopSpec(level).gapMax);
   const speeds = LEVELS.map((level) => puddleHopSpec(level).speed);
   assert.equal(new Set(speeds).size, LEVELS.length, `repeated tier: ${speeds.join(', ')}`);
+});
+
+// --- IT_GROWS -----------------------------------------------------------------
+
+/**
+ * The charter's IT_GROWS, held to the letter: every step up is harder.
+ *
+ * The checks above allow a flat step; this one doesn't. For each game, its
+ * difficulty dials are listed together, and between every level and the
+ * next, no dial may fall and at least one must rise. So there is no level
+ * a child can be promoted into that plays like the one they just left.
+ *
+ * A new game joins by adding a row. `every game is on the list` below fails
+ * until it does, so it can't be forgotten.
+ */
+const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
+  memory: (l) => [pairsForLevel(l)],
+  counting: (l) => [rangeForLevel(l).min, rangeForLevel(l).max, choicesForLevel(l)],
+  shapes: (l) => {
+    const rules = new Set<string>();
+    for (let seed = 0; seed < 300; seed += 1) rules.add(sortRuleForLevel(seededRng(seed), l));
+    return [rules.size, basketsForLevel('shape', l), basketsForLevel('color', l)];
+  },
+  wordbuilder: (l) => {
+    const length = wordPoolForLevel(l)[0].word.length;
+    return [length, length + decoysForLevel(l)];
+  },
+  patternplay: (l) => [tileCountForLevel(l), sequenceLengthForLevel(l)],
+  numbercrunch: (l) => [
+    operatorsForLevel(l).length,
+    termRangeForLevel(l).min,
+    termRangeForLevel(l).max,
+    factorRangeForLevel(l).min,
+    factorRangeForLevel(l).max,
+  ],
+  sudoku: (l) => [sizeForLevel(l), sizeForLevel(l) ** 2 - givensForLevel(l)],
+  shapebuilder: (l) => {
+    const spec = shapeBuilderSpec(l);
+    return [spec.blocks, spec.pieces, spec.maxPiece, spec.rotation ? 1 : 0];
+  },
+  puddlehop: (l) => {
+    const spec = puddleHopSpec(l);
+    // Gaps shrink as it gets harder, so they count negatively.
+    return [spec.speed, spec.obstacles, spec.kinds.length, -spec.gapMin, -spec.gapMax];
+  },
+};
+
+test('IT_GROWS: every game is harder at every level than at the one below', () => {
+  for (const [game, dials] of Object.entries(DIALS)) {
+    for (let i = 1; i < LEVELS.length; i += 1) {
+      const below = dials(LEVELS[i - 1]);
+      const here = dials(LEVELS[i]);
+      const fell = here.findIndex((v, d) => v < below[d]);
+      assert.equal(fell, -1, `${game}: level ${LEVELS[i]} is easier than ${LEVELS[i - 1]} on dial ${fell}`);
+      assert.ok(
+        here.some((v, d) => v > below[d]),
+        `${game}: level ${LEVELS[i]} plays exactly like level ${LEVELS[i - 1]} (${here.join(', ')})`,
+      );
+    }
+  }
+});
+
+test('IT_GROWS: every game is on the list', () => {
+  const ids = GAMES_META.map((g) => g.id).sort();
+  assert.deepEqual(Object.keys(DIALS).sort(), ids, 'a game is missing its difficulty dials');
+});
+
+test('IT_GROWS: every game moves its own level with nextLevel after a round', () => {
+  // The step up only happens if the screen asks for it. Each game screen
+  // must pass the round's stars through `nextLevel` when "Play again" starts
+  // the next one, rather than replaying at the level it had.
+  const dirs = readdirSync('src/games', { withFileTypes: true }).filter((d) => d.isDirectory());
+  for (const dir of dirs) {
+    const screen = readdirSync(`src/games/${dir.name}`).find((f) => f.endsWith('Screen.tsx'));
+    if (!screen) continue;
+    const source = readFileSync(`src/games/${dir.name}/${screen}`, 'utf8');
+    assert.match(source, /nextLevel\(level, stars\)/, `${screen} does not move its level after a round`);
+  }
 });

@@ -61,13 +61,14 @@ export function CountingScreen({ level: initialLevel, onRoundComplete, onExit }:
 
   // Few objects should be large and inviting; many should still fit the stage
   // without scrolling. Scaling with the count keeps the group visually similar
-  // in weight whether the answer is 1 or 12.
+  // in weight whether the answer is 1 or 16.
   const objectSize = useMemo(() => {
     const count = state.question.count;
     if (count <= 3) return 96;
     if (count <= 6) return 76;
     if (count <= 9) return 62;
-    return 52;
+    if (count <= 12) return 52;
+    return 44;
   }, [state.question.count]);
 
   return (

@@ -14,6 +14,7 @@ import {
   createGame as createCounting,
   createQuestion,
   QUESTIONS_PER_ROUND,
+  choicesForLevel,
   rangeForLevel,
 } from '../src/games/counting/logic.ts';
 import {
@@ -131,17 +132,34 @@ test('memory can always be completed, and a perfect game records no mistakes', (
   }
 });
 
+test('every basket at every level has a real shape and colour to draw', () => {
+  // Six shape baskets and only five colours once left the sixth basket with
+  // no colour at all — an invisible target. Checked across every level and
+  // every rule, since that's where the pools run out.
+  for (let level = 1; level <= 6; level++) {
+    for (let seed = 0; seed < 200; seed++) {
+      const state = createShapes(seededRng(seed * 7 + level), level);
+      for (const basket of state.baskets) {
+        assert.ok(basket.shape, `level ${level} seed ${seed}: a basket has no shape`);
+        assert.ok(basket.color, `level ${level} seed ${seed}: a basket has no colour`);
+      }
+      const keys = state.baskets.map((b) => b.key);
+      assert.equal(new Set(keys).size, keys.length, `level ${level} seed ${seed}: two baskets share a key`);
+    }
+  }
+});
+
 // --- counting ---------------------------------------------------------------
 
-test('counting offers three near-miss choices that always include the answer', () => {
+test('counting offers near-miss choices that always include the answer', () => {
   for (let seed = 0; seed < 300; seed++) {
-    for (let level = 1; level <= 4; level++) {
+    for (let level = 1; level <= 6; level++) {
       const q = createQuestion(seededRng(seed), level);
       const { min, max } = rangeForLevel(level);
 
       assert.ok(q.count >= min && q.count <= max, `count ${q.count} outside level ${level} range`);
-      assert.equal(q.choices.length, 3);
-      assert.equal(new Set(q.choices).size, 3, 'choices must be distinct');
+      assert.equal(q.choices.length, choicesForLevel(level));
+      assert.equal(new Set(q.choices).size, q.choices.length, 'choices must be distinct');
       assert.ok(q.choices.includes(q.count));
       assert.ok(q.choices.every((c) => c >= 1), 'no zero or negative numerals');
     }
@@ -150,7 +168,10 @@ test('counting offers three near-miss choices that always include the answer', (
 
 test('counting never asks for more objects than a young child can count', () => {
   assert.deepEqual(rangeForLevel(1), { min: 1, max: 5 });
-  assert.ok(rangeForLevel(99).max <= 12);
+  // Counting up to twenty things to answer "how many?" is the kindergarten
+  // benchmark (Common Core K.CC.B.5), which is the top of this game's age
+  // range. Only a child who keeps finishing cleanly climbs this far.
+  assert.ok(rangeForLevel(99).max <= 20);
 });
 
 test('counting draws pictures from a pool bigger than one question needs, for variety', () => {

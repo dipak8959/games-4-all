@@ -16,7 +16,7 @@ here is built to actually hold up for a grown-up, not just tolerate one:
 | Game | Practises | Ages |
 | --- | --- | --- |
 | **Find the Pairs** | Visual memory and concentration | 3-6 |
-| **How Many?** | Counting and recognising numerals 1-12 | 3-6 |
+| **How Many?** | Counting and recognising numerals 1-16 | 3-6 |
 | **Sort It Out** | Sorting by shape, colour, and size | 3-6 |
 | **Spell It!** | Reading and spelling simple words | 6-10 |
 | **Sudoku** | Logical reasoning and number placement | 7+ |
@@ -330,7 +330,7 @@ src/
     settings.ts, progress.ts, freshness.ts
   games/
     catalog.ts              Pure game metadata + age/category/search filtering (no React)
-    charter.ts              The ten principles, and the gate that checks an idea against them
+    charter.ts              The eleven principles, and the gate that checks an idea against them
     registry.ts             Attaches each game's Screen component to the catalogue
     memory/ counting/ shapes/ wordbuilder/ sudoku/ patternplay/ numbercrunch/
       logic.ts              Pure, seeded, unit-tested game rules
@@ -364,7 +364,7 @@ exactly one basket; every round is completable).
 
 0. **Write the idea down and run it through the gate, before writing any
    code.** Put a `GameProposal` in `proposals/` and run `npm run propose` —
-   it checks the idea against the ten principles in `src/games/charter.ts`
+   it checks the idea against the eleven principles in `src/games/charter.ts`
    and tells you which ones it fails and why. A game that cannot pass here
    should not be built, and finding that out costs ten seconds rather than a
    day. See "The charter" in **[SAFETY.md](SAFETY.md)**.

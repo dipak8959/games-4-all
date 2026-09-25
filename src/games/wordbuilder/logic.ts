@@ -86,11 +86,41 @@ export function wordPoolForLevel(level: number): readonly WordPuzzle[] {
   return FIVE_LETTER_WORDS;
 }
 
-/** Scrambles a word's letters into tiles, retrying once if the shuffle
- *  happens to land back in the already-solved order. */
-function scrambleWord(rng: Rng, word: string): Tile[] {
-  let letters = shuffle(rng, word.split(''));
-  if (letters.join('') === word) letters = shuffle(rng, letters);
+/**
+ * Letters mixed in that aren't in the word at all. Word length moves every
+ * second level; decoys fill the step in between, so each length is met
+ * plain first and then with something to rule out — and no promotion lands
+ * on a round exactly like the last. A wrong letter costs a mistake like any
+ * other wrong tap, and stays on the board to be passed over.
+ */
+export function decoysForLevel(level: number): number {
+  if (level <= 1) return 0;
+  if (level === 2) return 1;
+  if (level === 3) return 0;
+  if (level === 4) return 1;
+  if (level === 5) return 1;
+  return 2;
+}
+
+const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+/** Scrambles a word's letters, plus any decoys, into tiles, reshuffling for
+ *  as long as the word still reads in order from the first tile. (Retrying
+ *  just once wasn't enough: a three-letter word lands back in order one
+ *  shuffle in six, so one round in thirty-six opened already solved.) */
+function scrambleWord(rng: Rng, word: string, decoys: number): Tile[] {
+  const outsiders = shuffle(
+    rng,
+    ALPHABET.filter((letter) => !word.includes(letter)),
+  ).slice(0, decoys);
+  const all = [...word.split(''), ...outsiders];
+  let letters = shuffle(rng, all);
+  for (let tries = 0; letters.join('').startsWith(word) && tries < 50; tries += 1) {
+    letters = shuffle(rng, letters);
+  }
+  // Fifty unlucky shuffles in a row is effectively impossible, but if it
+  // ever happens, turning the row by one tile always breaks the order.
+  if (letters.join('').startsWith(word)) letters = [...letters.slice(1), letters[0]];
   return letters.map((letter) => ({ letter, used: false }));
 }
 
@@ -102,7 +132,7 @@ function pickPuzzle(rng: Rng, level: number, avoidWord: string | null): WordPuzz
 
 function startPuzzle(rng: Rng, level: number, avoidWord: string | null): { puzzle: WordPuzzle; tiles: Tile[] } {
   const puzzle = pickPuzzle(rng, level, avoidWord);
-  return { puzzle, tiles: scrambleWord(rng, puzzle.word) };
+  return { puzzle, tiles: scrambleWord(rng, puzzle.word, decoysForLevel(level)) };
 }
 
 export function createGame(rng: Rng, level: number, avoidWord: string | null = null): WordBuilderState {

@@ -34,17 +34,30 @@ const SYMBOLS = [
 
 export const QUESTIONS_PER_ROUND = 5;
 
-/** Counting range for a level. Kept inside what a child can subitise and count
- *  reliably before the numerals get large. */
+/**
+ * Counting range for a level. It starts inside what a child can subitise at
+ * a glance, and by the top reaches sixteen — beyond what anyone can see at
+ * once, so it has to be counted one by one, which is the skill. The floor
+ * rises too, so the easy, tiny counts drop out rather than diluting a
+ * harder round.
+ */
 export function rangeForLevel(level: number): { min: number; max: number } {
   if (level <= 1) return { min: 1, max: 5 };
   if (level === 2) return { min: 2, max: 8 };
   if (level === 3) return { min: 3, max: 10 };
-  return { min: 5, max: 12 };
+  if (level === 4) return { min: 5, max: 12 };
+  if (level === 5) return { min: 6, max: 14 };
+  return { min: 8, max: 16 };
+}
+
+/** How many numbers to choose between: three to start, four from level 4,
+ *  so a near guess stops being right one time in three. */
+export function choicesForLevel(level: number): number {
+  return level >= 4 ? 4 : 3;
 }
 
 /**
- * Builds one question with three near-miss choices.
+ * Builds one question with near-miss choices (see `choicesForLevel`).
  *
  * Distractors sit adjacent to the answer so the child has to actually count
  * rather than eyeball "the big one" or "the small one". `avoidSymbol` keeps
@@ -55,11 +68,12 @@ export function createQuestion(rng: Rng, level: number, avoidSymbol: string | nu
   const { min, max } = rangeForLevel(level);
   const count = randInt(rng, min, max);
 
+  const wanted = choicesForLevel(level);
   const choices = new Set<number>([count]);
   let spread = 1;
-  while (choices.size < 3) {
+  while (choices.size < wanted) {
     for (const candidate of [count - spread, count + spread]) {
-      if (choices.size >= 3) break;
+      if (choices.size >= wanted) break;
       if (candidate >= 1 && candidate !== count) choices.add(candidate);
     }
     spread += 1;

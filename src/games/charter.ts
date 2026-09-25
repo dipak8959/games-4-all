@@ -33,7 +33,8 @@ export type PrincipleId =
   | 'HONEST_AGE'
   | 'ORIGINAL'
   | 'PLAYS_WITHOUT_READING'
-  | 'REACHABLE_BY_A_CHILD';
+  | 'REACHABLE_BY_A_CHILD'
+  | 'IT_GROWS';
 
 export type Principle = {
   readonly id: PrincipleId;
@@ -110,6 +111,12 @@ export const PRINCIPLES: readonly Principle[] = [
     rule: 'Nothing under 72dp, always escapable in one tap, and colour is never the only way to tell things apart.',
     why: 'Small hands are imprecise, a child must always be able to leave, and roughly one boy in twelve cannot separate red from green.',
     enforcedAt: 'both',
+  },
+  {
+    id: 'IT_GROWS',
+    rule: 'Every level is harder than the one below. A clean round moves the next one up a level and a rough one moves it down, one step at a time.',
+    why: 'A game that stops getting harder stops teaching anything, and a child who keeps finishing cleanly has earned the next step, not the same round again. Stepping down after a rough round stops it becoming a wall.',
+    enforcedAt: 'build',
   },
 ];
 

@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { seededRng } from '../src/util/random.ts';
 import {
   createGame,
+  decoysForLevel,
   tapTile,
   wordPoolForLevel,
   WORDS_PER_ROUND,
@@ -37,16 +38,45 @@ test('every word is lowercase letters only, with a non-empty emoji clue', () => 
 
 // --- scrambling ----------------------------------------------------------
 
-test('scrambled tiles are exactly the letters of the word, never pre-solved', () => {
-  for (let seed = 0; seed < 300; seed++) {
-    const state = createGame(seededRng(seed), 5); // 5-letter words scramble more meaningfully
-    const tileLetters = state.tiles.map((t) => t.letter).sort();
-    const wordLetters = state.puzzle.word.split('').sort();
-    assert.deepEqual(tileLetters, wordLetters, `seed ${seed}`);
+test("scrambled tiles are the word's letters plus the level's decoys, never pre-solved", () => {
+  for (const level of [1, 2, 3, 4, 5, 6]) {
+    for (let seed = 0; seed < 120; seed++) {
+      const state = createGame(seededRng(seed), level);
+      const word = state.puzzle.word;
+      const tiles = state.tiles.map((t) => t.letter);
+      assert.equal(tiles.length, word.length + decoysForLevel(level), `level ${level} seed ${seed}`);
 
-    const scrambledOrder = state.tiles.map((t) => t.letter).join('');
-    assert.notEqual(scrambledOrder, state.puzzle.word, `seed ${seed}: tiles started pre-solved`);
+      // Every letter of the word is there, as many times as it's needed...
+      const remaining = [...tiles];
+      for (const letter of word) {
+        const at = remaining.indexOf(letter);
+        assert.ok(at >= 0, `level ${level} seed ${seed}: "${word}" is missing a "${letter}"`);
+        remaining.splice(at, 1);
+      }
+      // ...and a decoy is never a letter the word uses, so there is never a
+      // second right answer to confuse things.
+      for (const decoy of remaining) {
+        assert.ok(!word.includes(decoy), `level ${level} seed ${seed}: decoy "${decoy}" is in "${word}"`);
+      }
+
+      assert.ok(!tiles.join('').startsWith(word), `level ${level} seed ${seed}: tiles started pre-solved`);
+    }
   }
+});
+
+test('a decoy tap is a mistake, and the word can still be finished', () => {
+  let state = createGame(seededRng(3), 6);
+  const decoy = state.tiles.findIndex((t) => !state.puzzle.word.includes(t.letter));
+  assert.ok(decoy >= 0);
+  const after = tapTile(state, decoy, seededRng(3), 6);
+  assert.equal(after.mistakes, 1);
+  assert.equal(after.tiles[decoy].used, false, 'the decoy stays on the board');
+  state = after;
+  for (const letter of state.puzzle.word) {
+    const i = state.tiles.findIndex((t) => !t.used && t.letter === letter);
+    state = tapTile(state, i, seededRng(3), 6);
+  }
+  assert.equal(state.wordIndex, 1, 'the word was spelled despite the decoy');
 });
 
 test('every tile starts unused', () => {

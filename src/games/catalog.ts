@@ -132,7 +132,7 @@ export const GAMES_META: readonly GameMeta[] = [
     title: 'How Many?',
     icon: 'count',
     color: palette.sun,
-    skill: 'Counting and recognising numerals 1-12',
+    skill: 'Counting and recognising numerals 1-16',
     roundEnds: 'Five questions answered.',
     origin: 'original',
     toldApartBy:

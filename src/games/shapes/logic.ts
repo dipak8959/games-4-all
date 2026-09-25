@@ -84,13 +84,17 @@ export function sortRuleForLevel(rng: Rng, level: number, avoidSortBy: SortBy | 
   return rest.length > 0 ? pick(rng, rest) : first;
 }
 
-/** Basket count for shape/colour rounds: two to start, growing with level, but
- *  never more than the pool for that attribute (so baskets stay distinct).
- *  Size rounds always use exactly two baskets — small and big are the only
- *  two values there ever are. */
+/** Basket count for shape/colour rounds, by level: 2, 3, 3, 4, 5, 6 — level 3
+ *  holds at three because it's where sorting by size first appears. Never
+ *  more than the pool for that attribute, so baskets stay distinct: colour
+ *  tops out at its five. Size rounds always use exactly two baskets — small
+ *  and big are the only two values there ever are. */
+const BASKETS_BY_LEVEL = [2, 3, 3, 4, 5, 6] as const;
+
 export function basketsForLevel(sortBy: 'shape' | 'color', level: number): number {
   const pool = sortBy === 'shape' ? SHAPES.length : COLORS.length;
-  return Math.min(2 + Math.floor(level / 2), pool);
+  const index = Math.max(1, Math.min(BASKETS_BY_LEVEL.length, Math.round(level))) - 1;
+  return Math.min(BASKETS_BY_LEVEL[index], pool);
 }
 
 /** What the previous round used, so the next one can avoid repeating it and
@@ -157,13 +161,19 @@ export function createGame(rng: Rng, level: number, avoid: ShapesHistory = EMPTY
   // other one is decorative regardless, so staleness there isn't noticeable.
   const shapes =
     sortBy === 'shape' ? sampleFresh(rng, SHAPES, count, avoid.shapes) : sampleFresh(rng, SHAPES, count, new Set());
+  // In a shape round colour is decoration, and there are more shapes than
+  // colours: at six baskets the colours wrap round and two baskets share one.
+  // Asking for six distinct colours from five left the sixth basket with
+  // none, drawn in nothing at all.
   const colors =
-    sortBy === 'color' ? sampleFresh(rng, COLORS, count, avoid.colors) : sampleFresh(rng, COLORS, count, new Set());
+    sortBy === 'color'
+      ? sampleFresh(rng, COLORS, count, avoid.colors)
+      : sampleFresh(rng, COLORS, Math.min(count, COLORS.length), new Set());
 
   const baskets: Basket[] = shapes.map((shape, i) => ({
     key: sortBy === 'shape' ? shape : colors[i],
     shape,
-    color: colors[i],
+    color: colors[i % colors.length],
   }));
 
   // Every item must belong to exactly one basket, and each basket should see at

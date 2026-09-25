@@ -102,7 +102,7 @@ time limit.
 
 ## The charter: what a game has to be
 
-Ten principles, in one place, in `src/games/charter.ts`. That file is the
+Eleven principles, in one place, in `src/games/charter.ts`. That file is the
 list — everything below and above in this document explains a principle, and
 the principles themselves live in code so they can be run rather than only
 read.
@@ -111,7 +111,7 @@ read.
 | --- | --- | --- |
 | 1 | Offline | Works with nothing connected, and reaches nothing outside the device. |
 | 2 | Nothing to sell | No ads, purchases, accounts, analytics, third-party SDKs or device permissions. |
-| 3 | It ends | A round ends on its own, at a point fixed before it started. |
+| 3 | It ends | A round ends on its own, no later than a point fixed before it started. |
 | 4 | Nothing to lose | No timers, no lives. A miss may end a round early only with a fixed finish, no score or best, and a fresh round next. |
 | 5 | Nothing to chase | No scores, streaks, leaderboards, multipliers, daily rewards or self-starting rounds. |
 | 6 | Worth the time | It practises something nameable, stated plainly enough to show a parent. |
@@ -119,6 +119,7 @@ read.
 | 8 | Original | Invented here, or a format old enough to belong to everyone. |
 | 9 | Plays without reading | A child who cannot read can play it, unless reading is the skill. |
 | 10 | Reachable by a child | Nothing under 72dp, always escapable, and colour is never the only signal. |
+| 11 | It grows | Every level is harder than the one below. A clean round moves the next one up a level and a rough one moves it down, one step at a time. |
 
 ### The gate runs before the game is built
 
@@ -168,6 +169,30 @@ gate over the entire live catalogue on every CI run. A principle the
 existing games cannot satisfy is a wrong principle and fails the build
 immediately. The catalogue is the gate's fixture set, which is what stops it
 drifting into a document nobody applies.
+
+### Every game grows with the player
+
+Principle 11 is the one that applies to every game without exception, and
+it works the same way in all of them:
+
+- **Where you start** comes from the profile's age (`startingLevelForAge`),
+  so a six-year-old and a forty-year-old don't open the same game at the
+  same difficulty.
+- **Finishing cleanly moves you up.** A three-star round makes the next one
+  a level harder. Two stars holds. One star steps down. Never more than one
+  level at a time (`nextLevel`), on a scale of 1 to 6 shared by every game,
+  remembered per profile, and applied straight away on "Play again".
+- **Every level is genuinely harder than the one below it.** Not just
+  numbered higher: something about the round is harder and nothing is
+  easier. More pairs, higher counts, more baskets, longer words and decoy
+  letters, longer sequences, bigger numbers, emptier grids, more pieces,
+  faster runs.
+
+`tests/difficulty.test.ts` enforces the last point for every game, dial by
+dial. A new game fails the build until it lists its difficulty dials there,
+and fails again if any promotion would land a child on a round that plays
+like the one they just left. It also checks that every game screen actually
+passes each round's stars through `nextLevel`.
 
 ## Design rules for the games themselves
 

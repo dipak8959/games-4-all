@@ -20,8 +20,9 @@ import {
   positionNow,
   rivalDistance,
   rivalLaneAt,
+  hoppingOver,
   starsForPlace,
-  steer,
+  steerTo,
   step,
   type LaneDashState,
   type Obstacle,
@@ -36,6 +37,12 @@ const CAR_BASE = 64;
 const PRESS_AT_ONCE = { delayPressIn: 0 } as object;
 
 const ORDINAL = ['', '1ST', '2ND', '3RD'];
+
+/** What each lane is called, by how many lanes the road has. */
+const LANE_NAMES: Readonly<Record<number, readonly string[]>> = {
+  2: ['Left lane', 'Right lane'],
+  3: ['Left lane', 'Middle lane', 'Right lane'],
+};
 
 /** Four small wheels, just outside the body on each side. */
 function Wheels({ w, h }: { readonly w: number; readonly h: number }) {
@@ -78,41 +85,51 @@ function PlayerCar({
       : { x: drift * pupil * 0.45, y: -pupil * 0.4 };
   const spin = spinning && !reduceMotion ? `${Math.round((1 - state.spinFor / SPIN_FOR) * 360)}deg` : '0deg';
 
+  // Mid-hop, the car's shadow stays on the road a little behind and to the
+  // side, so the jump over the middle lane reads as a jump.
+  const hopping = hoppingOver(state).length > 0;
+  const left = laneCentre(state.lanes, state.laneX) * k - w / 2;
+
   return (
-    <View
-      testID="player-car"
-      style={{
-        position: 'absolute',
-        left: laneCentre(state.lanes, state.laneX) * k - w / 2,
-        bottom: CAR_BASE,
-        width: w,
-        height: h,
-        transform: [{ rotate: spin }],
-      }}
-    >
-      <Wheels w={w} h={h} />
-      <View style={[styles.playerBody, { width: w, height: h }]}>
-        {[0, 1].map((i) => (
-          <View
-            key={i}
-            style={[
-              styles.eye,
-              { width: eye, height: eye, borderRadius: eye / 2, top: h * 0.1, left: w * (i === 0 ? 0.1 : 0.56) },
-            ]}
-          >
+    <>
+      {hopping ? (
+        <View style={[styles.hopShadow, { left: left + w * 0.14, bottom: CAR_BASE - h * 0.12, width: w, height: h }]} />
+      ) : null}
+      <View
+        testID="player-car"
+        style={{
+          position: 'absolute',
+          left,
+          bottom: CAR_BASE,
+          width: w,
+          height: h,
+          transform: [{ rotate: spin }],
+        }}
+      >
+        <Wheels w={w} h={h} />
+        <View style={[styles.playerBody, { width: w, height: h }]}>
+          {[0, 1].map((i) => (
             <View
-              style={{
-                width: pupil,
-                height: pupil,
-                borderRadius: pupil / 2,
-                backgroundColor: palette.ink,
-                transform: [{ translateX: look(i).x }, { translateY: look(i).y }],
-              }}
-            />
-          </View>
-        ))}
+              key={i}
+              style={[
+                styles.eye,
+                { width: eye, height: eye, borderRadius: eye / 2, top: h * 0.1, left: w * (i === 0 ? 0.1 : 0.56) },
+              ]}
+            >
+              <View
+                style={{
+                  width: pupil,
+                  height: pupil,
+                  borderRadius: pupil / 2,
+                  backgroundColor: palette.ink,
+                  transform: [{ translateX: look(i).x }, { translateY: look(i).y }],
+                }}
+              />
+            </View>
+          ))}
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
@@ -200,9 +217,9 @@ export function LaneDashScreen({ level: initialLevel, onRoundComplete, onExit }:
   }, [state.bumps, settings]);
 
   const onSteer = useCallback(
-    (direction: -1 | 1) => {
+    (lane: number) => {
       tap(settings);
-      setState((prev) => steer(prev, direction));
+      setState((prev) => steerTo(prev, lane));
     },
     [settings],
   );
@@ -230,7 +247,7 @@ export function LaneDashScreen({ level: initialLevel, onRoundComplete, onExit }:
   const dashes = k > 0 ? Array.from({ length: Math.ceil(stage.height / (dashEvery * k)) + 2 }, (_, i) => firstDash + i * dashEvery) : [];
 
   const label = !state.started
-    ? 'TAP LEFT OR RIGHT TO GO'
+    ? 'TAP A LANE TO GO'
     : state.complete
       ? `YOU CAME ${ORDINAL[place]}`
       : `PLACE ${place} OF 3`;
@@ -291,17 +308,18 @@ export function LaneDashScreen({ level: initialLevel, onRoundComplete, onExit }:
 
         {k > 0 ? <PlayerCar state={state} k={k} reduceMotion={settings.reduceMotion} /> : null}
 
-        {/* The two halves of the road are the two buttons — as big as a
-            target gets. Each press moves one lane that way. */}
+        {/* Each lane of the road is its own button, the full height of the
+            stage — as big as a target gets. Tap the lane you want to be in,
+            however far across it is. */}
         <View style={styles.controls}>
-          {([-1, 1] as const).map((direction) => (
+          {LANE_NAMES[state.lanes].map((name, lane) => (
             <Pressable
-              key={direction}
+              key={name}
               {...PRESS_AT_ONCE}
               accessibilityRole="button"
-              accessibilityLabel={direction < 0 ? 'Steer left' : 'Steer right'}
-              onPressIn={() => onSteer(direction)}
-              style={styles.half}
+              accessibilityLabel={`${name}${state.lane === lane ? ', your car' : ''}`}
+              onPressIn={() => onSteer(lane)}
+              style={styles.lane}
             />
           ))}
         </View>
@@ -346,5 +364,6 @@ const styles = StyleSheet.create({
   roadworks: { position: 'absolute', backgroundColor: palette.ink },
   stripe: { position: 'absolute', left: 0, right: 0, height: rule.major * 2, backgroundColor: palette.sun },
   controls: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, flexDirection: 'row' },
-  half: { flex: 1 },
+  lane: { flex: 1 },
+  hopShadow: { position: 'absolute', backgroundColor: palette.border },
 });

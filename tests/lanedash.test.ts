@@ -6,6 +6,7 @@ import {
   CAR_LENGTH,
   LANE_SPEED,
   OBSTACLE_SHAPES,
+  REACT_ROOM,
   SLOW_FACTOR,
   SLOW_FOR,
   createGame,
@@ -15,7 +16,7 @@ import {
   rivalLaneAt,
   specForLevel,
   starsForPlace,
-  steer,
+  steerTo,
   step,
   type LaneDashState,
 } from '../src/games/lanedash/logic.ts';
@@ -23,12 +24,13 @@ import {
 const LEVELS = [1, 2, 3, 4, 5, 6];
 const FRAME = 1 / 60;
 
-/** Drives a race to the flag at 60fps; `choose` returns -1, 0 or 1 each frame. */
-function race(state: LaneDashState, choose: (s: LaneDashState) => -1 | 0 | 1): LaneDashState {
-  let s = steer(state, 1); // the first tap starts the race
+/** Drives a race to the flag at 60fps; `choose` returns the lane to tap
+ *  each frame, or null to leave it. */
+function race(state: LaneDashState, choose: (s: LaneDashState) => number | null): LaneDashState {
+  let s = steerTo(state, 0); // the first tap starts the race
   for (let frame = 0; frame < 60 * 120 && !s.complete; frame += 1) {
-    const d = choose(s);
-    if (d !== 0) s = steer(s, d);
+    const lane = choose(s);
+    if (lane !== null) s = steerTo(s, lane);
     s = step(s, FRAME);
   }
   return s;
@@ -36,21 +38,20 @@ function race(state: LaneDashState, choose: (s: LaneDashState) => -1 | 0 | 1): L
 
 /** Looks at the next row still ahead of the car, and heads for the nearest
  *  clear lane — using only what's on the road. */
-function perfect(s: LaneDashState): -1 | 0 | 1 {
+function perfect(s: LaneDashState): number | null {
   const ahead = s.obstacles.filter((o) => o.y + o.length > s.distance - CAR_LENGTH);
-  if (ahead.length === 0) return 0;
+  if (ahead.length === 0) return null;
   const nextY = Math.min(...ahead.map((o) => o.y));
   const blocked = ahead.filter((o) => o.y === nextY).map((o) => o.lane);
-  if (!blocked.includes(s.lane)) return 0;
+  if (!blocked.includes(s.lane)) return null;
   const free = Array.from({ length: s.lanes }, (_, l) => l).filter((l) => !blocked.includes(l));
-  const target = free.reduce((a, b) => (Math.abs(b - s.lane) < Math.abs(a - s.lane) ? b : a));
-  return target < s.lane ? -1 : 1;
+  return free.reduce((a, b) => (Math.abs(b - s.lane) < Math.abs(a - s.lane) ? b : a));
 }
 
 test('nothing moves until the first tap, and that tap only starts the race', () => {
   const state = createGame(seededRng(1), 3);
   assert.deepEqual(step(state, 3), state);
-  const going = steer(state, -1);
+  const going = steerTo(state, 0);
   assert.equal(going.started, true);
   assert.equal(going.lane, state.lane, 'the starting tap does not also steer');
 });
@@ -77,7 +78,7 @@ test('a clean race always wins, on every track at every level', () => {
   }
 });
 
-test('no row ever blocks every lane, and there is always time to move across', () => {
+test('no row ever blocks every lane, and there is always time to see it and move', () => {
   for (const level of LEVELS) {
     for (let seed = 0; seed < 40; seed += 1) {
       const s = createGame(seededRng(seed + level * 100), level);
@@ -87,9 +88,19 @@ test('no row ever blocks every lane, and there is always time to move across', (
       for (const y of ys) assert.ok((rows.get(y) as number[]).length < s.lanes, `level ${level}: a full block`);
       for (let i = 1; i < ys.length; i += 1) {
         const longest = Math.max(...s.obstacles.filter((o) => o.y === ys[i - 1]).map((o) => o.length));
-        const room = ys[i] - (ys[i - 1] + longest) - CAR_LENGTH;
-        const crossing = ((s.lanes - 1) / LANE_SPEED) * s.speed;
-        assert.ok(room > crossing, `level ${level} seed ${seed}: no time to cross the road between rows`);
+        const seconds = (ys[i] - (ys[i - 1] + longest) - CAR_LENGTH) / s.speed;
+        // Any move, one lane or two, takes 1 / LANE_SPEED.
+        assert.ok(seconds > 1 / LANE_SPEED, `level ${level} seed ${seed}: no time to move between rows`);
+        // Where the only way on is a lane the last row blocked, the car can
+        // only move once it's past that row — so there's room to react too.
+        const before = rows.get(ys[i - 1]) as number[];
+        const free = Array.from({ length: s.lanes }, (_, l) => l).filter((l) => !(rows.get(ys[i]) as number[]).includes(l));
+        if (free.every((l) => before.includes(l))) {
+          assert.ok(
+            seconds >= REACT_ROOM - 0.01,
+            `level ${level} seed ${seed}: ${seconds.toFixed(2)}s to see and move into a lane the last row blocked`,
+          );
+        }
       }
     }
   }
@@ -161,11 +172,55 @@ test('nobody starts on top of anybody else', () => {
 });
 
 test('steering stops at the edge of the road', () => {
-  let s = steer(createGame(seededRng(2), 3), 1);
-  for (let i = 0; i < 5; i += 1) s = steer(s, -1);
+  let s = steerTo(createGame(seededRng(2), 3), 1);
+  s = steerTo(s, -4);
   assert.equal(s.lane, 0);
-  for (let i = 0; i < 5; i += 1) s = steer(s, 1);
+  s = steerTo(s, 9);
   assert.equal(s.lane, s.lanes - 1);
+});
+
+/** A race on a three-lane road, started, with the car in `lane` and one
+ *  obstacle placed just ahead of it in `blockedLane`. */
+function oneObstacle(lane: number, blockedLane: number): LaneDashState {
+  const s = steerTo(createGame(seededRng(5), 3), 0);
+  return {
+    ...s,
+    lane,
+    laneX: lane,
+    changeFrom: lane,
+    distance: 1000,
+    obstacles: [{ kind: 'cone', lane: blockedLane, y: 1000 + 20, width: 30, length: 30, hit: false }],
+  };
+}
+
+function drive(s: LaneDashState, seconds: number): LaneDashState {
+  let out = s;
+  for (let t = 0; t < seconds; t += FRAME) out = step(out, FRAME);
+  return out;
+}
+
+test('one tap crosses two lanes, in the time one lane takes', () => {
+  const s = steerTo(oneObstacle(0, 0), 2);
+  assert.equal(s.lane, 2);
+  const after = drive({ ...s, obstacles: [] }, 1 / LANE_SPEED + 2 * FRAME);
+  assert.equal(after.laneX, 2);
+});
+
+test('two lanes across is a hop: nothing in the lane jumped over is hit', () => {
+  // Hopping from the left lane to the right, with a cone right there in the middle.
+  const hop = drive(steerTo(oneObstacle(0, 1), 2), 1);
+  assert.equal(hop.bumps, 0, 'the hop hit the cone in the middle lane');
+
+  // Stepping over one lane at a time drives through the middle lane instead.
+  let slow = steerTo(oneObstacle(0, 1), 1);
+  slow = drive(slow, 1 / LANE_SPEED + 2 * FRAME);
+  slow = drive(steerTo(slow, 2), 1);
+  assert.equal(slow.bumps, 1, 'driving through the middle lane should bump');
+});
+
+test('a hop still lands: what is in the lane it lands in is hit', () => {
+  const s = drive(steerTo(oneObstacle(0, 2), 2), 1);
+  assert.equal(s.bumps, 1);
 });
 
 test('every kind a level allows turns up, and each has its own shape', () => {

@@ -191,7 +191,7 @@ if (await openGame(page, 'Puddle Hop')) {
 
 console.log('\n=== Lane Dash: driving into everything ===');
 if (await openGame(page, 'Lane Dash')) {
-  await page.getByLabel('Steer right').click(); // start, then never steer
+  await page.getByLabel(/^Right lane/).click(); // start, then never steer
   const result = await waitForRound(page, 60000);
   if (!result) report.bug('Lane Dash', 'a race full of bumps never reached the flag');
   else {
@@ -201,6 +201,28 @@ if (await openGame(page, 'Lane Dash')) {
     const text = await page.locator('body').innerText();
     if (/\b(best|record|lap|time:|seconds)\b/i.test(text)) report.bug('Lane Dash', 'a time or record is on screen');
     else report.ok('no clock, lap time or record anywhere');
+  }
+  await backHome(page, report, 'Lane Dash');
+}
+
+console.log('\n=== Lane Dash: one tap, two lanes ===');
+// Still age 9 here, and Lane Dash already played at 17: a three-lane road.
+if (await openGame(page, 'Lane Dash')) {
+  const car = () => page.locator('[data-testid="player-car"]').boundingBox();
+  await page.getByLabel(/^Left lane/).click(); // starts the race
+  await page.getByLabel(/^Left lane/).click();
+  await page.waitForTimeout(400);
+  const leftX = (await car()).x;
+  await page.getByLabel(/^Right lane/).click();
+  await page.waitForTimeout(250); // one lane's time and a little: the whole hop
+  const rightX = (await car()).x;
+  const road = await page.locator('[data-testid^="road:"]').boundingBox();
+  if (rightX - leftX < road.width * 0.55) {
+    report.bug('Lane Dash', `one tap on the right lane moved the car ${Math.round(rightX - leftX)}px of a ${Math.round(road.width)}px road`);
+  } else if (!(await page.getByLabel('Right lane, your car').count())) {
+    report.bug('Lane Dash', 'the right lane does not say the car is in it');
+  } else {
+    report.ok('one tap on the far lane crosses the whole road, in a quarter of a second');
   }
   await backHome(page, report, 'Lane Dash');
 }

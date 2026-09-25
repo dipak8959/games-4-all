@@ -289,7 +289,7 @@ export const GAMES_META: readonly GameMeta[] = [
     ages: '5+',
     category: 'timing',
     minAge: 5,
-    // Two taps, left and right, so a five-year-old can race; three lanes,
+    // Tap the lane you want, so a five-year-old can race; three lanes,
     // a fast road and rivals close behind a clean race make the top level a
     // real test of looking ahead for anyone. Every race ends at the flag.
     maxAge: 99,

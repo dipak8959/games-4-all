@@ -464,40 +464,43 @@ export async function playPuddleHop(page, report) {
 /**
  * Lane Dash, played from inside the page like Puddle Hop: it reads the road
  * off the screen — how many lanes, where your car is, where each obstacle is
- * and which lane it blocks — picks a clear lane for the next row, and steers
- * with real taps on the left and right halves of the road.
+ * and which lane it blocks — picks the nearest clear lane for the next row,
+ * and taps that lane for real, however far across it is.
  */
 const steerHook = new WeakSet();
 const steerAt = new WeakMap();
 
 export async function playLaneDash(page, report) {
-  const left = await page.getByLabel('Steer left').boundingBox();
-  const right = await page.getByLabel('Steer right').boundingBox();
-  steerAt.set(page, {
-    left: { x: left.x + left.width / 2, y: left.y + left.height / 2 },
-    right: { x: right.x + right.width / 2, y: right.y + right.height / 2 },
-  });
+  // Each lane is its own button; note where each one is, left to right.
+  const lanes = [];
+  for (const button of await page.getByLabel(/^(Left|Middle|Right) lane/).all()) {
+    const box = await button.boundingBox();
+    lanes.push({ x: box.x + box.width / 2, y: box.y + box.height / 2 });
+  }
+  lanes.sort((a, b) => a.x - b.x);
+  steerAt.set(page, lanes);
   if (!steerHook.has(page)) {
     steerHook.add(page);
-    await page.exposeFunction('__laneDashSteer', (side) => {
-      const at = steerAt.get(page)[side];
+    await page.exposeFunction('__laneDashSteer', (lane) => {
+      const at = steerAt.get(page)[lane];
       return page.mouse.click(at.x, at.y);
     });
   }
-  await page.getByLabel('Steer right').click(); // the first tap starts the race
+  await page.getByLabel(/^Right lane/).click(); // the first tap starts the race
 
-  const presses = await page.evaluate(
+  const { presses, hops } = await page.evaluate(
     () =>
       new Promise((resolve) => {
         const road = document.querySelector('[data-testid^="road:"]');
         const lanes = Number(road.dataset.testid.split(':')[1]);
         let lane = Math.floor(lanes / 2);
         let presses = 0;
+        let hops = 0;
         let busyUntil = 0;
         const started = performance.now();
         const frame = (now) => {
           if (document.querySelector('[aria-label="Play again"]') || now - started > 90000) {
-            resolve(presses);
+            resolve({ presses, hops });
             return;
           }
           const car = document.querySelector('[data-testid="player-car"]').getBoundingClientRect();
@@ -514,11 +517,11 @@ export async function playLaneDash(page, report) {
             if (blocked.includes(lane)) {
               const free = Array.from({ length: lanes }, (_, l) => l).filter((l) => !blocked.includes(l));
               const target = free.reduce((a, b) => (Math.abs(b - lane) < Math.abs(a - lane) ? b : a));
-              const side = target < lane ? 'left' : 'right';
-              lane += target < lane ? -1 : 1;
+              if (Math.abs(target - lane) > 1) hops += 1;
+              lane = target;
               presses += 1;
               busyUntil = now + 60;
-              window.__laneDashSteer(side);
+              window.__laneDashSteer(target);
             }
           }
           requestAnimationFrame(frame);
@@ -526,7 +529,7 @@ export async function playLaneDash(page, report) {
         requestAnimationFrame(frame);
       }),
   );
-  report.ok(`steered ${presses} times on the way to the flag`);
+  report.ok(`steered ${presses} times on the way to the flag, ${hops} of them a hop across two lanes`);
 }
 
 /** Odd One Out, played by ear: each shape's label says its size, which way

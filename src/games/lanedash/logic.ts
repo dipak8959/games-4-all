@@ -4,8 +4,8 @@ import { randInt, shuffle, type Rng } from '../../util/random';
  * Lane Dash.
  *
  * A top-down race on a straight road, against two rival cars, to a
- * chequered flag. Tap the left or right half of the screen to move a lane
- * over. Cones, puddles and roadworks sit in the lanes; hit one and the car
+ * chequered flag. Tap the lane you want to be in and the car moves there —
+ * hopping straight over the lane between if it's two across. Cones, puddles and roadworks sit in the lanes; hit one and the car
  * spins and drops to half speed for a moment, and the rivals get ahead.
  * Where you cross the flag is the result: first is three stars, second two,
  * third one.
@@ -26,7 +26,7 @@ import { randInt, shuffle, type Rng } from '../../util/random';
  * What it practises: looking ahead and choosing a lane early enough to get
  * round what's coming — a different skill from Puddle Hop's when-to-jump.
  *
- * Everything here is pure: `step` advances time, `steer` changes lane. The
+ * Everything here is pure: `step` advances time, `steerTo` changes lane. The
  * track is built in the road's own units: `ROAD_WIDTH` across, and forward
  * distance along it. The screen scales that to the phone.
  */
@@ -36,8 +36,18 @@ export const CAR_LENGTH = 70;
 export const CAR_WIDTH = 56;
 
 /** How fast a lane change happens, in lanes per second. A change of one
- *  lane takes about a sixth of a second — quick, but visible. */
+ *  lane takes about a sixth of a second — quick, but visible. A change of two
+ *  is a hop, and takes the same time: see `steerTo`. */
 export const LANE_SPEED = 6;
+
+/**
+ * Where the only way through the next row is a lane the row before it
+ * blocks, the car can't move over until it has passed that row. This is the
+ * least time, at full speed, it then has to see that and move — reaction
+ * time and the move itself. Without it, the fastest levels left about 0.6 s,
+ * which read as "that one came out of nowhere".
+ */
+export const REACT_ROOM = 0.9;
 
 /** A bump: half speed for this long, spinning for part of it. */
 export const SLOW_FOR = 1;
@@ -105,6 +115,9 @@ export type LaneDashState = {
    *  road, in lanes (it slides from one to the other). */
   readonly lane: number;
   readonly laneX: number;
+  /** Where the car was when it was last steered, so a move of two lanes
+   *  knows it is a hop and what it is hopping over. */
+  readonly changeFrom: number;
   readonly slowFor: number;
   readonly spinFor: number;
   readonly bumps: number;
@@ -195,10 +208,18 @@ export function createGame(rng: Rng, level: number): LaneDashState {
   const rows: number[][] = [];
   const rowY: number[] = [];
   let y = RUNWAY;
+  let lastEnd = 0;
   for (let r = 0; r < spec.rows; r += 1) {
     // Never every lane: there is always a way through.
     const blockCount = spec.lanes >= 3 && rng() < spec.doubleChance ? 2 : 1;
     const blocked = shuffle(rng, allLanes).slice(0, Math.min(blockCount, spec.lanes - 1));
+    // If the only way through this row is a lane the last row blocks, the
+    // car can't move over until it's past that row: leave room to see it
+    // and move (`REACT_ROOM`).
+    const free = allLanes.filter((l) => !blocked.includes(l));
+    if (r > 0 && free.every((l) => rows[r - 1].includes(l))) {
+      y = Math.max(y, lastEnd + CAR_LENGTH + Math.ceil(REACT_ROOM * spec.speed));
+    }
     let rowLength = 0;
     for (const lane of blocked) {
       const kind = kindQueue.pop() ?? 'cone';
@@ -208,10 +229,11 @@ export function createGame(rng: Rng, level: number): LaneDashState {
     }
     rows.push(blocked);
     rowY.push(y);
+    lastEnd = y + rowLength;
     // Measured from the far end of this row, so a long block of roadworks
     // never eats into the time to move over for the next one.
     const gapSeconds = spec.gapMin + rng() * (spec.gapMax - spec.gapMin);
-    y += rowLength + Math.round(spec.speed * gapSeconds);
+    y = lastEnd + Math.round(spec.speed * gapSeconds);
   }
   const finish = y + RUN_OUT;
 
@@ -245,6 +267,7 @@ export function createGame(rng: Rng, level: number): LaneDashState {
     distance: 0,
     lane: start,
     laneX: start,
+    changeFrom: start,
     slowFor: 0,
     spinFor: 0,
     bumps: 0,
@@ -254,13 +277,33 @@ export function createGame(rng: Rng, level: number): LaneDashState {
   };
 }
 
-/** A tap on one side of the road. The first tap starts the race and steers
- *  nowhere; after that, each tap moves one lane that way, to the edge. */
-export function steer(state: LaneDashState, direction: -1 | 1): LaneDashState {
+/**
+ * A tap on a lane: go there. The first tap starts the race and steers
+ * nowhere.
+ *
+ * Any change takes the time one lane does. Two lanes across is a hop: the
+ * car jumps the lane in between rather than driving through it, so what's in
+ * that lane can't be hit — only where it lands matters. With the road only
+ * steerable a lane per tap, a child who saw a gap two lanes over had to tap
+ * twice, and then drove through the middle lane on the way, into whatever
+ * was in it.
+ */
+export function steerTo(state: LaneDashState, lane: number): LaneDashState {
   if (state.complete) return state;
   if (!state.started) return { ...state, started: true };
-  const lane = Math.max(0, Math.min(state.lanes - 1, state.lane + direction));
-  return lane === state.lane ? state : { ...state, lane };
+  const to = Math.max(0, Math.min(state.lanes - 1, Math.round(lane)));
+  return to === state.lane ? state : { ...state, lane: to, changeFrom: state.laneX };
+}
+
+/** Lanes the car is hopping over right now: between where it was steered
+ *  from and where it's going, and at least a lane from both. */
+export function hoppingOver(state: LaneDashState): number[] {
+  if (state.laneX === state.lane) return [];
+  const lo = Math.min(state.changeFrom, state.lane);
+  const hi = Math.max(state.changeFrom, state.lane);
+  return Array.from({ length: state.lanes }, (_, l) => l).filter(
+    (l) => l > lo && l < hi && Math.abs(l - state.changeFrom) >= 1 && Math.abs(l - state.lane) >= 1,
+  );
 }
 
 /** Where a rival is across the road at a distance along the track: in the
@@ -284,6 +327,7 @@ export function rivalLaneAt(rival: Rival, y: number): number {
 const FORGIVE = 6;
 
 function touches(state: LaneDashState, o: Obstacle): boolean {
+  if (hoppingOver(state).includes(o.lane)) return false;
   const front = state.distance;
   const back = state.distance - CAR_LENGTH;
   const along = front > o.y + FORGIVE && back < o.y + o.length - FORGIVE;
@@ -318,7 +362,8 @@ function tick(state: LaneDashState, dt: number): LaneDashState {
   const distance = Math.min(state.finish, state.distance + speed * dt);
   const elapsed = state.elapsed + dt;
 
-  const move = LANE_SPEED * dt;
+  // However far the change, it takes the time of one lane.
+  const move = LANE_SPEED * Math.max(1, Math.abs(state.lane - state.changeFrom)) * dt;
   const gap = state.lane - state.laneX;
   const laneX = Math.abs(gap) <= move ? state.lane : state.laneX + Math.sign(gap) * move;
 

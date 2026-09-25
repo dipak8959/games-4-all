@@ -1,4 +1,4 @@
-import { randInt, type Rng } from '../../util/random';
+import { randInt, shuffle, type Rng } from '../../util/random';
 import type { ColorKind, ShapeKind } from '../shapes/logic';
 
 /**
@@ -31,6 +31,28 @@ const COLORS: readonly ColorKind[] = ['berry', 'sky', 'leaf', 'sun', 'grape'];
 /** Shapes that look different upside down. A circle, square or diamond
  *  turned over is the same shape, so it can't be the odd one by turning. */
 export const TURNABLE: readonly ShapeKind[] = ['triangle', 'heart', 'star'];
+
+/** The near-miss pair: a diamond is a square turned a quarter-way round. */
+export const NEAR_MISS: readonly ShapeKind[] = ['square', 'diamond'];
+
+/**
+ * Colours for a mixed-up group, dealt so that every colour on the board is
+ * used at least three times.
+ *
+ * Picked at random instead, a colour often came up just once — and a lone
+ * blue star among orange and yellow ones *is* the odd one out, to any child
+ * looking at it. It just wasn't the answer. In testing that happened in 72%
+ * of level-5 groups. Dealt like this, no shape can stand out by colour,
+ * right or wrong, so the only way to the answer is the real difference.
+ */
+function mixedColours(rng: Rng, count: number): ColorKind[] {
+  const kinds = Math.max(2, Math.min(COLORS.length, Math.floor(count / 3)));
+  const palette = shuffle(rng, COLORS).slice(0, kinds);
+  return shuffle(
+    rng,
+    Array.from({ length: count }, (_, i) => palette[i % kinds]),
+  );
+}
 
 /** How the odd one differs. Never colour alone. */
 export type Difference = 'shape-and-colour' | 'shape' | 'size' | 'turn';
@@ -65,8 +87,16 @@ type LevelSpec = {
   /** How much smaller the odd one is in a size question. Closer to 1 is
    *  harder to see. */
   readonly sizeRatio: number;
-  /** Everyone gets a random colour, so colour is noise to look past. */
+  /** Colours are mixed up across the group, so colour is noise to look past. */
   readonly colourNoise: boolean;
+  /** `any`: the odd shape can be any other shape — a heart among circles.
+   *  `near`: only a near miss — a diamond among squares, which is the same
+   *  square turned. Without this, a "different shape" group stayed as easy
+   *  at level 6 as at level 2, next to size and turn groups that got hard. */
+  readonly shapes: 'any' | 'near';
+  /** Which shapes can be the upside-down one. A triangle or heart upside
+   *  down is obvious; a star is the subtle one, so the top levels use it. */
+  readonly turnable: readonly ShapeKind[];
 };
 
 /**
@@ -75,12 +105,12 @@ type LevelSpec = {
  * colours hiding it.
  */
 const LEVELS: readonly LevelSpec[] = [
-  { items: 3, differences: ['shape-and-colour'], sizeRatio: 0.55, colourNoise: false },
-  { items: 4, differences: ['shape-and-colour', 'shape'], sizeRatio: 0.55, colourNoise: false },
-  { items: 6, differences: ['shape', 'size'], sizeRatio: 0.6, colourNoise: false },
-  { items: 9, differences: ['shape', 'size', 'turn'], sizeRatio: 0.7, colourNoise: false },
-  { items: 12, differences: ['shape', 'size', 'turn'], sizeRatio: 0.78, colourNoise: true },
-  { items: 16, differences: ['shape', 'size', 'turn'], sizeRatio: 0.85, colourNoise: true },
+  { items: 3, differences: ['shape-and-colour'], sizeRatio: 0.55, colourNoise: false, shapes: 'any', turnable: TURNABLE },
+  { items: 4, differences: ['shape-and-colour', 'shape'], sizeRatio: 0.55, colourNoise: false, shapes: 'any', turnable: TURNABLE },
+  { items: 6, differences: ['shape', 'size'], sizeRatio: 0.6, colourNoise: false, shapes: 'any', turnable: TURNABLE },
+  { items: 9, differences: ['shape', 'size', 'turn'], sizeRatio: 0.7, colourNoise: false, shapes: 'near', turnable: TURNABLE },
+  { items: 12, differences: ['shape', 'size', 'turn'], sizeRatio: 0.78, colourNoise: true, shapes: 'near', turnable: ['star'] },
+  { items: 16, differences: ['shape', 'size', 'turn'], sizeRatio: 0.85, colourNoise: true, shapes: 'near', turnable: ['star'] },
 ];
 
 export function specForLevel(level: number): LevelSpec {
@@ -100,16 +130,17 @@ export function createQuestion(rng: Rng, level: number, avoid: Difference | null
   const options = spec.differences.filter((d) => d !== avoid);
   const difference = pickFrom(rng, options.length > 0 ? options : spec.differences);
 
-  const base: ShapeKind = difference === 'turn' ? pickFrom(rng, TURNABLE) : pickFrom(rng, SHAPES);
+  const nearShape = difference === 'shape' && spec.shapes === 'near';
+  const base: ShapeKind =
+    difference === 'turn'
+      ? pickFrom(rng, spec.turnable)
+      : nearShape
+        ? pickFrom(rng, NEAR_MISS)
+        : pickFrom(rng, SHAPES);
   const baseColor = pickFrom(rng, COLORS);
-  const colorFor = () => (spec.colourNoise ? pickFrom(rng, COLORS) : baseColor);
+  const colours = spec.colourNoise ? mixedColours(rng, spec.items) : Array.from({ length: spec.items }, () => baseColor);
 
-  const items: Look[] = Array.from({ length: spec.items }, () => ({
-    shape: base,
-    color: colorFor(),
-    scale: 1,
-    turned: false,
-  }));
+  const items: Look[] = colours.map((color) => ({ shape: base, color, scale: 1, turned: false }));
 
   const odd = randInt(rng, 0, spec.items - 1);
   const same = items[odd];
@@ -119,7 +150,7 @@ export function createQuestion(rng: Rng, level: number, avoid: Difference | null
       oddLook = { ...same, shape: pickFrom(rng, SHAPES, base), color: pickFrom(rng, COLORS, baseColor) };
       break;
     case 'shape':
-      oddLook = { ...same, shape: pickFrom(rng, SHAPES, base) };
+      oddLook = { ...same, shape: nearShape ? pickFrom(rng, NEAR_MISS, base) : pickFrom(rng, SHAPES, base) };
       break;
     case 'size':
       oddLook = { ...same, scale: spec.sizeRatio };

@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import { seededRng } from '../src/util/random.ts';
 import {
+  NEAR_MISS,
   QUESTIONS_PER_ROUND,
   TURNABLE,
   choose,
@@ -104,6 +105,52 @@ test('the same kind of difference is not asked twice in a row when there is a ch
       const first = createQuestion(seededRng(seed), level);
       const next = createQuestion(seededRng(seed + 500), level, first.difference);
       assert.notEqual(next.difference, first.difference);
+    }
+  }
+});
+
+test('no shape ever stands out by colour — right or wrong', () => {
+  // Colours picked at random left one shape as the only one of its colour in
+  // 72% of level-5 groups: a lone blue star among orange ones reads as the
+  // odd one out to any child, and tapping it was marked wrong. Now every
+  // colour on a mixed board is used at least three times.
+  for (const level of [5, 6]) {
+    for (let seed = 0; seed < 1000; seed += 1) {
+      const q = createQuestion(seededRng(seed * 7 + level), level);
+      const counts = new Map<string, number>();
+      for (const item of q.items) counts.set(item.color, (counts.get(item.color) ?? 0) + 1);
+      for (const [colour, n] of counts) {
+        assert.ok(n >= 3, `level ${level} seed ${seed}: only ${n} ${colour} on the board`);
+      }
+      assert.ok(counts.size > 1, 'the colours are still mixed up');
+    }
+  }
+  // Below the mixed levels, colour is never a hint beyond levels 1-2.
+  for (const level of [3, 4]) {
+    for (let seed = 0; seed < 300; seed += 1) {
+      const q = createQuestion(seededRng(seed), level);
+      assert.equal(new Set(q.items.map((i) => i.color)).size, 1);
+    }
+  }
+});
+
+test('a different shape is a near miss from level 4, like the other differences there', () => {
+  // A heart among circles stayed as easy at level 6 as at level 2, next to
+  // size and turn groups that had become genuinely hard — so one group was
+  // trivial and the next took real looking. From level 4 a shape group is a
+  // diamond among squares or the other way round.
+  for (const level of [4, 5, 6]) {
+    for (let seed = 0; seed < 300; seed += 1) {
+      const q = createQuestion(seededRng(seed * 3 + level), level);
+      if (q.difference !== 'shape') continue;
+      for (const item of q.items) assert.ok(NEAR_MISS.includes(item.shape), `level ${level}: a ${item.shape}`);
+    }
+  }
+  // And at the top, the upside-down one is always the subtle star.
+  for (const level of [5, 6]) {
+    for (let seed = 0; seed < 300; seed += 1) {
+      const q = createQuestion(seededRng(seed), level);
+      if (q.difference === 'turn') assert.equal(q.items[q.odd].shape, 'star');
     }
   }
 });

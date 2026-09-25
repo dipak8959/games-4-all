@@ -14,10 +14,11 @@ import {
   release,
   runTime,
   specForLevel,
+  starsForRun,
+  STUMBLE_TIME,
   step,
   type PuddleHopState,
 } from '../src/games/puddlehop/logic.ts';
-import { starsForMistakes } from '../src/games/types.ts';
 
 const LEVELS = [1, 2, 3, 4, 5, 6];
 const FRAME = 1 / 60;
@@ -74,14 +75,42 @@ test('speed never creeps up during a run', () => {
   }
 });
 
-test('running into everything still reaches the flag — there is no game over', () => {
+test('a bump ends the run right there, after the tumble — one star, never a zero', () => {
   for (const level of LEVELS) {
     const start = createGame(seededRng(level * 3), level);
     const end = run(start, () => false);
-    assert.equal(end.complete, true, `level ${level} never finished`);
-    assert.equal(end.bumps, start.obstacles.length, 'each obstacle is a stumble once, never more');
-    assert.ok(starsForMistakes(end.bumps) >= 1, 'even a run of stumbles earns a star');
+    assert.equal(end.complete, true, `level ${level} never ended`);
+    assert.equal(end.crashed, true);
+    assert.equal(end.bumps, 1);
+    assert.equal(end.obstacles.filter((o) => o.hit).length, 1, 'only the first obstacle was hit');
+    assert.equal(end.obstacles[0].hit, true, 'it was the first one in the way');
+    assert.ok(end.distance < end.finish, 'a crashed run never reaches the flag');
+    assert.equal(starsForRun(end), 1);
   }
+});
+
+test('the tumble plays out before the round ends, and nothing moves on meanwhile', () => {
+  let s = hop(createGame(seededRng(12), 2));
+  while (!s.crashed) s = step(s, FRAME);
+  assert.equal(s.complete, false, 'the round ends after the tumble, not on the bump');
+  const where = s.distance;
+  assert.equal(hop(s), s, 'no hopping out of a crash');
+  for (let t = 0; t < STUMBLE_TIME - 0.05; t += FRAME) s = step(s, FRAME);
+  assert.equal(s.complete, false);
+  assert.equal(s.distance, where, 'the course stopped where the bump was');
+  for (let i = 0; i < 10; i += 1) s = step(s, FRAME);
+  assert.equal(s.complete, true);
+  assert.equal(s.height, 0, 'the runner is back on the ground');
+});
+
+test('reaching the flag is three stars; there is nothing in between to chase', () => {
+  const clean = run(createGame(seededRng(30), 3), perfect);
+  assert.equal(clean.crashed, false);
+  assert.equal(starsForRun(clean), 3);
+  // No distance-based partial credit: how far a crashed run got changes
+  // nothing, so there is no "furthest yet" hiding inside the stars.
+  const early = run(createGame(seededRng(31), 3), () => false);
+  assert.equal(starsForRun(early), 1);
 });
 
 test('perfect timing clears every course without a single bump', () => {

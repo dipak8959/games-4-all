@@ -112,7 +112,7 @@ read.
 | 1 | Offline | Works with nothing connected, and reaches nothing outside the device. |
 | 2 | Nothing to sell | No ads, purchases, accounts, analytics, third-party SDKs or device permissions. |
 | 3 | It ends | A round ends on its own, at a point fixed before it started. |
-| 4 | Nothing to lose | No timers, no lives, no game-over. |
+| 4 | Nothing to lose | No timers, no lives. A miss may end a round early only with a fixed finish, no score or best, and a fresh round next. |
 | 5 | Nothing to chase | No scores, streaks, leaderboards, multipliers, daily rewards or self-starting rounds. |
 | 6 | Worth the time | It practises something nameable, stated plainly enough to show a parent. |
 | 7 | Honest age | Its age range is a deliberate claim about who it suits, not "everyone" by default. |
@@ -175,8 +175,16 @@ Safety for this age range is as much about tone as about data. Every rule
 below holds for every game in the catalogue, including "Spell It!" — the one
 game where reading is the point rather than something to avoid:
 
-- **No losing.** No timers, no lives, no game-over. A round ends when it is
-  finished; a wrong answer produces a soft nudge and the child tries again.
+- **No losing, with one deliberate exception.** No timers and no lives. A
+  round ends when it is finished; a wrong answer produces a soft nudge and
+  the child tries again. Puddle Hop is the exception: a bump ends the run.
+  That was the owner's decision, for every age, taken knowing it is the
+  pressure this rule exists to avoid — so it comes with three conditions
+  that take away what that pressure feeds on. The course still finishes at
+  a flag fixed before the run starts. Nothing is kept: no distance, score
+  or best. And "Play again" deals a new course, never the same stretch to
+  throw yourself at again. The charter asks a person to confirm all three
+  for any future game that ends on a miss (`endsOnAMiss`).
 - **No zero score.** Completing a round always earns at least one star
   (`starsForMistakes`). Stars reward effort, not perfection.
 - **No engagement mechanics.** No streaks, no daily-login rewards, no
@@ -257,8 +265,8 @@ comment or in parent-facing copy is fine, building one is not:
 | Endless or infinite modes | Removes the ending, which is the whole safeguard. |
 
 Two existing rules carry the same weight and are listed under "Design rules
-for the games themselves" above: no timers, lives, or game-over; and no
-notifications of any kind.
+for the games themselves" above: no timers or lives (and a game-over only
+under the conditions set out there); and no notifications of any kind.
 
 **Every game must also be worth the time.** Each entry declares what it
 practises (`skill`), and that is shown to parents too. "It passes the time"

@@ -144,6 +144,28 @@ if (await openGame(page, 'Pattern Play')) {
   await backHome(page, report, 'Pattern Play');
 }
 
+console.log('\n=== Puddle Hop: a bump ends the run ===');
+if (await openGame(page, 'Puddle Hop')) {
+  const box = await page.getByLabel('Start running').boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.85);
+  // Never hop. The first obstacle should end it, after the tumble.
+  const result = await waitForRound(page, 12000);
+  if (!result) report.bug('Puddle Hop', 'running into an obstacle did not end the round');
+  else {
+    const progress = parseInt(await page.getByText(/^\d+%$/).first().innerText(), 10);
+    if (progress >= 100) report.bug('Puddle Hop', 'a crashed run was shown as finished');
+    else if (result.stars !== 1) report.bug('Puddle Hop', `a crash earned ${result.stars} stars, not 1`);
+    else report.ok(`the first bump ended the run at ${progress}%: one star, "Nice try"`);
+    const text = await page.locator('body').innerText();
+    if (/\b(best|score|record|metres|distance)\b/i.test(text)) {
+      report.bug('Puddle Hop', 'the end card shows a score, distance or best');
+    } else {
+      report.ok('the end card keeps no score, distance or best');
+    }
+  }
+  await backHome(page, report, 'Puddle Hop');
+}
+
 console.log('\n=== leaving a round part-way through ===');
 if (await openGame(page, 'Number Crunch')) {
   const first = await page.getByLabel(/^\d+ [-+×÷−] \d+$/).first().getAttribute('aria-label');

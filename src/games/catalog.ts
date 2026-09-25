@@ -74,6 +74,14 @@ export type GameProposal = {
   /** True only where reading is the skill being taught rather than a barrier
    *  to play. Everything else must be playable by a child who cannot read. */
   readonly readingIsTheSkill?: boolean;
+  /**
+   * True where a miss ends the round early rather than costing a star.
+   * Allowed — the owner decided so for Puddle Hop — but only alongside a
+   * finish fixed before the round starts, no score or best kept anywhere,
+   * and a fresh round rather than a retry of the same one. The charter asks
+   * a person to confirm all three whenever this is set.
+   */
+  readonly endsOnAMiss?: boolean;
   /** How a player tells the pieces apart. Colour alone is never an answer —
    *  the app is built to work for colour-blind players. */
   readonly toldApartBy: string;
@@ -251,7 +259,8 @@ export const GAMES_META: readonly GameMeta[] = [
     icon: 'hop',
     color: palette.sky,
     skill: 'Timing and anticipation: judging when something arrives, and acting at that moment',
-    roundEnds: 'The runner reaches the finish flag.',
+    roundEnds: 'The runner reaches the finish flag, or bumps into something on the way.',
+    endsOnAMiss: true,
     origin: 'public-domain',
     priorArt:
       'Jump-the-obstacle running games — a playground race long before a screen, and a side-scrolling staple since the earliest home computers.',
@@ -259,9 +268,10 @@ export const GAMES_META: readonly GameMeta[] = [
     ages: '4+',
     category: 'timing',
     minAge: 4,
-    // One button, so a four-year-old can play it; speed, tighter gaps and a
-    // pair of stones that needs a longer hop make the top level a real test
-    // of timing for anyone — and every run is short and ends at a flag.
+    // One button, so a four-year-old can play it; speed, tighter gaps and
+    // obstacles that need a held hop make the top level a real test of
+    // timing for anyone. Every run is short, and ends at the flag or at the
+    // first bump, whichever comes first.
     maxAge: 99,
   },
 ];

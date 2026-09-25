@@ -10,14 +10,16 @@ import { randInt, shuffle, type Rng } from '../../util/random';
  * offline screen, rebuilt around this app's rules:
  *
  *   - It ends. The course is laid out before the run starts and finishes at
- *     a flag, twenty-odd seconds away (under twenty at the gentlest level). There is no "how far can you get",
- *     so there is no moment where stopping means losing your best run.
- *   - There is nothing to lose. Running into something is a stumble, not a
- *     game over: the runner tumbles, picks itself up and carries on. A bump
- *     costs a star at the end, like a wrong answer does anywhere else.
- *   - There is nothing to chase. No distance counter, no score, no best —
- *     and speed doesn't creep up during a run, so a round is never a race
- *     to see how long you can hold on.
+ *     a flag, twenty-odd seconds away (under twenty at the gentlest level).
+ *     A run can end sooner — see below — but never later.
+ *   - A miss ends the run. Bump into something and the runner takes a comic
+ *     tumble, and that's the round: one star and "Nice try". The owner chose
+ *     this for every age, over the stumble-and-carry-on this game first
+ *     shipped with; the charter records that choice under NOTHING_TO_LOSE.
+ *   - There is still nothing to chase. No distance counter, no score, no
+ *     best, and speed doesn't creep up during a run. "Play again" deals a
+ *     new course rather than the same one again, so there's no single
+ *     stretch of ground to keep throwing yourself at.
  *
  * What's left is the part that is actually good for a child: judging when
  * something coming towards you arrives, and acting at the right moment.
@@ -62,8 +64,9 @@ export function airtime(held: number): number {
 /** The biggest hop there is: held all the way to the top. */
 const FULL_AIRTIME = airtime(Infinity);
 
-/** How long a stumble plays for, in seconds. */
-export const STUMBLE_TIME = 0.6;
+/** How long the tumble plays for before the round ends, in seconds — long
+ *  enough to land the joke and to see what was hit. */
+export const STUMBLE_TIME = 0.9;
 
 /** Stretches of empty ground at the start and before the flag. */
 const RUNWAY = 460;
@@ -89,7 +92,7 @@ export type Obstacle = {
   readonly x: number;
   readonly width: number;
   readonly height: number;
-  /** Already bumped into — a stumble is counted once per obstacle. */
+  /** The one that ended the run, if it was this one. */
   readonly hit: boolean;
 };
 
@@ -108,11 +111,14 @@ export type PuddleHopState = {
   readonly holding: boolean;
   /** Nothing moves until the first tap: the child starts the run. */
   readonly started: boolean;
-  /** Seconds of stumble left to play, 0 when running normally. */
+  /** Seconds of tumble left to play, 0 when running normally. */
   readonly stumbling: number;
-  /** What the most recent stumble was into, for the screen to draw. */
+  /** What ended the run, if a bump did. */
   readonly lastBump: ObstacleKind | null;
+  /** 0 or 1: the first bump ends the run. */
   readonly bumps: number;
+  /** Bumped into something: the run is over once the tumble finishes. */
+  readonly crashed: boolean;
   readonly complete: boolean;
 };
 
@@ -190,6 +196,7 @@ export function createGame(rng: Rng, level: number): PuddleHopState {
     stumbling: 0,
     lastBump: null,
     bumps: 0,
+    crashed: false,
     complete: false,
   };
 }
@@ -201,7 +208,7 @@ export function createGame(rng: Rng, level: number): PuddleHopState {
  * learn, no way to stay up forever.
  */
 export function hop(state: PuddleHopState): PuddleHopState {
-  if (state.complete) return state;
+  if (state.complete || state.crashed) return state;
   if (!state.started) return { ...state, started: true };
   if (state.height > 0 || state.rise > 0) return state;
   return { ...state, rise: HOP_SPEED, holding: true };
@@ -241,6 +248,15 @@ export function step(state: PuddleHopState, seconds: number): PuddleHopState {
 function tick(state: PuddleHopState, dt: number): PuddleHopState {
   if (!state.started || state.complete) return state;
 
+  // After a bump the course stops where it is; the runner drops back to the
+  // ground and the tumble plays out, then the round is over.
+  if (state.crashed) {
+    const stumbling = Math.max(0, state.stumbling - dt);
+    const rise = state.height > 0 ? state.rise - GRAVITY * dt : 0;
+    const height = Math.max(0, state.height + state.rise * dt - 0.5 * GRAVITY * dt * dt);
+    return { ...state, stumbling, height, rise: height > 0 ? rise : 0, holding: false, complete: stumbling === 0 };
+  }
+
   const distance = Math.min(state.finish, state.distance + state.speed * dt);
   // Held and still climbing: light gravity. Otherwise, full.
   const held = state.holding && state.rise > 0;
@@ -269,17 +285,26 @@ function tick(state: PuddleHopState, dt: number): PuddleHopState {
     next = {
       ...next,
       obstacles: next.obstacles.map((o, i) => (i === bumped ? { ...o, hit: true } : o)),
-      bumps: next.bumps + 1,
+      bumps: 1,
+      crashed: true,
+      holding: false,
       stumbling: STUMBLE_TIME,
       lastBump: next.obstacles[bumped].kind,
     };
+    return next;
   }
 
   return distance >= state.finish ? { ...next, complete: true } : next;
 }
 
-/** How long a run takes, in seconds. A stumble doesn't slow the runner, so
- *  this is the same however the run goes. */
+/** How long a run to the flag takes, in seconds. */
 export function runTime(state: PuddleHopState): number {
   return state.finish / state.speed;
+}
+
+/** Stars for a finished run: the flag is three, a bump is one. There is no
+ *  zero, as everywhere else — and no in-between measured in distance, which
+ *  would just be a score by another name. */
+export function starsForRun(state: PuddleHopState): number {
+  return state.crashed ? 1 : 3;
 }

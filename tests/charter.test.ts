@@ -120,8 +120,7 @@ test('it blocks the endless runner, and lets the bounded one through', () => {
   assert.ok(blocked.includes('NOTHING_TO_CHASE'), 'a high score must be refused');
   assert.ok(blocked.includes('ORIGINAL'), 'naming the Chrome game must be refused');
 
-  // The same jumping, with a finish line, no score and nothing to lose, is
-  // fine — which is how Puddle Hop ships.
+  // The same jumping with a finish line and no score is fine.
   const bounded = reviewProposal(
     {
       ...SOUND,
@@ -132,6 +131,13 @@ test('it blocks the endless runner, and lets the bounded one through', () => {
     [],
   );
   assert.ok(isAccepted(bounded));
+
+  // And ending on a miss — the owner's choice for Puddle Hop — is allowed
+  // alongside a fixed finish, but always asks a person to confirm the
+  // conditions rather than passing silently.
+  const endsOnAMiss = reviewProposal({ ...SOUND, roundEnds: 'The flag, or the first bump.', endsOnAMiss: true }, []);
+  assert.ok(isAccepted(endsOnAMiss));
+  assert.ok(endsOnAMiss.some((f) => f.principle === 'NOTHING_TO_LOSE' && f.severity === 'ask'));
 });
 
 test('it blocks an age range that is not a real claim', () => {

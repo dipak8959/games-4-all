@@ -65,14 +65,14 @@ export const PRINCIPLES: readonly Principle[] = [
   },
   {
     id: 'IT_ENDS',
-    rule: 'A round ends on its own, at a point fixed before it started.',
+    rule: 'A round ends on its own, no later than a point fixed before it started.',
     why: 'An endless game is one a child is always mid-something in, so every moment is a bad moment to stop. This is the single strongest safeguard against a game being hard to put down.',
     enforcedAt: 'both',
   },
   {
     id: 'NOTHING_TO_LOSE',
-    rule: 'No timers, no lives, no game-over. A wrong answer nudges and you try again.',
-    why: 'Losing turns play into pressure, and pressure is what makes a child need one more go.',
+    rule: 'No timers and no lives. A wrong answer nudges and you try again. A round may end early on a miss only if it still has a fixed finish, keeps no score or best, and deals a fresh round next time.',
+    why: 'Losing turns play into pressure, and pressure is what makes a child need one more go. Where a game does end on a miss, taking away the score, the best and the instant retry of the same course removes what that pressure feeds on.',
     enforcedAt: 'both',
   },
   {
@@ -248,6 +248,13 @@ export function reviewProposal(
   const pressure = prose.match(PRESSURE);
   if (pressure) {
     block('NOTHING_TO_LOSE', `Mentions "${pressure[0]}". Nothing here is timed and nothing can be lost.`);
+  }
+
+  if (proposal.endsOnAMiss) {
+    ask(
+      'NOTHING_TO_LOSE',
+      'Ends a round early on a miss. Confirm it still finishes at a fixed point, keeps no score or best, and deals a fresh round rather than a retry.',
+    );
   }
 
   // NOTHING_TO_CHASE

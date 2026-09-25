@@ -8,7 +8,7 @@ import { nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { gutter, palette, rule } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
-import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
+import { nextLevel, type GameScreenProps } from '../types';
 import {
   RUNNER_SIZE,
   RUNNER_X,
@@ -17,6 +17,7 @@ import {
   createGame,
   hop,
   release,
+  starsForRun,
   step,
   type Obstacle,
   type PuddleHopState,
@@ -214,7 +215,7 @@ export function PuddleHopScreen({ level: initialLevel, onRoundComplete, onExit }
     return () => cancelAnimationFrame(frame);
   }, [state.started, state.complete]);
 
-  // A stumble gets the same gentle nudge a wrong answer does elsewhere.
+  // A bump gets the same gentle nudge a wrong answer does elsewhere.
   const bumps = useRef(0);
   useEffect(() => {
     if (state.bumps > bumps.current) nudge(settings);
@@ -243,7 +244,7 @@ export function PuddleHopScreen({ level: initialLevel, onRoundComplete, onExit }
     setState(createGame(systemRng, atLevel));
   }, []);
 
-  const stars = starsForMistakes(state.bumps);
+  const stars = starsForRun(state);
   const progress = state.distance / state.finish;
   const visible = (x: number, width: number) =>
     x - state.distance + width > -40 && x - state.distance < STAGE_WIDTH + 40;

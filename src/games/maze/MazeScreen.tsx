@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, useKeyRow } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { Icon } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { hitTarget, palette, rule, space } from '../../theme/tokens';
+import { palette, rule, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, type GameScreenProps } from '../types';
 import {
@@ -39,6 +39,7 @@ const where = (state: MazeState, cell: number) =>
 
 export function MazeScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  const keys = useKeyRow(4);
   const [level, setLevel] = useState(initialLevel);
   const [state, setState] = useState<MazeState>(() => createGame(systemRng, level));
   const [area, setArea] = useState({ width: 0, height: 0 });
@@ -167,14 +168,14 @@ export function MazeScreen({ level: initialLevel, onRoundComplete, onExit }: Gam
         ) : null}
       </View>
 
-      <AnswerRow style={styles.pad}>
+      <AnswerRow style={[styles.pad, keys.style]}>
         {ARROWS.map(({ dir, turn, name }) => {
           const open = ways.includes(dir);
           return (
             <AnswerButton
               key={dir}
               accessibilityLabel={`Go ${name}${open ? '' : ', wall'}`}
-              size={hitTarget + 8}
+              size={keys.size}
               disabled={state.done}
               onPress={() => onArrow(dir)}
             >

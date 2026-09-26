@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, useKeyRow } from '../../components/GameStage';
 import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { Icon } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { hitTarget, palette, rule, space } from '../../theme/tokens';
+import { palette, rule, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { APPLES_PER_ROUND, createGame, step, turn, type Dir, type HungryWormState } from './logic';
@@ -21,6 +21,7 @@ const ARROWS: readonly { dir: Dir; turn: string }[] = [
 
 export function HungryWormScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  const keys = useKeyRow(4);
   // How to play is open: the worm waits where it is.
   const paused = useGamePaused();
   const [level, setLevel] = useState(initialLevel);
@@ -134,9 +135,9 @@ export function HungryWormScreen({ level: initialLevel, onRoundComplete, onExit 
         ) : null}
       </View>
 
-      <AnswerRow style={styles.pad}>
+      <AnswerRow style={[styles.pad, keys.style]}>
         {ARROWS.map(({ dir, turn: rotate }) => (
-          <AnswerButton key={dir} accessibilityLabel={`Go ${dir}`} size={hitTarget + 8} onPress={() => onArrow(dir)}>
+          <AnswerButton key={dir} accessibilityLabel={`Go ${dir}`} size={keys.size} onPress={() => onArrow(dir)}>
             <View style={{ transform: [{ rotate }] }}>
               <Icon name="back" size={34} color={palette.ink} />
             </View>

@@ -1828,7 +1828,9 @@ export async function playRhymeTime(page, report) {
 
 /** Group games start by asking how many players. */
 async function choosePlayers(page, n) {
-  await page.getByLabel(`${n} players`, { exact: true }).click();
+  const button = page.getByLabel(`${n} players`, { exact: true });
+  if (!(await button.count())) return;
+  await button.click();
   await page.waitForTimeout(300);
 }
 
@@ -1896,8 +1898,11 @@ export async function playCountAround(page, report) {
 /** Star Jar: three players, one of each kind of question; works each out. */
 export async function playStarJar(page, report) {
   await choosePlayers(page, 3);
+  // "Play again" keeps everyone's choices, so this is asked only once.
   for (const [i, words] of ['counting', 'adding and taking away', 'times tables'].entries()) {
-    await page.getByLabel(`Player ${i + 1}: ${words}`, { exact: true }).click();
+    const choice = page.getByLabel(`Player ${i + 1}: ${words}`, { exact: true });
+    if (!(await choice.count())) break;
+    await choice.click();
     await page.waitForTimeout(200);
   }
   let answered = 0;

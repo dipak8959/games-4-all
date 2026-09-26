@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, StageScroll, fitTiles } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { Icon } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gutter, hitTarget, palette, rule } from '../../theme/tokens';
+import { font, hitTarget, palette, rule } from '../../theme/tokens';
 import { fonts, type } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
@@ -76,11 +76,11 @@ export function TreasureHuntScreen({ level: initialLevel, onRoundComplete, onExi
   }, []);
 
   const { map } = state;
-  const tile = useMemo(() => {
-    const { width, height } = Dimensions.get('window');
-    const across = Math.floor((width - gutter * 2 - (map.cols - 1) * rule.hair) / map.cols);
-    const down = Math.floor((height - 240) / map.rows);
-    return Math.max(hitTarget, Math.min(96, across, down));
+  const { tile, rowWidth } = useMemo(() => {
+    // As big as fits across and down, up to 96 — and never under the
+    // minimum, with the grid scrolling on a phone too short for it.
+    const down = Math.floor((Dimensions.get('window').height - 240) / map.rows);
+    return fitTiles(map.cols, Math.min(96, Math.max(hitTarget, down)));
   }, [map.cols, map.rows]);
 
   const stars = starsForMistakes(state.mistakes);
@@ -88,10 +88,10 @@ export function TreasureHuntScreen({ level: initialLevel, onRoundComplete, onExi
 
   return (
     <GameFrame title="Treasure Hunt" icon="treasure" onExit={onExit} progress={progress}>
-      <View style={styles.stage}>
+      <StageScroll>
         <StageLabel live>{state.found ? 'TREASURE!' : 'DIG TO FIND THE TREASURE'}</StageLabel>
 
-        <AnswerRow style={{ maxWidth: map.cols * tile + (map.cols - 1) * rule.hair, alignSelf: 'center' }}>
+        <AnswerRow style={{ width: rowWidth, alignSelf: 'center' }}>
           {Array.from({ length: map.cols * map.rows }, (_, cell) => {
             const dug = state.dug.includes(cell);
             const where = `Row ${Math.floor(cell / map.cols) + 1}, column ${(cell % map.cols) + 1}`;
@@ -134,7 +134,7 @@ export function TreasureHuntScreen({ level: initialLevel, onRoundComplete, onExi
             );
           })}
         </AnswerRow>
-      </View>
+      </StageScroll>
 
       {state.complete ? (
         <RoundComplete
@@ -155,7 +155,6 @@ export function TreasureHuntScreen({ level: initialLevel, onRoundComplete, onExi
 }
 
 const styles = StyleSheet.create({
-  stage: { flex: 1, justifyContent: 'center' },
   // Undug sand: a small speckle, so it reads as ground rather than a blank
   // button. A dug square is the hole: the clue sits on the plain ground.
   sand: { width: 6, height: 6, backgroundColor: palette.border },

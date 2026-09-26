@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, StageScroll } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, tap } from '../../feedback/feedback';
@@ -28,6 +28,7 @@ import {
 const WATERED_MS = 1200;
 /** Room either side of the grid for the tap and the flower. */
 const SIDE = 34;
+const FLOWER_MIN = 24;
 
 const SIDE_NAMES: readonly [number, string][] = [
   [UP, 'up'],
@@ -70,8 +71,10 @@ function Pipe({ sides, size, full }: { readonly sides: number; readonly size: nu
 
 /** The flower: a stem, and petals that open once it has water. */
 function Flower({ size, watered }: { readonly size: number; readonly watered: boolean }) {
-  const petal = watered ? size * 0.34 : size * 0.22;
-  const colour = watered ? palette.grape : palette.surfaceAlt;
+  // Shut, the bud is grey but still clear against the ground: it is the
+  // goal, and has to be found before it has water.
+  const petal = watered ? size * 0.34 : size * 0.26;
+  const colour = watered ? palette.grape : palette.inkSoft;
   const middle = size / 2;
   return (
     <View style={{ width: size, height: size * 1.6 }}>
@@ -140,13 +143,21 @@ export function WaterWorksScreen({ level: initialLevel, onRoundComplete, onExit 
   }, []);
 
   const { puzzle } = state;
-  const tile = useMemo(() => {
+  const { tile, side } = useMemo(() => {
     const { width, height } = Dimensions.get('window');
     const across = Math.floor((width - gutter * 2 - SIDE * 2 - (puzzle.cols - 1) * rule.hair) / puzzle.cols);
     const down = Math.floor((height - 250) / puzzle.rows);
-    return Math.max(hitTarget, Math.min(96, across, down));
+    const t = Math.max(hitTarget, Math.min(96, across, down));
+    // The tap and the flower take what's left either side, down to a narrow
+    // strip on a small phone, and the board may use the gutters: the pipes
+    // are what's tapped, and they never go under the minimum.
+    const grid = puzzle.cols * t + (puzzle.cols - 1) * rule.hair;
+    return { tile: t, side: Math.max(14, Math.min(SIDE, Math.floor((width - grid) / 2) - 2)) };
   }, [puzzle.cols, puzzle.rows]);
   const pitch = tile + rule.hair;
+  // Never too small to spot: on a narrow phone the flower leans over the
+  // end of the last pipe, where the water would reach it anyway.
+  const flower = Math.max(FLOWER_MIN, side - 4);
   const flowing = new Set(wet(puzzle));
 
   const stars = starsForTurns(state.roundTaps, state.roundFewest);
@@ -154,11 +165,11 @@ export function WaterWorksScreen({ level: initialLevel, onRoundComplete, onExit 
 
   return (
     <GameFrame title="Water Works" icon="pipes" onExit={onExit} progress={progress}>
-      <View style={styles.stage}>
+      <StageScroll>
         <StageLabel live>{state.solved ? 'THE FLOWER HAS WATER' : 'TURN THE PIPES TO THE FLOWER'}</StageLabel>
 
         <View style={styles.board}>
-          <View style={{ width: SIDE, height: puzzle.rows * pitch }}>
+          <View style={{ width: side, height: puzzle.rows * pitch }}>
             <View
               accessible
               accessibilityLabel={`The tap, at row ${puzzle.tapRow + 1}`}
@@ -189,17 +200,18 @@ export function WaterWorksScreen({ level: initialLevel, onRoundComplete, onExit 
             })}
           </AnswerRow>
 
-          <View style={{ width: SIDE, height: puzzle.rows * pitch }}>
+          <View style={{ width: side, height: puzzle.rows * pitch }}>
             <View
               accessible
               accessibilityLabel={`The flower, at row ${puzzle.flowerRow + 1}${state.solved ? ', watered' : ''}`}
-              style={{ position: 'absolute', left: 2, top: puzzle.flowerRow * pitch + tile / 2 - SIDE / 2 }}
+              pointerEvents="none"
+              style={{ position: 'absolute', left: side - 2 - flower, top: puzzle.flowerRow * pitch + tile / 2 - flower / 2 }}
             >
-              <Flower size={SIDE - 4} watered={state.solved} />
+              <Flower size={flower} watered={state.solved} />
             </View>
           </View>
         </View>
-      </View>
+      </StageScroll>
 
       {state.complete ? (
         <RoundComplete
@@ -220,7 +232,6 @@ export function WaterWorksScreen({ level: initialLevel, onRoundComplete, onExit 
 }
 
 const styles = StyleSheet.create({
-  stage: { flex: 1, justifyContent: 'center' },
   board: { flexDirection: 'row', alignSelf: 'center' },
   pipe: { position: 'absolute', backgroundColor: palette.ink },
   water: { position: 'absolute', backgroundColor: palette.sky },

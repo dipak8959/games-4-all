@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
 
 import { StageLabel } from '../../components/GameStage';
 import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { palette, rule } from '../../theme/tokens';
+import { gutter, hitTarget, palette, rule } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, type GameScreenProps } from '../types';
 import {
@@ -153,6 +153,11 @@ export function FruitCatchScreen({ level: initialLevel, onRoundComplete, onExit 
     setState(createGame(systemRng, atLevel));
   }, []);
 
+  // Each column is a button the full height of the stage: on a phone too
+  // narrow for four at the minimum width, the stage uses the gutters.
+  const needed = state.columns * hitTarget + rule.major * 2;
+  const inside = Dimensions.get('window').width - gutter * 2;
+  const bleed = needed > inside ? Math.min(gutter, Math.ceil((needed - inside) / 2)) : 0;
   const colW = stage.width / state.columns;
   const size = Math.min(colW * 0.55, 56);
   const basketTop = stage.height - GROUND_H - BASKET_H;
@@ -182,7 +187,7 @@ export function FruitCatchScreen({ level: initialLevel, onRoundComplete, onExit 
       <StageLabel live>{state.started ? 'CATCH THE FRUIT, NOT THE CONES' : 'TAP TO START'}</StageLabel>
 
       <View
-        style={styles.stage}
+        style={[styles.stage, { marginHorizontal: -bleed }]}
         onLayout={(e) => setStage({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}
         testID={`field:${state.columns}`}
       >

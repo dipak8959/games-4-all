@@ -1,7 +1,7 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import React, { useMemo } from 'react';
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { font, hitTarget, palette, rule, space } from '../theme/tokens';
+import { font, gutter, hitTarget, palette, rule, space } from '../theme/tokens';
 import { fonts, type } from '../theme/type';
 
 /**
@@ -140,6 +140,61 @@ export function AnswerButton({
 }
 
 /**
+ * A row of arrow keys, all on one line on any phone. Four 80dp keys need
+ * 323dp, more than a 320dp screen has, and a wrapped pad puts "right" under
+ * "up". So the keys shrink towards the 72dp minimum first, and the row may
+ * use the gutters as a grid does.
+ */
+export function useKeyRow(keys: number, max: number = hitTarget + 8): { size: number; style: ViewStyle } {
+  return useMemo(() => {
+    const { tile, rowWidth } = fitTiles(keys, max);
+    return { size: tile, style: { width: rowWidth, alignSelf: 'center' } };
+  }, [keys, max]);
+}
+
+/**
+ * Tiles for a grid a given number of columns wide: as big as the screen
+ * allows, up to `max`, and never under the 72dp minimum.
+ *
+ * On a narrow phone that minimum doesn't always fit inside the gutters —
+ * four 72dp tiles and their rules need 291dp, and a 320dp screen has 288
+ * between its gutters. Rather than let the row wrap (a four-wide grid drawn
+ * three across, and pushed off the screen), the grid is allowed to use the
+ * gutters too: `bleed` is the negative margin to give it on each side.
+ */
+export function fitTiles(
+  columns: number,
+  max: number,
+  width: number = Dimensions.get('window').width,
+): { tile: number; bleed: number; rowWidth: number } {
+  const inside = width - gutter * 2;
+  const fit = Math.floor((inside - (columns - 1) * rule.hair) / columns);
+  const tile = Math.max(hitTarget, Math.min(max, fit));
+  const rowWidth = columns * tile + (columns - 1) * rule.hair;
+  const bleed = rowWidth > inside ? Math.min(gutter, Math.ceil((rowWidth - inside) / 2)) : 0;
+  return { tile, bleed, rowWidth };
+}
+
+/**
+ * Where a game's board sits when it might not fit the screen: centred when
+ * it does, and scrolled when it doesn't — a tall grid on a small phone —
+ * rather than spilling out over the header and the back button.
+ */
+export function StageScroll({
+  children,
+  style,
+}: {
+  readonly children: React.ReactNode;
+  readonly style?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <ScrollView style={styles.scroll} contentContainerStyle={[styles.scrollInner, style]} showsVerticalScrollIndicator={false}>
+      {children}
+    </ScrollView>
+  );
+}
+
+/**
  * react-native-web's own name for "report a press the instant it starts".
  * Native Pressable already does; the web build waits 50ms unless told.
  */
@@ -180,6 +235,10 @@ export function HoldButton({
 
 const styles = StyleSheet.create({
   label: { paddingBottom: space.sm },
+  // Out to the screen's edges and padded back in, so a grid that borrows
+  // the gutters (see `fitTiles`) isn't clipped by the scroll view.
+  scroll: { flex: 1, marginHorizontal: -gutter },
+  scrollInner: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: gutter },
   stage: {
     flex: 1,
     alignItems: 'center',

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { StageLabel } from '../../components/GameStage';
+import { StageLabel, fitTiles } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { font, gutter, palette, rule } from '../../theme/tokens';
+import { font, palette, rule } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { createGame, flip, hasPendingPair, resolvePair, type MemoryState } from './logic';
@@ -88,15 +88,14 @@ export function MemoryScreen({ level: initialLevel, onRoundComplete, onExit }: G
   const progress = state.cards.length ? matched / state.cards.length : 0;
 
   const columns = state.cards.length <= 8 ? 3 : 4;
-  const size = useMemo(() => {
-    const width = Dimensions.get('window').width - gutter * 2;
-    return Math.floor((width - rule.hair * (columns - 1)) / columns);
-  }, [columns]);
+  // Cards fill the width — and on a phone too narrow for four at the
+  // minimum size, the grid uses the gutters rather than shrink them.
+  const { tile: size } = useMemo(() => fitTiles(columns, 400), [columns]);
 
   return (
     <GameFrame title="Find the Pairs" icon="pairs" onExit={onExit} progress={progress}>
       <StageLabel>MATCH THE PAIRS</StageLabel>
-      <View style={[styles.grid, { maxWidth: columns * (size + rule.hair) }]}>
+      <View style={[styles.grid, { width: columns * size + (columns - 1) * rule.hair, alignSelf: 'center' }]}>
         {state.cards.map((card, index) => {
           const visible = card.faceUp || card.matched;
 

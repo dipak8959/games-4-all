@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, fitTiles } from '../../components/GameStage';
 import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { gutter, hitTarget, palette, rule } from '../../theme/tokens';
+import { palette, rule } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import {
@@ -113,10 +113,7 @@ export function WhichCupScreen({ level: initialLevel, onRoundComplete, onExit }:
     setState(createGame(systemRng, atLevel));
   }, []);
 
-  const tile = useMemo(() => {
-    const across = Dimensions.get('window').width - gutter * 2;
-    return Math.max(hitTarget, Math.min(104, Math.floor((across - (question.cups - 1) * rule.hair) / question.cups)));
-  }, [question.cups]);
+  const { tile } = useMemo(() => fitTiles(question.cups, 104), [question.cups]);
   const pitch = tile + rule.hair;
   const width = question.cups * tile + (question.cups - 1) * rule.hair;
   const height = tile * 2.2;

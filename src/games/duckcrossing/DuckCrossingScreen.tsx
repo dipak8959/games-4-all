@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, useKeyRow } from '../../components/GameStage';
 import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { Icon } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { hitTarget, palette, playPalette, rule, space } from '../../theme/tokens';
+import { palette, playPalette, rule, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import {
@@ -74,6 +74,7 @@ function Duckling({ size, bumped }: { readonly size: number; readonly bumped: bo
 
 export function DuckCrossingScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  const keys = useKeyRow(4);
   // How to play is open: the traffic stops where it is.
   const paused = useGamePaused();
   const [level, setLevel] = useState(initialLevel);
@@ -231,9 +232,9 @@ export function DuckCrossingScreen({ level: initialLevel, onRoundComplete, onExi
         ) : null}
       </View>
 
-      <AnswerRow style={styles.pad}>
+      <AnswerRow style={[styles.pad, keys.style]}>
         {ARROWS.map(({ way, turn }) => (
-          <AnswerButton key={way} accessibilityLabel={`Hop ${way}`} size={hitTarget + 8} onPress={() => onHop(way)}>
+          <AnswerButton key={way} accessibilityLabel={`Hop ${way}`} size={keys.size} onPress={() => onHop(way)}>
             <View style={{ transform: [{ rotate: turn }] }}>
               <Icon name="back" size={34} color={palette.ink} />
             </View>

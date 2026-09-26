@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, useKeyRow } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { Icon } from '../../components/Icon';
 import { PlayerMark, PlayersPicker, playerName } from '../../components/Players';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { hitTarget, palette, space } from '../../theme/tokens';
+import { palette, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { canGo, type Dir } from '../maze/logic';
 import { Door, Explorer, Flag, KeyMark } from '../maze/MazeScreen';
@@ -37,6 +37,7 @@ const ARROWS: readonly { dir: Dir; turn: string }[] = [
 
 export function MazeTeamScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
   const { settings } = useApp();
+  const keys = useKeyRow(4);
   const [level, setLevel] = useState(initialLevel);
   const [players, setPlayers] = useState(0);
   const [state, setState] = useState<MazeTeamState | null>(null);
@@ -133,12 +134,12 @@ export function MazeTeamScreen({ level: initialLevel, onRoundComplete, onExit }:
       </View>
 
       {/* Every arrow wears its owner's mark: only they press it. */}
-      <AnswerRow style={styles.pad}>
+      <AnswerRow style={[styles.pad, keys.style]}>
         {ARROWS.map(({ dir, turn }) => (
           <AnswerButton
             key={dir}
             accessibilityLabel={`Go ${dir}, for ${playerName(who[dir])}${open.includes(dir) ? '' : ', wall'}`}
-            size={hitTarget + 8}
+            size={keys.size}
             disabled={state.done}
             onPress={() => onArrow(dir)}
           >

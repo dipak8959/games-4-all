@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, StageScroll, fitTiles } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { gutter, hitTarget, palette, rule } from '../../theme/tokens';
+import { palette, rule } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, type GameScreenProps } from '../types';
 import { canSlide, createGame, slide, starsForMoves, type TileSlideState } from './logic';
@@ -39,10 +39,7 @@ export function TileSlideScreen({ level: initialLevel, onRoundComplete, onExit }
   }, []);
 
   const { size, board } = state;
-  const tile = useMemo(() => {
-    const across = Dimensions.get('window').width - gutter * 2;
-    return Math.max(hitTarget, Math.min(104, Math.floor((across - (size - 1) * rule.hair) / size)));
-  }, [size]);
+  const { tile, rowWidth } = useMemo(() => fitTiles(size, 104), [size]);
 
   const stars = starsForMoves(state.moves, state.par);
   const home = board.filter((t, i) => t !== 0 && t === i + 1).length;
@@ -50,10 +47,10 @@ export function TileSlideScreen({ level: initialLevel, onRoundComplete, onExit }
 
   return (
     <GameFrame title="Tile Slide" icon="slide" onExit={onExit} progress={progress}>
-      <View style={styles.stage}>
+      <StageScroll>
         <StageLabel>PUT THE NUMBERS IN ORDER</StageLabel>
 
-        <AnswerRow style={{ maxWidth: size * tile + (size - 1) * rule.hair, alignSelf: 'center' }}>
+        <AnswerRow style={{ width: rowWidth, alignSelf: 'center' }}>
           {board.map((number, cell) => {
             const where = `row ${Math.floor(cell / size) + 1}, column ${(cell % size) + 1}`;
             if (number === 0) {
@@ -77,7 +74,7 @@ export function TileSlideScreen({ level: initialLevel, onRoundComplete, onExit }
             );
           })}
         </AnswerRow>
-      </View>
+      </StageScroll>
 
       {state.complete ? (
         <RoundComplete
@@ -98,7 +95,6 @@ export function TileSlideScreen({ level: initialLevel, onRoundComplete, onExit }
 }
 
 const styles = StyleSheet.create({
-  stage: { flex: 1, justifyContent: 'center' },
   // The gap is the ground showing through the frame — an empty cell, drawn
   // as nothing but its rule.
   gap: { borderWidth: rule.hair, borderColor: palette.border, borderStyle: 'dashed' },

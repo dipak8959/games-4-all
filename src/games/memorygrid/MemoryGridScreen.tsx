@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { AnswerButton, AnswerRow, StageLabel, StageScroll, fitTiles } from '../../components/GameStage';
 import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { Icon } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { gutter, hitTarget, palette, rule, space } from '../../theme/tokens';
+import { hitTarget, palette, rule, space } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import {
@@ -71,20 +71,17 @@ export function MemoryGridScreen({ level: initialLevel, onRoundComplete, onExit 
     setState(createGame(systemRng, atLevel));
   }, []);
 
-  const tile = useMemo(() => {
-    const across = Dimensions.get('window').width - gutter * 2;
-    return Math.max(hitTarget, Math.min(96, Math.floor((across - (state.size - 1) * rule.hair) / state.size)));
-  }, [state.size]);
+  const { tile, rowWidth } = useMemo(() => fitTiles(state.size, 96), [state.size]);
 
   const stars = starsForMistakes(state.mistakes);
   const progress = (state.patternIndex + state.found.length / state.lit.length) / PATTERNS_PER_ROUND;
 
   return (
     <GameFrame title="Memory Grid" icon="memorygrid" onExit={onExit} progress={progress}>
-      <View style={styles.stage}>
+      <StageScroll>
         <StageLabel live>{state.showing ? 'REMEMBER THE SQUARES' : 'TAP THE ONES THAT LIT UP'}</StageLabel>
 
-        <AnswerRow style={{ maxWidth: state.size * tile + (state.size - 1) * rule.hair, alignSelf: 'center' }}>
+        <AnswerRow style={{ width: rowWidth, alignSelf: 'center' }}>
           {Array.from({ length: state.size * state.size }, (_, cell) => {
             const shown = state.showing && visible && state.lit.includes(cell);
             const found = state.found.includes(cell);
@@ -118,7 +115,7 @@ export function MemoryGridScreen({ level: initialLevel, onRoundComplete, onExit 
             <Icon name="replay" size={34} color={palette.ink} />
           </AnswerButton>
         </AnswerRow>
-      </View>
+      </StageScroll>
 
       {state.complete ? (
         <RoundComplete
@@ -139,6 +136,5 @@ export function MemoryGridScreen({ level: initialLevel, onRoundComplete, onExit 
 }
 
 const styles = StyleSheet.create({
-  stage: { flex: 1, justifyContent: 'center' },
   replay: { paddingTop: space.lg },
 });

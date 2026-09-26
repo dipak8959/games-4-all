@@ -611,6 +611,95 @@ export const GAMES_META: readonly GameMeta[] = [
     // a small pad across the hills, wind and little fuel is anyone's.
     maxAge: 99,
   },
+  {
+    id: 'talltower',
+    title: 'Tall Tower',
+    icon: 'tower',
+    color: tilePalette.azure,
+    skill: 'Timing: stopping a sliding block at just the right moment so it lands square on the one below',
+    roundEnds: 'Twelve blocks dropped.',
+    origin: 'public-domain',
+    priorArt: 'Block-stacking timing games, from wooden stacking toys to arcade machines, owned by no one.',
+    toldApartBy: 'Position and shape: the sliding block is above the tower; a trimmed-off piece is shown falling away.',
+    ages: '4+',
+    category: 'arcade',
+    // Tap-timing starts at four here, as Puddle Hop does.
+    minAge: 4,
+    // A wide, slow block with an outline to aim at is a four-year-old's; a
+    // narrow one that speeds up as the tower climbs is a real test at any age.
+    maxAge: 99,
+  },
+  {
+    id: 'duckcrossing',
+    title: 'Duck Crossing',
+    icon: 'duck',
+    color: tilePalette.grass,
+    skill: 'Looking ahead and judging gaps: choosing when it is safe to step across a moving lane',
+    roundEnds: 'Three ducklings home at the pond.',
+    origin: 'public-domain',
+    priorArt:
+      'Cross-the-road games, a playground road-safety lesson and an arcade staple since the 1980s, owned by no one.',
+    toldApartBy: 'Shape: the duckling is round with a beak, cars and vans are long blocks with wheels.',
+    ages: '4+',
+    category: 'arcade',
+    minAge: 4,
+    // Two quiet lanes is a four-year-old's; seven busy ones with lorries and
+    // small gaps asks for real judgement at any age.
+    maxAge: 99,
+  },
+  {
+    id: 'codecracker',
+    title: 'Code Cracker',
+    icon: 'code',
+    color: tilePalette.plum,
+    skill: 'Deduction: using what each guess reveals to narrow down a hidden row of shapes',
+    roundEnds: 'The code is cracked, or ten guesses have been made and it is shown.',
+    origin: 'public-domain',
+    priorArt: 'Bulls and Cows, a pencil-and-paper code-breaking game over a century old, owned by no one.',
+    toldApartBy:
+      'Shape: each symbol is a different shape; a filled peg means right shape in the right place, a hollow peg right shape in the wrong place.',
+    ages: '6+',
+    category: 'logic',
+    minAge: 6,
+    // Three shapes with a mark under each is a six-year-old's; five, with
+    // repeats and only a count to go on, is a proper puzzle for an adult.
+    maxAge: 99,
+  },
+  {
+    id: 'clocktime',
+    title: "What's the Time?",
+    icon: 'clockface',
+    color: tilePalette.raspberry,
+    skill: "Telling the time: working out the time from an analogue clock's hands, to the hour, the half, the quarter and the minute",
+    roundEnds: 'Ten clocks.',
+    origin: 'public-domain',
+    priorArt: 'Learning-clock exercises, used in primary classrooms for well over a century and owned by no one.',
+    toldApartBy:
+      'The hands: the short hand points to the hour and the long hand to the minutes; each answer is a time written in numbers.',
+    ages: '5-10',
+    category: 'numbers',
+    minAge: 5,
+    // O'clock at five, any minute by eight or nine; past ten it's a skill
+    // already had, so it stops there.
+    maxAge: 10,
+  },
+  {
+    id: 'rhymetime',
+    title: 'Rhyme Time',
+    icon: 'rhyme',
+    color: tilePalette.mustard,
+    skill: 'Hearing rhymes in written words: picking the word that rhymes, even when it is spelt differently',
+    roundEnds: 'Ten rhymes found.',
+    origin: 'public-domain',
+    priorArt: 'Rhyming-word exercises, as old as nursery rhymes and every early-reading classroom, owned by no one.',
+    toldApartBy: 'Reading is the skill: every choice is a written word.',
+    ages: '5-9',
+    category: 'words',
+    readingIsTheSkill: true,
+    minAge: 5,
+    // Early reading: cat and hat at five, food and good by eight or nine.
+    maxAge: 9,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

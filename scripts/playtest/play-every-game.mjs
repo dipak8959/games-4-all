@@ -74,6 +74,11 @@ await play('Peekaboo Pals');
 await play('Bounce Bricks');
 await play('Hungry Worm');
 await play('Hoop Shot');
+await play('Tall Tower');
+await play('Duck Crossing');
+await play('Code Cracker');
+await play("What's the Time?");
+await play('Rhyme Time');
 
 console.log('\n=== age 9 ===');
 await setAge(page, 9);
@@ -116,6 +121,9 @@ for (const title of [
   'Hungry Worm',
   'Hoop Shot',
   'Soft Landing',
+  'Tall Tower',
+  'Duck Crossing',
+  'Code Cracker',
 ]) {
   const row = lines.findIndex((l) => l.trim() === title);
   const meta = lines.slice(row, row + 4).join(' ');

@@ -239,7 +239,9 @@ game where reading is the point rather than something to avoid:
   for any future game that ends on a miss (`endsOnAMiss`).
   The arcade games keep to the rule the genre usually breaks. Hungry Worm
   stops at a wall and waits; Soft Landing's bumpy landing is a bump, and the
-  next rocket comes down. Bounce Bricks' five balls are the round's length,
+  next rocket comes down; a bumped duckling in Duck Crossing goes back to the
+  grass and tries again; a block that misses the tower in Tall Tower just
+  falls, and the next one comes. Bounce Bricks' five balls are the round's length,
   like Hoop Shot's ten throws — a ball that falls is served again when the
   child taps, nothing is taken away, and the stars come from how much of the
   wall came down.
@@ -296,7 +298,9 @@ game where reading is the point rather than something to avoid:
   to where it stops instead of walking there. The arcade games are movement
   through and through, and were built with nothing decorative in them to
   take away: nothing shakes, flashes or bounces for show — a bumpy landing
-  leaves the rocket leaning, still.
+  leaves the rocket leaning, still. The one decoration there is, Tall
+  Tower's trimmed pieces falling away, simply isn't drawn with reduce motion
+  on.
 
 ## Nothing here is built to be hard to stop
 

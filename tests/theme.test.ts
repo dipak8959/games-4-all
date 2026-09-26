@@ -22,7 +22,10 @@ const GAME_SCREENS = [
   'src/games/ballooncount/BalloonCountScreen.tsx',
   'src/games/bigtosmall/BigToSmallScreen.tsx',
   'src/games/bouncebricks/BounceBricksScreen.tsx',
+  'src/games/clocktime/ClockTimeScreen.tsx',
+  'src/games/codecracker/CodeCrackerScreen.tsx',
   'src/games/counting/CountingScreen.tsx',
+  'src/games/duckcrossing/DuckCrossingScreen.tsx',
   'src/games/fruitcatch/FruitCatchScreen.tsx',
   'src/games/hoopshot/HoopShotScreen.tsx',
   'src/games/hungryworm/HungryWormScreen.tsx',
@@ -35,11 +38,13 @@ const GAME_SCREENS = [
   'src/games/patternplay/PatternPlayScreen.tsx',
   'src/games/peekaboo/PeekabooScreen.tsx',
   'src/games/puddlehop/PuddleHopScreen.tsx',
+  'src/games/rhymetime/RhymeTimeScreen.tsx',
   'src/games/shadowmatch/ShadowMatchScreen.tsx',
   'src/games/shapebuilder/ShapeBuilderScreen.tsx',
   'src/games/shapes/ShapesScreen.tsx',
   'src/games/softlanding/SoftLandingScreen.tsx',
   'src/games/sudoku/SudokuScreen.tsx',
+  'src/games/talltower/TallTowerScreen.tsx',
   'src/games/tileslide/TileSlideScreen.tsx',
   'src/games/treasurehunt/TreasureHuntScreen.tsx',
   'src/games/waterworks/WaterWorksScreen.tsx',
@@ -236,7 +241,8 @@ function sourceFiles(dir: string): string[] {
  * the cup — as are fruit, balloons, the maze explorer's eyes and key ring,
  * and a flower's petals — and the arcade games' balls, the worm's eyes and its
  * apple, and a peeking pal's eyes. Everything else in the app is square — the
- * runner's body, the rocket and its window included.
+ * runner's body, the rocket and its window included. A duckling is round,
+ * and so is a clock face.
  */
 const MAY_DRAW_CIRCLES = [
   'src/components/Icon.tsx',
@@ -255,6 +261,8 @@ const MAY_DRAW_CIRCLES = [
   'src/games/hungryworm/HungryWormScreen.tsx',
   'src/games/peekaboo/PeekabooScreen.tsx',
   'src/games/hoopshot/HoopShotScreen.tsx',
+  'src/games/duckcrossing/DuckCrossingScreen.tsx',
+  'src/games/clocktime/ClockTimeScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

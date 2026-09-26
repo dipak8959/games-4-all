@@ -70,7 +70,12 @@ export type IconName =
   | 'worm'
   | 'peekaboo'
   | 'hoop'
-  | 'lander';
+  | 'lander'
+  | 'tower'
+  | 'duck'
+  | 'code'
+  | 'clockface'
+  | 'rhyme';
 
 export function Icon({
   name,
@@ -762,6 +767,71 @@ export function Icon({
           <View style={[at(size, 0.2, 0.6, 0, 0.26), { width: s, backgroundColor: color }]} />
           <View style={[at(size, 0.8, 0.6, 0, 0.26), { width: s, marginLeft: -s, backgroundColor: color }]} />
           <View style={[at(size, 0.04, 0.86, 0.92, 0), { height: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'tower':
+      // A tower of blocks, and the next one sliding in above it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.2, 0.74, 0.6, 0.16), { backgroundColor: color }]} />
+          <View style={[at(size, 0.24, 0.54, 0.52, 0.16), { backgroundColor: color }]} />
+          <View style={[at(size, 0.3, 0.34, 0.44, 0.16), { backgroundColor: color }]} />
+          <View style={[at(size, 0.46, 0.1, 0.44, 0.16), { borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'duck':
+      // A duckling from above: a round body and a beak, crossing a lane line.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.04, 0.46, 0.92, 0), { height: s / 2, backgroundColor: color }]} />
+          <Triangle w={size * 0.2} h={size * 0.16} color={color} style={{ position: 'absolute', left: size * 0.4, top: size * 0.12 }} />
+          <View style={[at(size, 0.28, 0.26, 0.44, 0.44), { borderRadius: size, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'code':
+      // Three slots, and the pegs that say how close the guess was.
+      return (
+        <View style={box} {...hidden}>
+          {[0.06, 0.36, 0.66].map((left, i) => (
+            <View key={left} style={[at(size, left, 0.14, 0.26, 0.26), i === 1 ? { backgroundColor: color } : { borderWidth: s / 2, borderColor: color }]} />
+          ))}
+          <View style={[at(size, 0.2, 0.62, 0.18, 0.18), { backgroundColor: color }]} />
+          <View style={[at(size, 0.44, 0.62, 0.18, 0.18), { backgroundColor: color }]} />
+          <View style={[at(size, 0.68, 0.62, 0.18, 0.18), { borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'clockface':
+      // A clock face with its quarter marks, at ten past ten.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.06, 0.06, 0.88, 0.88), { borderRadius: size, borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.48, 0.14, 0, 0.1), { width: s, marginLeft: -s / 2, backgroundColor: color }]} />
+          <View style={[at(size, 0.48, 0.76, 0, 0.1), { width: s, marginLeft: -s / 2, backgroundColor: color }]} />
+          <View style={[at(size, 0.14, 0.5, 0.1, 0), { height: s, marginTop: -s / 2, backgroundColor: color }]} />
+          <View style={[at(size, 0.76, 0.5, 0.1, 0), { height: s, marginTop: -s / 2, backgroundColor: color }]} />
+          <View style={[styles.center, at(size, 0, 0, 1, 1), { transform: [{ rotate: '-60deg' }] }]}>
+            <View style={{ width: s * 1.5, height: size * 0.26, marginTop: -size * 0.26, backgroundColor: color }} />
+          </View>
+          <View style={[styles.center, at(size, 0, 0, 1, 1), { transform: [{ rotate: '60deg' }] }]}>
+            <View style={{ width: s, height: size * 0.36, marginTop: -size * 0.36, backgroundColor: color }} />
+          </View>
+        </View>
+      );
+
+    case 'rhyme':
+      // Two words that end the same: two rows, the same last two blocks.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.06, 0.2, 0.22, 0.22), { borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.4, 0.2, 0.22, 0.22), { backgroundColor: color }]} />
+          <View style={[at(size, 0.72, 0.2, 0.22, 0.22), { backgroundColor: color }]} />
+          <View style={[at(size, 0.06, 0.58, 0.22, 0.22), { borderWidth: s / 2, borderColor: color, transform: [{ rotate: '45deg' }] }]} />
+          <View style={[at(size, 0.4, 0.58, 0.22, 0.22), { backgroundColor: color }]} />
+          <View style={[at(size, 0.72, 0.58, 0.22, 0.22), { backgroundColor: color }]} />
         </View>
       );
 

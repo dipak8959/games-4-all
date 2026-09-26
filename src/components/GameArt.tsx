@@ -608,6 +608,71 @@ const SCENES: Readonly<Record<string, Draw>> = {
       <Drop u={u} cx={50} top={49} w={8} h={12} color={c.fg} />
     </>
   ),
+  // A tower of blocks narrowing as it rises, the next block sliding in.
+  talltower: (u, c) => (
+    <>
+      <Block u={u} x={18} y={82} w={64} h={10} color={c.fg} />
+      <Block u={u} x={20} y={70} w={60} h={10} color={c.fg} />
+      <Block u={u} x={24} y={58} w={54} h={10} color={c.fg} />
+      <Block u={u} x={24} y={46} w={48} h={10} color={c.fg} />
+      <Block u={u} x={42} y={24} w={48} h={10} color={c.hi} />
+      <Block u={u} x={76} y={50} w={8} h={8} color={c.fg} />
+    </>
+  ),
+  // Two lanes of traffic, the pond beyond, and the duckling about to cross.
+  duckcrossing: (u, c) => (
+    <>
+      <Frame u={u} x={6} y={6} w={88} h={16} color={c.fg} line={3} />
+      <Block u={u} x={6} y={30} w={88} h={2.5} color={c.fg} />
+      {[10, 30, 50, 70].map((x) => (
+        <Block key={x} u={u} x={x} y={49} w={10} h={2} color={c.fg} />
+      ))}
+      <Block u={u} x={6} y={68} w={88} h={2.5} color={c.fg} />
+      <Block u={u} x={14} y={36} w={26} h={10} color={c.fg} />
+      <Block u={u} x={60} y={55} w={22} h={10} color={c.fg} />
+      <Peak u={u} cx={52} top={73} w={7} h={6} color={c.hi} />
+      <Disc u={u} cx={52} cy={86} r={8} color={c.hi} />
+    </>
+  ),
+  // A guess of three shapes, and the pegs that answer it.
+  codecracker: (u, c) => (
+    <>
+      <Block u={u} x={10} y={18} w={22} h={22} color={c.fg} />
+      <Disc u={u} cx={50} cy={29} r={11} color={c.fg} />
+      <Peak u={u} cx={79} top={18} w={24} h={22} color={c.fg} />
+      <Block u={u} x={22} y={54} w={12} h={12} color={c.hi} />
+      <Block u={u} x={44} y={54} w={12} h={12} color={c.hi} />
+      <Frame u={u} x={66} y={54} w={12} h={12} color={c.hi} line={2.5} />
+      {[10, 39, 68].map((x) => (
+        <Frame key={x} u={u} x={x} y={76} w={22} h={14} color={c.fg} line={2} />
+      ))}
+    </>
+  ),
+  // A clock face at three o'clock.
+  clocktime: (u, c) => (
+    <>
+      <Ring u={u} cx={50} cy={50} r={40} color={c.fg} line={4} />
+      <Block u={u} x={48.5} y={14} w={3} h={8} color={c.fg} />
+      <Block u={u} x={48.5} y={78} w={3} h={8} color={c.fg} />
+      <Block u={u} x={14} y={48.5} w={8} h={3} color={c.fg} />
+      <Block u={u} x={78} y={48.5} w={8} h={3} color={c.fg} />
+      <Block u={u} x={48.5} y={20} w={3} h={31} color={c.hi} />
+      <Block u={u} x={49} y={47} w={24} h={6} color={c.hi} />
+      <Disc u={u} cx={50} cy={50} r={4} color={c.hi} />
+    </>
+  ),
+  // Two words that rhyme, the second one the answer.
+  rhymetime: (u, c) => (
+    <>
+      <Glyph u={u} x={8} y={16} w={84} size={26} color={c.fg}>
+        cat
+      </Glyph>
+      <Block u={u} x={30} y={50} w={40} h={3} color={c.fg} />
+      <Glyph u={u} x={8} y={58} w={84} size={26} color={c.hi}>
+        hat
+      </Glyph>
+    </>
+  ),
 };
 
 /** Hue of a `#rrggbb` colour, in degrees. */

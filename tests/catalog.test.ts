@@ -51,6 +51,7 @@ test('a young child sees exactly the preschool-appropriate games', () => {
       'ballooncount',
       'bigtosmall',
       'counting',
+      'duckcrossing',
       'fruitcatch',
       'maze',
       'memory',
@@ -61,6 +62,7 @@ test('a young child sees exactly the preschool-appropriate games', () => {
       'puddlehop',
       'shadowmatch',
       'shapes',
+      'talltower',
       'whichcup',
     ].sort(),
   );

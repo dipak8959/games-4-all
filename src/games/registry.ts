@@ -2,7 +2,10 @@ import { GAMES_META } from './catalog';
 import { BalloonCountScreen } from './ballooncount/BalloonCountScreen';
 import { BigToSmallScreen } from './bigtosmall/BigToSmallScreen';
 import { BounceBricksScreen } from './bouncebricks/BounceBricksScreen';
+import { ClockTimeScreen } from './clocktime/ClockTimeScreen';
+import { CodeCrackerScreen } from './codecracker/CodeCrackerScreen';
 import { CountingScreen } from './counting/CountingScreen';
+import { DuckCrossingScreen } from './duckcrossing/DuckCrossingScreen';
 import { FruitCatchScreen } from './fruitcatch/FruitCatchScreen';
 import { HoopShotScreen } from './hoopshot/HoopShotScreen';
 import { HungryWormScreen } from './hungryworm/HungryWormScreen';
@@ -15,11 +18,13 @@ import { OddOneOutScreen } from './oddoneout/OddOneOutScreen';
 import { PatternPlayScreen } from './patternplay/PatternPlayScreen';
 import { PeekabooScreen } from './peekaboo/PeekabooScreen';
 import { PuddleHopScreen } from './puddlehop/PuddleHopScreen';
+import { RhymeTimeScreen } from './rhymetime/RhymeTimeScreen';
 import { ShadowMatchScreen } from './shadowmatch/ShadowMatchScreen';
 import { ShapeBuilderScreen } from './shapebuilder/ShapeBuilderScreen';
 import { ShapesScreen } from './shapes/ShapesScreen';
 import { SoftLandingScreen } from './softlanding/SoftLandingScreen';
 import { SudokuScreen } from './sudoku/SudokuScreen';
+import { TallTowerScreen } from './talltower/TallTowerScreen';
 import { TileSlideScreen } from './tileslide/TileSlideScreen';
 import { TreasureHuntScreen } from './treasurehunt/TreasureHuntScreen';
 import type { GameDefinition } from './types';
@@ -64,6 +69,11 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   peekaboo: PeekabooScreen,
   hoopshot: HoopShotScreen,
   softlanding: SoftLandingScreen,
+  talltower: TallTowerScreen,
+  duckcrossing: DuckCrossingScreen,
+  codecracker: CodeCrackerScreen,
+  clocktime: ClockTimeScreen,
+  rhymetime: RhymeTimeScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

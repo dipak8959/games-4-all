@@ -255,6 +255,54 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'The speed bar goes past the line near the ground? Hold the up button until it is back above.',
     grows: 'Stronger gravity, a smaller pad further away, hills, wind, and less fuel.',
   },
+  talltower: {
+    goal: 'Build a tower twelve blocks high.',
+    steps: [
+      'Tap to start the block sliding.',
+      'Tap again to drop it onto the tower.',
+      'Any part hanging over the edge is cut off, so the tower gets narrower. Land it square to keep it wide.',
+    ],
+    example: 'The block is halfway over the edge? Tap a moment earlier next time, before it gets there.',
+    grows: 'A narrower tower, a faster block, no outline to aim at, then a block that speeds up as the tower rises.',
+  },
+  duckcrossing: {
+    goal: 'Help three ducklings across the roads to their pond.',
+    steps: [
+      'Press the arrows to hop the duckling one square at a time.',
+      'Watch which way each lane goes. Hop when there is a gap.',
+      'Bumped by a car? The duckling goes back to the grass and tries again.',
+    ],
+    example: 'A van is coming along the next lane? Wait on the grass until it has gone by, then hop.',
+    grows: 'More lanes, faster traffic, smaller gaps, and longer lorries.',
+  },
+  codecracker: {
+    goal: 'Work out the hidden row of shapes in ten guesses or fewer.',
+    steps: [
+      'Tap shapes to make a guess, then press CHECK.',
+      'A filled square means a shape is right and in the right place. A hollow square means it is in the code, but somewhere else.',
+      'Use every clue for your next guess.',
+    ],
+    example: 'You guessed circle, star, heart and got one filled square: one of those three is in exactly the right place.',
+    grows: 'At first the marks sit under each shape. Later they are only a count, the code gets longer, and a shape can be used twice.',
+  },
+  clocktime: {
+    goal: 'Tell the time on ten clocks.',
+    steps: [
+      'The short hand shows the hour. The long hand shows the minutes.',
+      'Read the clock, then tap the time it shows.',
+    ],
+    example: 'The long hand points straight down at the 6 and the short hand is between the 3 and the 4: it is 3:30.',
+    grows: "O'clock first, then half past, then quarter past and quarter to, then every five minutes, then any minute.",
+  },
+  rhymetime: {
+    goal: 'Find the word that rhymes, ten times.',
+    steps: [
+      'Read the word at the top. Say it out loud.',
+      'Tap the word below that rhymes with it: it ends with the same sound.',
+    ],
+    example: 'cat rhymes with hat. blue rhymes with shoe, even though they are spelt differently.',
+    grows: 'Longer words, a word that starts the same to trick the eye, rhymes spelt differently, look-alikes that do not rhyme, then two-syllable words.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

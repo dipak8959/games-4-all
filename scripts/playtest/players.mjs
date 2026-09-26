@@ -1539,6 +1539,288 @@ export async function playSoftLanding(page, report) {
   report.ok(`flew three descents with ${holds} presses`);
 }
 
+/**
+ * Tall Tower, from inside the page: watches the sliding block close in on
+ * the top of the tower and taps — for real — a beat before it's square,
+ * allowing for how long a tap takes to land.
+ */
+const towerHook = new WeakSet();
+const towerAt = new WeakMap();
+
+export async function playTallTower(page, report) {
+  const stage = await page.getByTestId('tower-stage').boundingBox();
+  towerAt.set(page, { x: stage.x + stage.width / 2, y: stage.y + stage.height / 2 });
+  if (!towerHook.has(page)) {
+    towerHook.add(page);
+    await page.exposeFunction('__towerTap', () => {
+      const at = towerAt.get(page);
+      return page.mouse.click(at.x, at.y);
+    });
+  }
+  await page.mouse.click(towerAt.get(page).x, towerAt.get(page).y); // the first tap starts it sliding
+  const drops = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let drops = 0;
+        let busy = false;
+        let last = null;
+        const LATENCY = 0.03;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 120000) {
+            resolve(drops);
+            return;
+          }
+          const slider = document.querySelector('[data-testid="slider"]')?.getBoundingClientRect();
+          const top = document.querySelector('[data-testid^="top:"]')?.getBoundingClientRect();
+          if (slider && top && !busy) {
+            const gap = slider.left - top.left;
+            if (last && now > last.at) {
+              const v = (slider.left - last.x) / ((now - last.at) / 1000);
+              // Where it will be once the tap lands: tap when that's within
+              // a frame's travel of square.
+              const then = gap + v * LATENCY;
+              if (Math.abs(then) <= Math.max(1.5, Math.abs(v) / 60)) {
+                busy = true;
+                drops += 1;
+                await window.__towerTap();
+                last = null;
+                setTimeout(() => {
+                  busy = false;
+                }, 250);
+                requestAnimationFrame(frame);
+                return;
+              }
+            }
+            last = { x: slider.left, at: now };
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`dropped ${drops} blocks`);
+}
+
+/**
+ * Duck Crossing, from inside the page: reads each lane's direction and
+ * speed and where the vehicles are, and hops up only when the square ahead
+ * will stay clear long enough to hop again — stepping back to the grass if
+ * something is about to hit it where it stands.
+ */
+const duckHook = new WeakSet();
+const duckArrows = new WeakMap();
+
+export async function playDuckCrossing(page, report) {
+  const arrows = {};
+  for (const way of ['up', 'down', 'left', 'right']) {
+    const box = await page.getByLabel(`Hop ${way}`, { exact: true }).boundingBox();
+    arrows[way] = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  }
+  duckArrows.set(page, arrows);
+  if (!duckHook.has(page)) {
+    duckHook.add(page);
+    await page.exposeFunction('__duckHop', (way) => {
+      const at = duckArrows.get(page)[way];
+      return page.mouse.click(at.x, at.y);
+    });
+  }
+  const hops = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let hops = 0;
+        let busy = false;
+        const started = performance.now();
+        const lanes = () => {
+          const out = {};
+          for (const el of document.querySelectorAll('[data-testid^="lane:"]')) {
+            const [, row, dir, speed] = el.dataset.testid.split(':');
+            out[row] = { dir: Number(dir), speed: Number(speed), cars: [] };
+          }
+          for (const el of document.querySelectorAll('[data-testid^="car:"]')) {
+            const [, row, left, right] = el.dataset.testid.split(':');
+            out[row]?.cars.push({ left: Number(left), right: Number(right) });
+          }
+          return out;
+        };
+        // Clear for the next `t` seconds at this column?
+        const clearFor = (lane, col, t) =>
+          !lane ||
+          lane.cars.every((c) => {
+            const d = lane.dir * lane.speed * t;
+            const lo = Math.min(c.left, c.left + d) - 0.1;
+            const hi = Math.max(c.right, c.right + d) + 0.1;
+            return hi <= col + 0.2 || lo >= col + 0.8;
+          });
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) {
+            resolve(hops);
+            return;
+          }
+          const duck = document.querySelector('[data-testid^="duck:"]');
+          if (duck && !busy) {
+            const [, row, col] = duck.dataset.testid.split(':').map(Number);
+            const kinds = {};
+            for (const el of document.querySelectorAll('[data-testid^="row:"]')) {
+              const [, r, kind] = el.dataset.testid.split(':');
+              kinds[r] = kind;
+            }
+            const all = lanes();
+            let way = null;
+            const nextRoad = all[row + 1];
+            if (kinds[row + 1] === 'pond' || kinds[row + 1] === 'grass') way = 'up';
+            else if (nextRoad && clearFor(nextRoad, col, 0.9)) way = 'up';
+            else if (all[row] && !clearFor(all[row], col, 0.35)) {
+              // In a lane with something coming: sideways if that's clear, else back.
+              if (col > 0 && clearFor(all[row], col - 1, 0.6)) way = 'left';
+              else if (col < 6 && clearFor(all[row], col + 1, 0.6)) way = 'right';
+              else way = 'down';
+            }
+            if (way) {
+              busy = true;
+              hops += 1;
+              await window.__duckHop(way);
+              setTimeout(() => {
+                busy = false;
+              }, 120);
+            }
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`hopped ${hops} times`);
+}
+
+/**
+ * Code Cracker: every guess fits everything learned so far, read back off
+ * the screen — the marks under each shape, or the counts of pegs.
+ */
+export async function playCodeCracker(page, report) {
+  const names = [];
+  for (const b of await page.getByRole('button').all()) {
+    const label = (await b.getAttribute('aria-label')) ?? '';
+    if (/^(orange|blue|green|yellow|pink) (circle|square|triangle|star|diamond|heart)$/.test(label)) names.push(label);
+  }
+  // How long the code is: add shapes until it can be checked.
+  let length = 0;
+  while (length < 6 && !(await page.getByLabel('Check this guess').isEnabled())) {
+    await page.getByLabel(names[0], { exact: true }).click();
+    length += 1;
+  }
+  for (let i = 0; i < length; i += 1) await page.getByLabel('Take the last shape back').click();
+
+  let pool = [[]];
+  for (let i = 0; i < length; i += 1) pool = pool.flatMap((c) => names.map((_, s) => [...c, s]));
+  const score = (code, guess) => {
+    const marks = guess.map((g, i) => (g === code[i] ? 'here' : 'none'));
+    const left = new Map();
+    code.forEach((c, i) => guess[i] !== c && left.set(c, (left.get(c) ?? 0) + 1));
+    guess.forEach((g, i) => {
+      if (marks[i] === 'here') return;
+      if ((left.get(g) ?? 0) > 0) {
+        marks[i] = 'elsewhere';
+        left.set(g, left.get(g) - 1);
+      }
+    });
+    return marks;
+  };
+  let guesses = 0;
+  for (let turn = 0; turn < 10; turn += 1) {
+    if (await roundResult(page)) break;
+    if (!(await page.getByLabel('Check this guess').count())) break;
+    const guess = pool[Math.floor(pool.length / 2)];
+    for (const s of guess) await page.getByLabel(names[s], { exact: true }).click();
+    await page.getByLabel('Check this guess').click();
+    guesses += 1;
+    await page.waitForTimeout(250);
+    const rows = page.locator('[aria-label*="right place"], [aria-label*="right here"], [aria-label*="somewhere else"], [aria-label*="not in the code"]');
+    const label = await rows.nth((await rows.count()) - 1).getAttribute('aria-label');
+    if (/right place/.test(label)) {
+      const [, exact, near] = label.match(/(\d+) right place, (\d+) wrong place/);
+      pool = pool.filter((c) => {
+        const m = score(c, guess);
+        return m.filter((x) => x === 'here').length === Number(exact) && m.filter((x) => x === 'elsewhere').length === Number(near);
+      });
+    } else {
+      const marks = label.split(', ').map((part) => (/right here/.test(part) ? 'here' : /somewhere else/.test(part) ? 'elsewhere' : 'none'));
+      pool = pool.filter((c) => score(c, guess).join() === marks.join());
+    }
+    if (!pool.length) {
+      report.bug('Code Cracker', 'no code fits what the screen said about the guesses');
+      return;
+    }
+  }
+  await page.waitForTimeout(1900);
+  report.ok(`cracked it in ${guesses} guesses`);
+}
+
+/**
+ * What's the Time?: reads the clock the way a screen reader describes it —
+ * where the short hand is, where the long hand is — works out the time,
+ * and taps it.
+ */
+export async function playClockTime(page, report) {
+  let read = 0;
+  for (let turn = 0; turn < 40; turn += 1) {
+    if (await roundResult(page)) break;
+    const clock = page.getByTestId('clock');
+    if (!(await clock.count())) break;
+    const label = await clock.getAttribute('aria-label');
+    const long = label.match(/long hand is (?:on the (\d+)|(\d+) marks? past the (\d+))/);
+    const minute = long[1] ? (Number(long[1]) % 12) * 5 : (Number(long[3]) % 12) * 5 + Number(long[2]);
+    const short = label.match(/short hand is (on the|just past the|between the|nearly on the) (\d+)/);
+    let hour = Number(short[2]);
+    if (short[1] === 'nearly on the') hour = hour === 1 ? 12 : hour - 1;
+    const text = `${hour}:${String(minute).padStart(2, '0')}`;
+    const button = page.getByRole('button', { name: text, exact: true });
+    if (!(await button.count())) {
+      report.bug("What's the Time?", `worked out ${text} from "${label}", but it isn't a choice`);
+      return;
+    }
+    await button.first().click();
+    read += 1;
+    await page.waitForTimeout(200);
+  }
+  report.ok(`read ${read} clocks`);
+}
+
+/** Rhyme Time: knows which words rhyme from the game's own word groups (the
+ *  way a reader knows it from saying them), and taps the rhyme. */
+function rhymeGroups() {
+  const source = readFileSync(new URL('../../src/games/rhymetime/words.ts', import.meta.url), 'utf8');
+  return [...source.matchAll(/words: \[([^\]]*)\]/g)].map((m) => [...m[1].matchAll(/'([a-z]+)'/g)].map((w) => w[1]));
+}
+
+export async function playRhymeTime(page, report) {
+  const groups = rhymeGroups();
+  let found = 0;
+  for (let turn = 0; turn < 40; turn += 1) {
+    if (await roundResult(page)) break;
+    const prompt = page.locator('[data-testid^="prompt:"]');
+    if (!(await prompt.count())) break;
+    const word = (await prompt.getAttribute('data-testid')).split(':')[1];
+    const group = groups.find((g) => g.includes(word));
+    let clicked = false;
+    for (const b of await page.getByRole('button').all()) {
+      const label = (await b.getAttribute('aria-label')) ?? '';
+      if (label !== word && group?.includes(label)) {
+        await b.click();
+        clicked = true;
+        break;
+      }
+    }
+    if (!clicked) {
+      report.bug('Rhyme Time', `no rhyme for "${word}" among the choices`);
+      return;
+    }
+    found += 1;
+    await page.waitForTimeout(200);
+  }
+  report.ok(`found ${found} rhymes`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -1567,4 +1849,9 @@ export const PLAYERS = {
   'Peekaboo Pals': playPeekaboo,
   'Hoop Shot': playHoopShot,
   'Soft Landing': playSoftLanding,
+  'Tall Tower': playTallTower,
+  'Duck Crossing': playDuckCrossing,
+  'Code Cracker': playCodeCracker,
+  "What's the Time?": playClockTime,
+  'Rhyme Time': playRhymeTime,
 };

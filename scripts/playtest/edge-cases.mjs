@@ -73,17 +73,23 @@ for (const title of [
 await setAge(page, 4);
 await round('Puddle Hop', 'age 4');
 await round('Memory Grid', 'age 4');
+await round('Tall Tower', 'age 4');
+await round('Duck Crossing', 'age 4');
 await setAge(page, 5);
-for (const title of ['Lane Dash', 'Bounce Bricks', 'Hungry Worm', 'Hoop Shot']) await round(title, 'age 5');
+for (const title of ['Lane Dash', 'Bounce Bricks', 'Hungry Worm', 'Hoop Shot', "What's the Time?", 'Rhyme Time']) {
+  await round(title, 'age 5');
+}
 await setAge(page, 7);
-for (const title of ['Shadow Match', 'Big to Small', 'Tile Slide', 'Soft Landing']) await round(title, 'age 7');
+for (const title of ['Shadow Match', 'Big to Small', 'Tile Slide', 'Soft Landing', 'Code Cracker']) await round(title, 'age 7');
 await setAge(page, 8);
 await round('Balloon Count', 'age 8');
+await round('Rhyme Time', 'age 8');
 await setAge(page, 10);
 await round('Which Cup?', 'age 10');
 await round('Word Ladder', 'age 10');
 await round('Fruit Catch', 'age 10');
 await round('Peekaboo Pals', 'age 10');
+await round("What's the Time?", 'age 10');
 await setAge(page, 12);
 for (const title of ['Maze Explorer', 'Treasure Hunt', 'Water Works']) await round(title, 'age 12');
 
@@ -109,6 +115,9 @@ for (const title of [
   'Hungry Worm',
   'Hoop Shot',
   'Soft Landing',
+  'Tall Tower',
+  'Duck Crossing',
+  'Code Cracker',
 ]) {
   await round(title, 'age 17');
 }

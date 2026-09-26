@@ -36,6 +36,11 @@ import { specForLevel as wormSpec } from '../src/games/hungryworm/logic.ts';
 import { specForLevel as peekabooSpec } from '../src/games/peekaboo/logic.ts';
 import { specForLevel as hoopSpec } from '../src/games/hoopshot/logic.ts';
 import { specForLevel as landingSpec } from '../src/games/softlanding/logic.ts';
+import { specForLevel as towerSpec } from '../src/games/talltower/logic.ts';
+import { specForLevel as duckSpec } from '../src/games/duckcrossing/logic.ts';
+import { specForLevel as codeSpec } from '../src/games/codecracker/logic.ts';
+import { specForLevel as clockSpec } from '../src/games/clocktime/logic.ts';
+import { specForLevel as rhymeSpec } from '../src/games/rhymetime/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -300,6 +305,30 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
     const spec = landingSpec(l);
     // A gentler landing needed, a smaller pad and less fuel are harder.
     return [spec.gravity, -spec.safeV, -spec.safeH, -spec.padW, spec.offset, spec.hills, spec.wind, -spec.fuel];
+  },
+  talltower: (l) => {
+    const spec = towerSpec(l);
+    // A narrower tower, less forgiveness and an outline to aim at all make
+    // it easier, so they count negatively.
+    return [-spec.width, spec.speed, -spec.snap, spec.accel, spec.ghost ? 0 : 1, spec.alternate ? 1 : 0];
+  },
+  duckcrossing: (l) => {
+    const spec = duckSpec(l);
+    return [spec.lanes, spec.speed, -spec.gap, spec.maxLength];
+  },
+  codecracker: (l) => {
+    const spec = codeSpec(l);
+    // Marks under each shape are the easy version.
+    return [spec.length, spec.symbols, spec.repeats ? 1 : 0, spec.perSlot ? 0 : 1];
+  },
+  clocktime: (l) => {
+    const spec = clockSpec(l);
+    // A finer step is harder.
+    return [-spec.step, spec.choices, spec.near, spec.trap ? 1 : 0];
+  },
+  rhymetime: (l) => {
+    const spec = rhymeSpec(l);
+    return [spec.tier, spec.choices, spec.sameStart ? 1 : 0, spec.spelledDifferently ? 1 : 0, spec.lookAlike ? 1 : 0];
   },
 };
 

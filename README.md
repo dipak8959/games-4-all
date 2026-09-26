@@ -9,7 +9,7 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Twenty-seven games spanning early childhood through adulthood — this is a "whole
+Thirty-two games spanning early childhood through adulthood — this is a "whole
 family shares one device" app, not just a kids' app, so the oldest content
 here is built to actually hold up for a grown-up, not just tolerate one:
 
@@ -42,16 +42,24 @@ here is built to actually hold up for a grown-up, not just tolerate one:
 | **Peekaboo Pals** | Paying attention, and holding back | 3-10 |
 | **Hoop Shot** | Judging angle and strength | 5+ |
 | **Soft Landing** | Controlling speed | 7+ |
+| **Tall Tower** | Timing | 4+ |
+| **Duck Crossing** | Looking ahead and judging gaps | 4+ |
+| **Code Cracker** | Deduction from clues | 6+ |
+| **What's the Time?** | Telling the time on an analogue clock | 5-10 |
+| **Rhyme Time** | Hearing rhymes in written words | 5-9 |
 
-The last five are arcade games — formats old enough to belong to everyone,
+Bounce Bricks, Hungry Worm, Peekaboo Pals, Hoop Shot, Soft Landing, Tall
+Tower and Duck Crossing are arcade games — formats old enough to belong to everyone,
 with the parts that make arcade games hard to put down taken out. Nothing
-ends on a bump: the worm stops and waits, a bumpy landing is just a bump. A
-round is a fixed number of turns — five balls, ten apples, twenty pals, ten
-throws, three landings — and there is no score or best to chase, only stars.
+ends on a bump: the worm stops and waits, a bumpy landing is just a bump, a
+bumped duckling goes back to the grass. A round is a fixed number of turns —
+five balls, ten apples, twenty pals, ten throws, three landings, twelve
+blocks, three ducklings — and there is no score or best to chase, only
+stars.
 
 Each also carries a category (Memory, Numbers, Words, Logic, Sorting, Timing,
 Arcade) shown as filter chips on Home, alongside a search box — with
-twenty-seven games and
+thirty-two games and
 growing, finding the right one shouldn't require scrolling past all the
 others.
 

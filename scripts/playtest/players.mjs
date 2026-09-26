@@ -2318,6 +2318,146 @@ export async function playSkiSlalom(page, report) {
   report.ok(`skied the run: ${through}`);
 }
 
+/** Lets a loop running in the page tap the real mouse at a point. */
+const tappers = new WeakSet();
+async function canTap(page) {
+  if (tappers.has(page)) return;
+  tappers.add(page);
+  await page.exposeFunction('__tapAt', async (x, y) => {
+    await page.mouse.click(x, y);
+  });
+}
+
+/**
+ * Space Rocks, played by eye: follows each rock from frame to frame to see
+ * which way it drifts, and taps a little ahead of the nearest one.
+ */
+export async function playSpaceRocks(page, report) {
+  await canTap(page);
+  const bumps = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let before = [];
+        let lastTap = 0;
+        let busy = false;
+        let bumps = 0;
+        let bumping = false;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) return resolve(bumps);
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const text = document.body.innerText;
+          if (text.includes('BUMP!') && !bumping) bumps += 1;
+          bumping = text.includes('BUMP!');
+          const field = document.querySelector('[data-testid="field"]')?.getBoundingClientRect();
+          const ship = document.querySelector('[data-testid="ship"]')?.getBoundingClientRect();
+          const rocks = [...document.querySelectorAll('[data-testid^="rock:"]')].map((el) => {
+            const b = el.getBoundingClientRect();
+            return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+          });
+          // Each rock's drift, from where the nearest rock was last frame.
+          const seen = rocks.map((r) => {
+            const prev = before.reduce((best, p) => (!best || Math.hypot(p.x - r.x, p.y - r.y) < Math.hypot(best.x - r.x, best.y - r.y) ? p : best), null);
+            const moved = prev && Math.hypot(prev.x - r.x, prev.y - r.y) < 12 ? { vx: (r.x - prev.x) / ((now - prev.t) / 1000), vy: (r.y - prev.y) / ((now - prev.t) / 1000) } : { vx: 0, vy: 0 };
+            return { ...r, ...moved, t: now };
+          });
+          before = seen;
+          if (field && ship && seen.length && now - lastTap > 260 && !text.includes('DRIFTING IN')) {
+            const sx = ship.left + ship.width / 2;
+            const sy = ship.top + ship.height / 2;
+            const target = [...seen].sort((a, b) => Math.hypot(a.x - sx, a.y - sy) - Math.hypot(b.x - sx, b.y - sy))[0];
+            const k = field.width / 320;
+            const t = Math.hypot(target.x - sx, target.y - sy) / (420 * k) + 0.35;
+            let x = target.x + target.vx * t;
+            let y = target.y + target.vy * t;
+            // Keep the tap on the screen: only the way matters.
+            const dx = x - sx;
+            const dy = y - sy;
+            const fit = Math.min(1, (field.width / 2 - 6) / Math.max(1e-6, Math.abs(dx)), (field.height / 2 - 6) / Math.max(1e-6, Math.abs(dy)));
+            x = sx + dx * fit;
+            y = sy + dy * fit;
+            lastTap = now;
+            await window.__tapAt(x, y);
+          }
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`cleared space with ${bumps} bump${bumps === 1 ? '' : 's'} on the shield`);
+}
+
+/**
+ * Deep Sea Fishing, played by eye: works out where every fish will be as
+ * the hook reaches its depth, and drops the line only when the fish in the
+ * bubble will be under the boat with nothing in the way above it.
+ */
+export async function playDeepSea(page, report) {
+  await canTap(page);
+  const slips = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const last = new Map();
+        let busy = false;
+        let slips = 0;
+        let slipping = false;
+        let lastCast = 0;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) return resolve(slips);
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const text = document.body.innerText;
+          if (text.includes('NOT THAT ONE') && !slipping) slips += 1;
+          slipping = text.includes('NOT THAT ONE');
+          const field = document.querySelector('[data-testid="field"]')?.getBoundingClientRect();
+          const wanted = Number(document.querySelector('[data-testid^="wanted:"]')?.dataset.testid.split(':')[1]);
+          if (field && text.includes('TAP TO DROP THE LINE') && now - lastCast > 400) {
+            const k = field.width / 320;
+            const boatX = field.left + 2 + 160 * k;
+            const surface = field.top + 2 + 76 * k;
+            const fish = [...document.querySelectorAll('[data-testid^="fish:"]')].map((el) => {
+              const [, id, kind, , dir] = el.dataset.testid.split(':');
+              const b = el.getBoundingClientRect();
+              const L = b.width / 1.34;
+              const x = Number(dir) > 0 ? b.left + L * 0.84 : b.left + L * 0.5;
+              const prev = last.get(id);
+              const vx = prev ? (x - prev.x) / ((now - prev.t) / 1000) : 0;
+              last.set(id, { x, t: now });
+              return { kind: Number(kind), x, y: b.top + b.height / 2, vx, half: L / 2 };
+            });
+            const at = (f) => {
+              const t = (f.y - surface) / (320 * k);
+              return f.x + f.vx * t;
+            };
+            const hits = fish.filter((f) => f.vx !== 0 && Math.abs(at(f) - boatX) < f.half * 0.7).sort((a, b) => a.y - b.y);
+            if (hits.length && hits[0].kind === wanted) {
+              // Clear of every other fish's path down to it, too.
+              const blocked = fish.some((f) => f !== hits[0] && f.y < hits[0].y && Math.abs(at(f) - boatX) < f.half * 1.2);
+              if (!blocked) {
+                lastCast = now;
+                await window.__tapAt(boatX, field.top + field.height * 0.5);
+              }
+            }
+          } else if (field) {
+            for (const el of document.querySelectorAll('[data-testid^="fish:"]')) {
+              const [, id, , , dir] = el.dataset.testid.split(':');
+              const b = el.getBoundingClientRect();
+              const L = b.width / 1.34;
+              last.set(id, { x: Number(dir) > 0 ? b.left + L * 0.84 : b.left + L * 0.5, t: now });
+            }
+          }
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`caught eight fish, ${slips} put back`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -2360,4 +2500,6 @@ export const PLAYERS = {
   'Paper Plane': playPaperPlane,
   'Mini Golf': playMiniGolf,
   'Ski Slalom': playSkiSlalom,
+  'Space Rocks': playSpaceRocks,
+  'Deep Sea Fishing': playDeepSea,
 };

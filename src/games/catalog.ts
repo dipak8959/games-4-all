@@ -858,6 +858,42 @@ export const GAMES_META: readonly GameMeta[] = [
     minAge: 5,
     maxAge: 99,
   },
+  {
+    id: 'spacerocks',
+    title: 'Space Rocks',
+    icon: 'rocks',
+    color: tilePalette.rosewood,
+    skill: 'Aiming ahead of something moving: leading a target and planning the next shot',
+    roundEnds: 'Three waves of rocks broken to dust.',
+    origin: 'public-domain',
+    priorArt:
+      'Rock-breaking space shooters, from the arcade cabinets of the late 1970s, a format owned by no one.',
+    toldApartBy: 'Shape: rocks are jagged outlines that split into smaller ones; the ship is an arrowhead in the middle.',
+    ages: '7+',
+    category: 'arcade',
+    // Two slow rocks and a quick-turning ship suit a seven-year-old; four
+    // fast ones and a ship slow to turn take real aiming ahead at any age.
+    minAge: 7,
+    maxAge: 99,
+  },
+  {
+    id: 'deepsea',
+    title: 'Deep Sea Fishing',
+    icon: 'fish',
+    color: tilePalette.ocean,
+    skill: 'Timing and matching: dropping the line at the right moment for the fish that is asked for',
+    roundEnds: 'Eight fish caught.',
+    origin: 'public-domain',
+    priorArt:
+      'Fishing games, from the magnetic fishing toys of the early 1900s to the fairground hook-a-duck.',
+    toldApartBy: 'Pattern and shape: fish are striped, spotted or plain, with round or pointed tails; the fish asked for is drawn in a bubble at the top.',
+    ages: '3-8',
+    category: 'timing',
+    // Two depths and two very different fish suit a three-year-old; five
+    // busy depths of six kinds is a real test of timing up to eight.
+    minAge: 3,
+    maxAge: 8,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

@@ -805,6 +805,27 @@ const SCENES: Readonly<Record<string, Draw>> = {
       <Block u={u} x={49} y={46} w={3} h={14} color={c.hi} />
     </>
   ),
+  // A rock breaking in two, a shot on its way, and the ship.
+  spacerocks: (u, c) => (
+    <>
+      <Frame u={u} x={16} y={14} w={30} h={30} color={c.fg} line={4} />
+      <Block u={u} x={62} y={22} w={16} h={16} color={c.fg} />
+      <Block u={u} x={56} y={48} w={10} h={10} color={c.fg} />
+      <Block u={u} x={47} y={58} w={4} h={4} color={c.fg} />
+      <Block u={u} x={50} y={66} w={4} h={4} color={c.fg} />
+      <Peak u={u} cx={52} top={72} w={20} h={22} color={c.hi} />
+    </>
+  ),
+  // The boat, its line, and a fish swimming up to the hook.
+  deepsea: (u, c) => (
+    <>
+      <Block u={u} x={34} y={14} w={32} h={10} color={c.fg} />
+      <Block u={u} x={49} y={24} w={2} h={44} color={c.fg} />
+      <Block u={u} x={6} y={30} w={88} h={3} color={c.fg} />
+      <Disc u={u} cx={62} cy={76} r={11} color={c.hi} />
+      <Wedge u={u} x={70} y={66} w={14} h={20} color={c.hi} />
+    </>
+  ),
   // A drum mid-beat, and the beat's marks along the top.
   echobeat: (u, c) => (
     <>

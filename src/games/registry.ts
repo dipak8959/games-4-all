@@ -8,6 +8,8 @@ import { CountAroundScreen } from './countaround/CountAroundScreen';
 import { CountingScreen } from './counting/CountingScreen';
 import { DuckCrossingScreen } from './duckcrossing/DuckCrossingScreen';
 import { EchoBeatScreen } from './echobeat/EchoBeatScreen';
+import { DeepSeaScreen } from './deepsea/DeepSeaScreen';
+import { SpaceRocksScreen } from './spacerocks/SpaceRocksScreen';
 import { SkiSlalomScreen } from './skislalom/SkiSlalomScreen';
 import { MiniGolfScreen } from './minigolf/MiniGolfScreen';
 import { PaperPlaneScreen } from './paperplane/PaperPlaneScreen';
@@ -88,6 +90,8 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   starjar: StarJarScreen,
   mazeteam: MazeTeamScreen,
   echobeat: EchoBeatScreen,
+  deepsea: DeepSeaScreen,
+  spacerocks: SpaceRocksScreen,
   skislalom: SkiSlalomScreen,
   minigolf: MiniGolfScreen,
   paperplane: PaperPlaneScreen,

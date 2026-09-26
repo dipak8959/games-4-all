@@ -397,6 +397,28 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'The next gate is to the right: hold right, and let go just before you are lined up with it.',
     grows: 'More gates, narrower gates, a faster run, gates further across, then trees.',
   },
+  spacerocks: {
+    goal: 'Break every rock into dust, three waves of them.',
+    steps: [
+      'Tap where you want to shoot. The ship turns to face it and fires.',
+      'A big rock breaks into two smaller ones, and those into two tiny ones.',
+      'Rocks drift on while the ship turns and the shot flies: tap where the rock is going, not where it is.',
+      'A rock that reaches the ship just bumps off its shield.',
+    ],
+    example: 'A rock is drifting to the right: tap a little to the right of it.',
+    grows: 'More rocks, faster rocks, and a ship that turns more slowly.',
+  },
+  deepsea: {
+    goal: 'Catch eight fish: the one in the bubble each time.',
+    steps: [
+      'Look at the fish in the bubble: its pattern, and its tail.',
+      'Tap to drop the line. It catches the first fish it touches on the way down.',
+      'Wait for the right fish to swim under the boat, with nothing in the way above it.',
+      'The wrong fish? It goes back in the sea. Try again!',
+    ],
+    example: 'The bubble shows a stripy fish with a pointy tail: wait until it swims under the boat, then tap.',
+    grows: 'More fish at more depths, swimming faster, and more kinds to tell apart.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

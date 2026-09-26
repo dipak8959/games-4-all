@@ -51,6 +51,7 @@ test('a young child sees exactly the preschool-appropriate games', () => {
       'ballooncount',
       'bigtosmall',
       'counting',
+      'deepsea',
       'duckcrossing',
       'echobeat',
       'fruitcatch',

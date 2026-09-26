@@ -1,0 +1,12 @@
+{
+  "id": "marblemaze",
+  "title": "Marble Maze",
+  "skill": "Fine control and planning: tilting a board so a rolling marble follows a path past the holes",
+  "roundEnds": "Three boards rolled to the goal.",
+  "category": "logic",
+  "minAge": 6,
+  "maxAge": 99,
+  "origin": "public-domain",
+  "priorArt": "Tilting marble labyrinths, wooden toys since the 1940s.",
+  "toldApartBy": "Shape: the marble is a circle with a shine, holes are dark rings, the goal is a ring with a star."
+}

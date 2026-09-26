@@ -1,0 +1,184 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+
+import { AnswerButton, AnswerRow, StageLabel } from '../../components/GameStage';
+import { Icon } from '../../components/Icon';
+import { PatternMark } from './PatternMark';
+import { MARK_LABELS, markFor } from './marks';
+import { GameFrame, useGamePaused } from '../../components/GameFrame';
+import { RoundComplete } from '../../components/RoundComplete';
+import { correct, nudge, tap } from '../../feedback/feedback';
+import { useApp } from '../../state/AppProvider';
+import { hitTarget, palette, rule, space } from '../../theme/tokens';
+import { systemRng } from '../../util/random';
+import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
+import { createGame, replay, startInput, tapTile, type PatternPlayState } from './logic';
+
+
+/** How long each tile stays highlighted during the reveal, and the gap
+ *  between them — long enough to register, short enough not to drag. */
+const REVEAL_ON_MS = 550;
+const REVEAL_GAP_MS = 220;
+
+/**
+ * A beat before the first tile lights.
+ *
+ * Without it the sequence starts on the same frame the screen mounts, so the
+ * first tile flashes while the board is still arriving — after a tap on the
+ * home tile, and again the instant the round-complete card is dismissed by
+ * "Play again". A child reliably misses step one, then gets it wrong, which
+ * reads as the game being unfair rather than as a timing bug. The pause is
+ * long enough for the board to settle and for the "watch the pattern" label
+ * to be read first.
+ */
+const REVEAL_LEAD_IN_MS = 900;
+
+export function PatternPlayScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
+  const { settings } = useApp();
+  // How to play is open: the reveal stops, and plays again from the start
+  // when the game comes back.
+  const paused = useGamePaused();
+  // The prop only seeds the first round; from here the screen adapts locally
+  // each round (via `nextLevel`) so "Play again" reflects the new difficulty
+  // immediately, without waiting on a round-trip through app-level state.
+  const [level, setLevel] = useState(initialLevel);
+  // No freshness bookkeeping here — see logic.ts: every sequence is freshly
+  // randomised, so there's nothing pooled to avoid repeating.
+  const [state, setState] = useState<PatternPlayState>(() => createGame(systemRng, level));
+  const [revealIndex, setRevealIndex] = useState<number | null>(null);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const clearTimers = useCallback(() => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  }, []);
+
+  useEffect(() => clearTimers, [clearTimers]);
+
+  // Plays the reveal: highlight each tile in sequence, then flip to input.
+  useEffect(() => {
+    if (!state.revealing) return;
+    clearTimers();
+    setRevealIndex(null);
+    if (paused) return;
+
+    state.sequence.forEach((tile, i) => {
+      const onAt = REVEAL_LEAD_IN_MS + i * (REVEAL_ON_MS + REVEAL_GAP_MS);
+      timers.current.push(setTimeout(() => setRevealIndex(tile), onAt));
+      timers.current.push(setTimeout(() => setRevealIndex(null), onAt + REVEAL_ON_MS));
+    });
+
+    const doneAt = REVEAL_LEAD_IN_MS + state.sequence.length * (REVEAL_ON_MS + REVEAL_GAP_MS);
+    timers.current.push(
+      setTimeout(() => {
+        setState((prev) => startInput(prev));
+      }, doneAt),
+    );
+
+    return clearTimers;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.revealing, state.sequence, paused]);
+
+  const onTapTile = useCallback(
+    (tileIndex: number) => {
+      setState((prev) => {
+        if (prev.complete || prev.revealing) return prev;
+        const expected = prev.sequence[prev.inputIndex];
+        if (tileIndex === expected) correct(settings);
+        else nudge(settings);
+        return tapTile(prev, tileIndex);
+      });
+    },
+    [settings],
+  );
+
+  const onReplay = useCallback(() => {
+    tap(settings);
+    setState(replay);
+  }, [settings]);
+
+  const restart = useCallback((atLevel: number) => {
+    setLevel(atLevel);
+    setState(createGame(systemRng, atLevel));
+  }, []);
+
+  // Square-ish boards: 4 tiles want 2x2, 6 want 3x2, 9 want 3x3. Fixing the
+  // row at three wrapped a four-tile board to 3+1, leaving one tile stranded
+  // on its own line.
+  const columns = Math.ceil(Math.sqrt(state.tileCount));
+  const tile = hitTarget + 16;
+
+  const stars = starsForMistakes(state.mistakes);
+  const progress = state.revealing ? 0 : state.inputIndex / state.sequence.length;
+
+  return (
+    <GameFrame title="Pattern Play" icon="sequence" onExit={onExit} progress={progress}>
+      <View style={styles.stage}>
+        <StageLabel live>{state.revealing ? 'WATCH THE PATTERN' : 'NOW REPEAT IT BACK'}</StageLabel>
+
+        <AnswerRow style={[styles.grid, { maxWidth: columns * tile + (columns - 1) * rule.hair }]}>
+          {Array.from({ length: state.tileCount }, (_, i) => {
+            const mark = markFor(i);
+            const lit = revealIndex === i;
+            return (
+              <AnswerButton
+                key={i}
+                // The lit state has to be in the label, not only in
+                // `accessibilityState.selected`: `selected` is not a valid
+                // ARIA state on a button, so react-native-web drops it on the
+                // floor and the web build ends up signalling "lit" by colour
+                // alone.
+                accessibilityLabel={`${MARK_LABELS[mark]} tile${lit ? ', lit' : ''}`}
+                state={lit ? 'active' : 'idle'}
+                disabled={state.revealing}
+                onPress={() => onTapTile(i)}
+              >
+                {/* The mark takes the colour it is given, so a lit tile
+                    inverts to the ground rather than needing a fill its face
+                    can survive. */}
+                <PatternMark name={mark} size={34} color={lit ? palette.bg : palette.ink} />
+              </AnswerButton>
+            );
+          })}
+        </AnswerRow>
+
+        {/* Watch it again. A picture, not a word — the same replay mark the
+            round-complete card uses — so a child who can't read yet still
+            finds it. Inert while the pattern is already playing. */}
+        <AnswerRow style={styles.replay}>
+          <AnswerButton
+            accessibilityLabel="Watch the pattern again"
+            size={hitTarget}
+            disabled={state.revealing}
+            state={state.revealing ? 'spent' : 'idle'}
+            onPress={onReplay}
+          >
+            <Icon name="replay" size={34} color={palette.ink} />
+          </AnswerButton>
+        </AnswerRow>
+      </View>
+
+      {state.complete ? (
+        <RoundComplete
+          stars={stars}
+          reduceMotion={settings.reduceMotion}
+          onPlayAgain={() => {
+            onRoundComplete({ stars, level });
+            restart(nextLevel(level, stars));
+          }}
+          onExit={() => {
+            onRoundComplete({ stars, level });
+            onExit();
+          }}
+        />
+      ) : null}
+    </GameFrame>
+  );
+}
+
+const styles = StyleSheet.create({
+  stage: { flex: 1, justifyContent: 'center' },
+  grid: { alignSelf: 'center' },
+  replay: { paddingTop: space.lg },
+});

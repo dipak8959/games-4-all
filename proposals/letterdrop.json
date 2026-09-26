@@ -1,0 +1,12 @@
+{
+  "id": "letterdrop",
+  "title": "Letter Drop",
+  "skill": "Spelling: picking out the letters of a word, in order, as they fall",
+  "roundEnds": "Five words spelled.",
+  "category": "words",
+  "minAge": 5,
+  "maxAge": 9,
+  "origin": "original",
+  "readingIsTheSkill": true,
+  "toldApartBy": "Letters: each falling letter is drawn large; the picture shows the word to spell."
+}

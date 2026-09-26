@@ -1,0 +1,211 @@
+/**
+ * Design tokens — Modernist.
+ *
+ * These are the values from the `Games Hub` design handoff, applied to the
+ * app itself rather than kept as a separate mock. Four rules are
+ * load-bearing and everything below follows from them:
+ *
+ *   - **Zero radius everywhere.** No rounded corners, no pills.
+ *   - **Flat.** No gradients, no shadows, no glows. Structure comes from
+ *     rules: 2px dividers between major sections, 1px between rows.
+ *   - **Flush left.** Including button labels.
+ *   - **Accent used sparingly** — the primary action, the active tab, a
+ *     small piece of emphasis. Never decoration.
+ *
+ * Two constraints from this app's own safety model outrank the handoff
+ * where they collide, and both push in the safer direction:
+ *
+ *   - Nothing tappable is below `hitTarget` (72dp), well above the
+ *     handoff's 44-52px rows and both platform minimums. Small hands are
+ *     imprecise.
+ *   - Colour still identifies people and play objects. The chrome is ink on
+ *     ground, as the handoff specifies, but a profile keeps its own colour
+ *     and every game keeps its colour-blind-safe play palette — a child
+ *     picks "the blue one" long before they can read "Champ", and Sort It
+ *     Out literally sorts by colour.
+ */
+
+export const palette = {
+  /** Ground: the page. */
+  bg: '#f3f2f2',
+  /** Surface: inputs, tracks, and the cells that sit on the ground. */
+  surface: '#eae9e9',
+  /** A surface one step further back — placeholder fills, quiet rows. */
+  surfaceAlt: '#d7d3d3',
+  ink: '#201e1d',
+  /** Muted text: meta, mono labels, secondary copy. */
+  inkSoft: '#605d5d',
+  /** Every rule in the app. 2px for major divisions, 1px between rows. */
+  border: 'rgba(32,30,29,0.4)',
+
+  /** The accent, and its interaction ramp. */
+  accent: '#ec3013',
+  accentHover: '#dd2b0f',
+  accentPressed: '#ae1800',
+  /** Body-size red on a light ground — darker, so it stays legible small. */
+  accentText: '#ae1800',
+  /** Filled accent tint, for small tags. */
+  accentTint: '#ffe0d9',
+  accentTintText: '#7c1405',
+
+  /** Okabe-Ito derived: distinguishable under all common colour-vision
+   *  types. Used for play objects and profile colours — never for chrome.
+   *  Game tiles on Home have their own colours: see `tilePalette`. */
+  berry: '#E8630A',
+  sky: '#0091D6',
+  leaf: '#00A97A',
+  sun: '#F3A712',
+  grape: '#D9739F',
+  deep: '#5B5A82',
+  teal: '#0E8C7F',
+} as const;
+
+export type PaletteColor = (typeof palette)[keyof typeof palette];
+
+/** The colours a profile can be, and the colours a game screen draws its
+ *  own objects in. Chrome never reaches into this. */
+export const playPalette = {
+  berry: palette.berry,
+  sky: palette.sky,
+  leaf: palette.leaf,
+  sun: palette.sun,
+  grape: palette.grape,
+  deep: palette.deep,
+  teal: palette.teal,
+} as const;
+
+export type PlayColorKey = keyof typeof playPalette;
+
+/**
+ * Each game's tile colour on Home — one per game, never repeated.
+ *
+ * Kept apart from `playPalette` because the job is different. Play colours
+ * are bright, because a four-year-old sorts by them. A tile colour is the
+ * ground under a picture drawn in the light ground colour with one detail in
+ * ink, so it has to sit in a mid band: at least 3:1 against both (the WCAG
+ * minimum for graphics). Several play colours don't — white dots on the old
+ * yellow How Many? tile were 1.8:1 — and there were only seven of them for
+ * twelve games, so tiles repeated.
+ *
+ * Twenty-three, for twenty-two games and room for one more; `tests/theme.test.ts`
+ * holds every game to a colour of its own that clears both contrasts. None
+ * is red, which is the accent's. The band both contrasts leave is narrow, so
+ * the later colours differ as much by how strong they are as by hue: stone
+ * is a warm grey beside slate's blue one, khaki a muted ochre, and the
+ * last five were chosen by distance from all the others in CIELAB, with
+ * reds left out.
+ */
+export const tilePalette = {
+  indigo: '#5361C6',
+  ochre: '#A86A00',
+  green: '#2F8A3A',
+  rose: '#C0467A',
+  teal: '#0E8272',
+  violet: '#7F55C4',
+  orange: '#C25A12',
+  olive: '#6F7A12',
+  blue: '#2767C9',
+  slate: '#56708A',
+  magenta: '#A8489A',
+  pine: '#3C7A5A',
+  cyan: '#0B7FA6',
+  brown: '#8E6034',
+  moss: '#5B7F2A',
+  grape: '#9448B8',
+  stone: '#7A6F66',
+  khaki: '#7F7340',
+  fern: '#708C57',
+  periwinkle: '#7780BF',
+  mauve: '#A67498',
+  sage: '#628C89',
+  heather: '#875AA6',
+  clay: '#AD7F67',
+  jade: '#2D9A69',
+  fuchsia: '#C639C6',
+  copper: '#C97345',
+  mustard: '#A2852F',
+  azure: '#3F8ECF',
+  grass: '#279B27',
+  plum: '#9D3FCF',
+  raspberry: '#CC3396',
+  lichen: '#898D44',
+  lime: '#629720',
+  lagoon: '#2397A4',
+  orchid: '#C06DA7',
+  caramel: '#AA7431',
+  forest: '#347942',
+  // Chosen for the ten games that followed, the same way: the colours
+  // furthest (CIELAB) from every tile already here, that clear 3:1 against
+  // both the picture and its ink, kept off the accent and short of neon.
+  iris: '#8C7ED9',
+  flamingo: '#D26277',
+  reed: '#858C70',
+  lavender: '#8C85A8',
+  rosewood: '#A1545B',
+  ocean: '#008CEE',
+  rust: '#AF4D38',
+  cherry: '#D24D54',
+  terracotta: '#C47062',
+  crimson: '#C4315B',
+  blush: '#A87E85',
+} as const;
+
+/** Resolves one of `playPalette`'s keys, falling back to the first colour so
+ *  an unrecognised value (a colour stored by an older build, say) never
+ *  leaves a surface unfilled. */
+export function playColor(key: string): string {
+  return key in playPalette ? playPalette[key as PlayColorKey] : playPalette.sky;
+}
+
+export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
+
+/** The screen gutter. Everything flush to it, left and right. */
+export const gutter = 16;
+
+/**
+ * Zero, everywhere, deliberately — kept as a named token so the rule is
+ * visible at the call sites that used to round something off.
+ */
+export const radius = 0;
+
+/** Rule weights: 2px divides sections, 1px divides rows within one. */
+export const rule = { major: 2, hair: 1 } as const;
+
+export const font = {
+  // The handoff's scale, used as drawn — and the only scale in the app.
+  //
+  // The games used to carry a second, larger one of their own. They no
+  // longer do: a game is part of the same interface as everything around
+  // it, and two scales meant two looks. What a game does keep is the top of
+  // this scale — a sum is set at `display`, an answer at `h2` — because the
+  // sizes it needs are already here.
+  //
+  // Every one of these is a size the wireframe actually sets. It is a
+  // small-type system on purpose: the design carries emphasis with weight
+  // and rules rather than with size, so a row title is 13px extra-bold
+  // rather than 18px medium. Read it in Archivo, which is what these sizes
+  // were drawn for — its x-height runs noticeably taller than a system
+  // grotesque, so the same number is a visibly larger letter.
+  display: 42,
+  h2: 32,
+  h3: 25,
+  h5: 16,
+  body: 15,
+  secondary: 13,
+  meta: 12,
+  monoLg: 11,
+  mono: 10,
+  monoSm: 9,
+} as const;
+
+/** Letter-spacing, in px (React Native has no `em`). Headings tighten,
+ *  small uppercase labels open up. */
+export const tracking = {
+  heading: -0.5,
+  label: 1,
+  mono: 1,
+} as const;
+
+/** Minimum tappable edge, in dp. Above both platform minimums, and above
+ *  the handoff's own 44-52px rows, on purpose. */
+export const hitTarget = 72;

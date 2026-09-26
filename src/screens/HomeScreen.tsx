@@ -1,0 +1,635 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+
+import { GameArt } from '../components/GameArt';
+import { Icon, type IconName } from '../components/Icon';
+import { Rule } from '../components/Rule';
+import { Screen } from '../components/Screen';
+import { SectionHeader } from '../components/SectionHeader';
+import { TabBar, type TabKey } from '../components/TabBar';
+import {
+  GAMES_META,
+  GAME_CATEGORIES,
+  gamesByCategory,
+  gamesForAge,
+  searchGames,
+  type GameCategory,
+  type GameMeta,
+} from '../games/catalog';
+import { MAX_LEVEL } from '../games/types';
+import { tap } from '../feedback/feedback';
+import { DEFAULT_AGE, type Profile } from '../state/profiles';
+import { useApp } from '../state/AppProvider';
+import { progressFor } from '../state/progress';
+import { togglePinned } from '../state/settings';
+import { font, gutter, hitTarget, palette, playColor, rule, space } from '../theme/tokens';
+import { fonts, type } from '../theme/type';
+
+/**
+ * Home — the `Games Hub` handoff's first screen, built for real.
+ *
+ * The stack is the handoff's: a header over a 2px rule, the offline
+ * reassurance row, search, who is playing, a hero, the on-device shelf,
+ * favourites, and the tab bar. No cards, no shadows, no rounded corners;
+ * every division is a rule.
+ *
+ * Two things are this app's rather than the handoff's. The handoff's
+ * `WHO IS PLAYING` row picks an age band — this app has no bands, so the
+ * row picks a *person* instead, and their real age filters the shelf
+ * (`gamesForAge`). And where the handoff shows grayscale key art, this app
+ * draws the game's own mark: it ships no image files at all, by design.
+ */
+/**
+ * Where Home was left — the filter, the search, how far down — for each
+ * profile, for as long as the app is open. A child who picked "Arcade" and
+ * scrolled down to a game comes back from it to the same place, not to the
+ * top of the whole list. Memory only: none of it is saved.
+ */
+type Place = { readonly query: string; readonly category: GameCategory | null; readonly y: number };
+const places = new Map<string, Place>();
+
+export function HomeScreen({
+  onOpenGame,
+  onOpenParentZone,
+  onOpenProfiles,
+  onOpenPlayTime,
+}: {
+  readonly onOpenGame: (gameId: string) => void;
+  readonly onOpenParentZone: () => void;
+  readonly onOpenProfiles: () => void;
+  readonly onOpenPlayTime: () => void;
+}) {
+  const { progress, settings, profiles, activeProfile, updateSettings, levelForGame, admin, lockAdmin } = useApp();
+  const placeKey = activeProfile?.id ?? '';
+  const [query, setQuery] = useState(() => places.get(placeKey)?.query ?? '');
+  const [category, setCategory] = useState<GameCategory | null>(() => places.get(placeKey)?.category ?? null);
+  const scroller = useRef<ScrollView>(null);
+  const scrolledTo = useRef(places.get(placeKey)?.y ?? 0);
+  const restored = useRef(false);
+  useEffect(() => {
+    places.set(placeKey, { query, category, y: scrolledTo.current });
+  }, [placeKey, query, category]);
+  const age = activeProfile?.age ?? DEFAULT_AGE;
+
+  // Admin mode (for testing, see Parent Zone) lists every game on the
+  // device, whatever the age.
+  const shelf = useMemo(() => (admin.on ? GAMES_META : gamesForAge(age)), [admin.on, age]);
+  const games = useMemo(() => {
+    const byCategory = gamesByCategory(shelf, category);
+    return searchGames(byCategory, query);
+  }, [shelf, category, query]);
+
+  // Browsing (no active search or category filter) is when the hero and the
+  // favourites row earn their space — the whole point of pinning is reaching
+  // a game without going through search, so it would be self-defeating to
+  // only show favourites once a search has already narrowed things down.
+  const isBrowsing = query.trim() === '' && category === null;
+  const pinnedIds = settings.pinnedGameIds;
+  const favourites = isBrowsing
+    ? (pinnedIds.map((id) => games.find((g) => g.id === id)).filter(Boolean) as GameMeta[])
+    : [];
+  const hero = isBrowsing ? (favourites[0] ?? games[0] ?? null) : null;
+
+  const onTogglePin = (gameId: string) => updateSettings(togglePinned(settings, gameId));
+  const openGame = (gameId: string) => {
+    tap(settings);
+    onOpenGame(gameId);
+  };
+
+  const onSelectTab = (key: TabKey) => {
+    if (key === 'parent') onOpenParentZone();
+    else if (key === 'me') onOpenProfiles();
+    else if (key === 'time') onOpenPlayTime();
+  };
+
+  return (
+    <Screen padded={false}>
+      <ScrollView
+        ref={scroller}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        scrollEventThrottle={100}
+        onScroll={(e) => {
+          scrolledTo.current = e.nativeEvent.contentOffset.y;
+          places.set(placeKey, { query, category, y: scrolledTo.current });
+        }}
+        onContentSizeChange={() => {
+          if (restored.current) return;
+          restored.current = true;
+          if (scrolledTo.current > 0) scroller.current?.scrollTo({ y: scrolledTo.current, animated: false });
+        }}
+      >
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text style={type.mono}>OFFLINE SUPER APP</Text>
+            <Text style={type.h3} accessibilityRole="header">
+              GAMES
+            </Text>
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${activeProfile?.name ?? 'Profile'}, age ${age}. Tap to switch profile, grown-ups only.`}
+            onPress={onOpenProfiles}
+            style={({ pressed }) => [styles.kidChip, pressed && styles.pressedTint]}
+          >
+            <Icon name="shield" size={16} color={palette.ink} />
+            <Text style={[type.monoSm, styles.kidChipText]}>
+              {(activeProfile?.name ?? 'PLAYER').toUpperCase()}
+            </Text>
+          </Pressable>
+        </View>
+        <Rule weight="major" />
+
+        {admin.on ? (
+          <>
+            <View style={styles.adminRow}>
+              <Text style={[type.monoStrong, styles.adminText]}>
+                {`ADMIN MODE · ALL ${GAMES_META.length} GAMES${admin.level ? ` · LEVEL ${admin.level}` : ''}`}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Turn off admin mode"
+                onPress={lockAdmin}
+                style={({ pressed }) => [styles.adminOff, pressed && styles.pressedTint]}
+              >
+                <Text style={[type.monoStrong, styles.adminText]}>TURN OFF</Text>
+              </Pressable>
+            </View>
+            <Rule weight="major" />
+          </>
+        ) : null}
+
+        <View style={styles.offlineRow}>
+          <Icon name="offline" size={16} color={palette.accentText} />
+          <Text style={type.secondary}>Works with no internet. No ads, no chat, no purchases.</Text>
+        </View>
+        <Rule weight="major" />
+
+        <View style={styles.searchWrap}>
+          <View style={styles.search}>
+            <Icon name="search" size={18} color={palette.inkSoft} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder={`Search ${shelf.length === 1 ? '1 game' : `${shelf.length} games`} on this device`}
+              placeholderTextColor={palette.inkSoft}
+              style={styles.searchInput}
+              accessibilityLabel="Search games"
+              returnKeyType="search"
+              autoCorrect={false}
+            />
+            {query.length > 0 ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear search"
+                onPress={() => setQuery('')}
+                style={styles.clear}
+              >
+                <Icon name="close" size={16} color={palette.inkSoft} />
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+
+        <SectionHeader label="WHO IS PLAYING" meta="TAP TO SWITCH" tone="quiet" />
+        <CellGrid
+          columns={profiles.length > 3 ? 4 : Math.max(profiles.length, 1)}
+          items={profiles}
+          keyOf={(p) => p.id}
+          render={(profile) => (
+            <ProfileCell
+              profile={profile}
+              selected={profile.id === activeProfile?.id}
+              onPress={onOpenProfiles}
+            />
+          )}
+        />
+        <Rule weight="major" />
+
+        <SectionHeader label="WHAT KIND OF GAME" tone="quiet" />
+        <CellGrid
+          columns={3}
+          items={[{ id: null, label: 'All', icon: 'all' as IconName }, ...GAME_CATEGORIES]}
+          keyOf={(c) => c.id ?? 'all'}
+          render={(c) => (
+            <CategoryCell
+              label={c.label}
+              icon={c.icon}
+              selected={category === c.id}
+              onPress={() => setCategory((prev) => (prev === c.id ? null : (c.id as GameCategory | null)))}
+            />
+          )}
+        />
+        <Rule weight="major" />
+
+        {hero ? (
+          <>
+            <Hero
+              game={hero}
+              level={levelForGame(hero.id)}
+              onPress={() => openGame(hero.id)}
+            />
+            <Rule weight="major" />
+          </>
+        ) : null}
+
+        <SectionHeader
+          label="ON THIS DEVICE"
+          meta={`${games.length} ${games.length === 1 ? 'GAME' : 'GAMES'} · OFFLINE`}
+        />
+
+        {games.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={type.body}>
+              {query || category
+                ? 'No games match that search — try clearing it.'
+                : 'More games are on the way for this age.'}
+            </Text>
+          </View>
+        ) : (
+          <CellGrid
+            columns={3}
+            items={games}
+            keyOf={(g) => g.id}
+            render={(game) => (
+              <GameCell
+                game={game}
+                pinned={pinnedIds.includes(game.id)}
+                stars={progressFor(progress, game.id).stars}
+                onPress={() => openGame(game.id)}
+                onTogglePin={() => onTogglePin(game.id)}
+              />
+            )}
+          />
+        )}
+
+        {favourites.length > 0 ? (
+          <>
+            <Rule weight="major" />
+            <SectionHeader label="PINNED BY THIS PROFILE" meta={`${favourites.length}`} />
+            {favourites.map((game) => (
+              <FavouriteRow key={game.id} game={game} onPress={() => openGame(game.id)} />
+            ))}
+          </>
+        ) : null}
+      </ScrollView>
+
+      <TabBar active="games" onSelect={onSelectTab} />
+    </Screen>
+  );
+}
+
+/**
+ * The handoff's grid: cells on the ground, separated by 1px divider-coloured
+ * gaps. Rows are built explicitly rather than wrapped, so an incomplete last
+ * row keeps its column width instead of stretching to fill — and so a
+ * sub-pixel rounding difference can never drop a column onto its own line.
+ */
+function CellGrid<T>({
+  columns,
+  items,
+  keyOf,
+  render,
+}: {
+  readonly columns: number;
+  readonly items: readonly T[];
+  readonly keyOf: (item: T) => string;
+  readonly render: (item: T) => React.ReactNode;
+}) {
+  const rows: T[][] = [];
+  for (let i = 0; i < items.length; i += columns) rows.push(items.slice(i, i + columns));
+
+  return (
+    <View style={styles.grid}>
+      {rows.map((row, index) => (
+        <View key={index} style={styles.gridRow}>
+          {row.map((item) => (
+            <View key={keyOf(item)} style={styles.gridCell}>
+              {render(item)}
+            </View>
+          ))}
+          {Array.from({ length: columns - row.length }, (_, i) => (
+            <View key={`gap-${i}`} style={styles.gridCell} />
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function ProfileCell({
+  profile,
+  selected,
+  onPress,
+}: {
+  readonly profile: Profile;
+  readonly selected: boolean;
+  readonly onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      aria-checked={selected}
+      accessibilityLabel={`${profile.name}, age ${profile.age}${selected ? ', playing now' : ''}. Switching needs a grown-up.`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.cell, selected && styles.cellSelected, pressed && !selected && styles.pressedTint]}
+    >
+      <View style={[styles.profileDot, { backgroundColor: selected ? palette.bg : playColor(profile.avatar) }]} />
+      <Text style={[styles.cellLabel, selected && styles.onAccent]} numberOfLines={1}>
+        {profile.name}
+      </Text>
+      <Text style={[type.monoSm, selected && styles.onAccentSub]}>{profile.age} YRS</Text>
+    </Pressable>
+  );
+}
+
+function CategoryCell({
+  label,
+  icon,
+  selected,
+  onPress,
+}: {
+  readonly label: string;
+  readonly icon: IconName;
+  readonly selected: boolean;
+  readonly onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      accessibilityLabel={`${label} games${selected ? ', selected' : ''}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.cell, selected && styles.cellSelected, pressed && !selected && styles.pressedTint]}
+    >
+      <Icon name={icon} size={20} color={selected ? palette.bg : palette.ink} />
+      <Text style={[styles.cellLabel, selected && styles.onAccent]} numberOfLines={1}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * The handoff's 184px hero. Its key-art slot is the game's own picture — a
+ * tiny version of the game on its colour (`GameArt`), drawn at runtime, since
+ * this repository ships no image files.
+ */
+function Hero({
+  game,
+  level,
+  onPress,
+}: {
+  readonly game: GameMeta;
+  readonly level: number;
+  readonly onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${game.title}. ${game.skill}. Ages ${game.ages}. Level ${level} of ${MAX_LEVEL}.`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.hero, { backgroundColor: game.color }, pressed && styles.heroPressed]}
+    >
+      <View style={styles.heroArt}>
+        <GameArt id={game.id} color={game.color} />
+      </View>
+      <View style={styles.heroPlate}>
+        <Text style={[type.mono, styles.heroKicker]}>ON DEVICE · READY TO PLAY</Text>
+        <Text style={type.h3}>{game.title}</Text>
+        <Text style={type.meta}>
+          Ages {game.ages} · {game.skill} · level {level} of {MAX_LEVEL}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function GameCell({
+  game,
+  pinned,
+  stars,
+  onPress,
+  onTogglePin,
+}: {
+  readonly game: GameMeta;
+  readonly pinned: boolean;
+  readonly stars: number;
+  readonly onPress: () => void;
+  readonly onTogglePin: () => void;
+}) {
+  return (
+    <View style={styles.gameCell}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${game.title}. ${stars} stars earned.`}
+        onPress={onPress}
+        style={({ pressed }) => [styles.gameCellMain, pressed && styles.pressedTint]}
+      >
+        <View style={styles.thumb}>
+          <GameArt id={game.id} color={game.color} />
+        </View>
+        <Text style={styles.gameTitle} numberOfLines={2}>
+          {game.title}
+        </Text>
+        <Text style={type.monoSm}>
+          {game.ages} · {game.category.toUpperCase()}
+        </Text>
+      </Pressable>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${pinned ? 'Unpin' : 'Pin'} ${game.title}`}
+        accessibilityState={{ selected: pinned }}
+        onPress={onTogglePin}
+        style={styles.pin}
+      >
+        {/* On the game's colour: ink when pinned, the light ground when not.
+            The accent would vanish into the orange tiles. */}
+        <Icon name="star" size={18} color={pinned ? palette.ink : palette.bg} />
+      </Pressable>
+    </View>
+  );
+}
+
+/** The handoff's `SAME SCREEN, TWO PLAYERS` row, carrying this app's
+ *  pinned games instead — same shape: a mark, two lines, and one accent
+ *  block that starts it. */
+function FavouriteRow({ game, onPress }: { readonly game: GameMeta; readonly onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Play ${game.title}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.favRow, pressed && styles.pressedTint]}
+    >
+      <View style={styles.favMark}>
+        <Icon name={game.icon} size={24} color={palette.ink} />
+      </View>
+      <View style={styles.favText}>
+        <Text style={type.rowTitle}>{game.title}</Text>
+        <Text style={type.meta}>{game.skill}</Text>
+      </View>
+      <View style={styles.favStart}>
+        <Text style={[type.monoSm, styles.onAccent]}>PLAY</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: { paddingBottom: space.xl },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: gutter,
+    paddingTop: space.md,
+    paddingBottom: space.lg,
+    gap: space.md,
+  },
+  headerText: { gap: space.xs },
+  kidChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    minHeight: hitTarget,
+    paddingHorizontal: space.md,
+    borderWidth: rule.major,
+    borderColor: palette.ink,
+  },
+  kidChipText: { color: palette.ink },
+  offlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingHorizontal: gutter,
+    paddingVertical: 11,
+  },
+  // Admin mode says so at the top of Home for as long as it's on, so it is
+  // never handed to a child by accident.
+  adminRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: gutter,
+    backgroundColor: palette.accentTint,
+  },
+  adminText: { color: palette.accentTintText },
+  adminOff: {
+    minHeight: hitTarget,
+    paddingHorizontal: gutter,
+    justifyContent: 'center',
+    borderLeftWidth: rule.hair,
+    borderLeftColor: palette.border,
+  },
+  searchWrap: { paddingHorizontal: gutter, paddingTop: space.lg, paddingBottom: space.xs },
+  search: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    minHeight: hitTarget,
+    paddingHorizontal: space.md,
+    backgroundColor: palette.surface,
+    borderWidth: rule.hair,
+    borderColor: palette.border,
+  },
+  // The field fills its box: all of it takes the tap, not a line of text.
+  searchInput: { flex: 1, minWidth: 0, alignSelf: 'stretch', minHeight: hitTarget, fontSize: font.body, color: palette.ink },
+  clear: { width: hitTarget, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', marginRight: -space.md },
+
+  grid: { gap: rule.hair, paddingHorizontal: gutter },
+  gridRow: { flexDirection: 'row', gap: rule.hair },
+  gridCell: { flex: 1 },
+
+  cell: {
+    minHeight: hitTarget,
+    justifyContent: 'center',
+    gap: space.xs,
+    paddingVertical: space.md,
+    paddingHorizontal: space.sm,
+    backgroundColor: palette.surface,
+    borderWidth: rule.hair,
+    borderColor: palette.border,
+  },
+  cellSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+  cellLabel: { fontFamily: fonts.heavy, fontSize: font.body, color: palette.ink },
+  onAccent: { color: palette.bg },
+  onAccentSub: { color: palette.accentTint },
+  profileDot: { width: 14, height: 14 },
+  pressedTint: { backgroundColor: 'rgba(32,30,29,0.10)' },
+
+  hero: {
+    height: 184,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+    backgroundColor: palette.surfaceAlt,
+  },
+  heroPressed: { opacity: 0.85 },
+  heroArt: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 184,
+    height: 184,
+  },
+  heroPlate: {
+    maxWidth: 310,
+    // Stops short of the picture on the right (184 wide, as tall as the
+    // hero), so the name never covers the game's scene.
+    marginRight: 184,
+    alignSelf: 'flex-start',
+    backgroundColor: palette.bg,
+    paddingLeft: gutter,
+    paddingRight: gutter,
+    paddingTop: space.md,
+    paddingBottom: space.sm,
+    gap: 2,
+  },
+  heroKicker: { color: palette.accentText },
+
+  gameCell: { backgroundColor: palette.surface, borderWidth: rule.hair, borderColor: palette.border },
+  gameCellMain: { padding: space.sm, gap: space.sm, minHeight: 150 },
+  thumb: {
+    aspectRatio: 1,
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    backgroundColor: palette.surfaceAlt,
+  },
+  gameTitle: {
+    fontFamily: fonts.heavy,
+    fontSize: font.secondary,
+    color: palette.ink,
+    // Two lines' worth of height whether the title needs one line or two,
+    // so a long name ("Number Crunch") and a short one ("Sudoku") leave
+    // their cells the same height and the grid rows stay aligned.
+    lineHeight: 16,
+    minHeight: 32,
+  },
+  // The star is drawn small in the card's corner, but the whole 72dp corner
+  // square takes the tap — what `hitSlop` would do, on the web as well.
+  pin: { position: 'absolute', top: 0, right: 0, width: hitTarget, height: hitTarget, alignItems: 'flex-end', padding: space.sm },
+
+  favRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    minHeight: hitTarget,
+    paddingHorizontal: gutter,
+    paddingVertical: space.md,
+    borderTopWidth: rule.hair,
+    borderTopColor: palette.border,
+  },
+  favMark: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: palette.surface,
+  },
+  favText: { flex: 1, gap: 2 },
+  favStart: { backgroundColor: palette.accent, paddingHorizontal: space.lg, paddingVertical: space.md },
+
+  empty: { paddingHorizontal: gutter, paddingVertical: space.xl },
+});

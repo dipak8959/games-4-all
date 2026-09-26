@@ -289,9 +289,11 @@ game where reading is the point rather than something to avoid:
   it). Sudoku's grid cells are the one deliberate exception (a 9x9 board
   cannot fit 72dp cells on a phone screen), and only after selecting a
   cell does the actual answer get entered on full-sized number buttons. A
-  game card's pin/favourite star is visually smaller (40dp) but carries
-  `hitSlop` out to a 72dp effective touch target, since it's a secondary,
+  game card's pin/favourite star is drawn small in the card's corner, but
+  the whole 72dp corner square takes the tap. It is a secondary,
   fully-reversible action rather than the card's primary "play this" tap.
+  The grown-up screens are held to the same floor: limit chips, colour and
+  name choices, and whole rows for the on/off switches.
 - **Always escapable.** Every game has a large back control that exits
   immediately, with no confirmation dialog to read.
 - **Motion is optional.** The OS "reduce motion" setting is honoured

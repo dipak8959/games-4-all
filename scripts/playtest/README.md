@@ -1,6 +1,6 @@
 # Playtests
 
-Four passes that play the real app in a real browser. Nothing here imports
+Five passes that play the real app in a real browser. Nothing here imports
 the games' logic: each pass reads the board through the same accessibility
 labels a screen reader gets, works out the answer itself, and taps. A pass
 only goes green if what a child actually touches works.
@@ -10,6 +10,7 @@ only goes green if what a child actually touches works.
 | `play-every-game.mjs` | Every game played to the end, then "Play again", "Back to games" and the Parent Zone's round counts. |
 | `edge-cases.mjs` | Every game at a 3-year-old's level and at a 17-year-old's, wrong answers on purpose, tiles tapped before they're live, and rounds abandoned half-way. |
 | `rapid-taps.mjs` | Five fast taps on one answer, and five on "Play again" — neither may count twice. |
+| `tap-targets.mjs` | Every screen on a 320x568 phone — Home, search, TIME, the gate, Parent Zone, Profiles, the editor, and every game at level 1 and 6 — measured for 72dp targets, sideways scrolling, and buttons that can't be reached. |
 | `screen-time.mjs` | The limits a grown-up sets, on a clock the pass moves on: a sitting spans games, the stop screen stays until a grown-up changes the limit, and a new day brings a new allowance. |
 
 ## Running them
@@ -25,6 +26,7 @@ node scripts/playtest/play-every-game.mjs
 node scripts/playtest/edge-cases.mjs
 node scripts/playtest/rapid-taps.mjs
 node scripts/playtest/screen-time.mjs
+node scripts/playtest/tap-targets.mjs
 ```
 
 `PLAYTEST_URL` overrides where the build is served from; `PLAYTEST_CHROME`
@@ -56,3 +58,10 @@ Each pass exits non-zero if it finds a bug or the page logs an error.
   Grid), Treasure Hunt's map spilled up over the Back button, and the arrow
   pads wrapped "right" under "up". Grids and arrow rows now shrink to the
   minimum first and may use the gutters (`fitTiles`, `useKeyRow`).
+- Home and the grown-up screens had never been measured, and broke the 72dp
+  floor in several places. The pin star on every game card was 26dp; its
+  `hitSlop` reached 58dp on a phone and does nothing on the web, while
+  SAFETY.md said 72. "Clear search" was 16dp, and the search field was a
+  33dp line inside its 72dp box. Also under 72dp: the profile button,
+  Parent Zone's limit chips and switches, and the profile editor's colours
+  and names.

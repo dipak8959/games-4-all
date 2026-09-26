@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
   headerText: { gap: space.xs },
   done: {
     minHeight: hitTarget,
+    minWidth: hitTarget,
     paddingHorizontal: gutter,
     alignItems: 'center',
     justifyContent: 'center',
@@ -205,7 +206,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    minHeight: hitTarget,
+    // The rule sits inside the row: the targets below it still get 72dp.
+    minHeight: hitTarget + rule.hair,
     borderTopWidth: rule.hair,
     borderTopColor: palette.border,
   },

@@ -154,7 +154,7 @@ export function HomeScreen({
                 accessibilityRole="button"
                 accessibilityLabel="Clear search"
                 onPress={() => setQuery('')}
-                hitSlop={16}
+                style={styles.clear}
               >
                 <Icon name="close" size={16} color={palette.inkSoft} />
               </Pressable>
@@ -413,7 +413,6 @@ function GameCell({
         accessibilityLabel={`${pinned ? 'Unpin' : 'Pin'} ${game.title}`}
         accessibilityState={{ selected: pinned }}
         onPress={onTogglePin}
-        hitSlop={16}
         style={styles.pin}
       >
         {/* On the game's colour: ink when pinned, the light ground when not.
@@ -465,7 +464,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
-    minHeight: 48,
+    minHeight: hitTarget,
     paddingHorizontal: space.md,
     borderWidth: rule.major,
     borderColor: palette.ink,
@@ -506,7 +505,9 @@ const styles = StyleSheet.create({
     borderWidth: rule.hair,
     borderColor: palette.border,
   },
-  searchInput: { flex: 1, fontSize: font.body, color: palette.ink, paddingVertical: space.sm },
+  // The field fills its box: all of it takes the tap, not a line of text.
+  searchInput: { flex: 1, minWidth: 0, alignSelf: 'stretch', minHeight: hitTarget, fontSize: font.body, color: palette.ink },
+  clear: { width: hitTarget, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', marginRight: -space.md },
 
   grid: { gap: rule.hair, paddingHorizontal: gutter },
   gridRow: { flexDirection: 'row', gap: rule.hair },
@@ -576,7 +577,9 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     minHeight: 32,
   },
-  pin: { position: 'absolute', top: space.xs, right: space.xs, padding: space.xs },
+  // The star is drawn small in the card's corner, but the whole 72dp corner
+  // square takes the tap — what `hitSlop` would do, on the web as well.
+  pin: { position: 'absolute', top: 0, right: 0, width: hitTarget, height: hitTarget, alignItems: 'flex-end', padding: space.sm },
 
   favRow: {
     flexDirection: 'row',

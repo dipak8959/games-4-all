@@ -37,11 +37,11 @@ export function reporter() {
 }
 
 /** Opens the app on a phone-sized viewport, past the onboarding screen. */
-export async function openApp({ clockAt } = {}) {
+export async function openApp({ clockAt, viewport = { width: 390, height: 844 } } = {}) {
   const browser = await chromium.launch({
     executablePath: process.env.PLAYTEST_CHROME ?? undefined,
   });
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const page = await browser.newPage({ viewport });
   // A pass that needs to move time on (screen-time limits) starts the page on
   // a clock it controls. Time still flows on its own until moved.
   if (clockAt) await page.clock.install({ time: clockAt });

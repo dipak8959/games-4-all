@@ -343,16 +343,21 @@ function Toggle({
   readonly value: boolean;
   readonly onChange: (value: boolean) => void;
 }) {
+  // The whole 72dp row is the switch. The platform switch is drawn for the
+  // eye only: on its own it is a 40x20 target.
   return (
-    <View style={styles.row}>
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: value }}
+      onPress={() => onChange(!value)}
+      style={({ pressed }) => [styles.row, pressed && styles.pressedTint]}
+    >
       <Text style={type.rowTitle}>{label}</Text>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        accessibilityLabel={label}
-        trackColor={{ true: palette.accent, false: palette.surfaceAlt }}
-      />
-    </View>
+      <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
+        <Switch value={value} trackColor={{ true: palette.accent, false: palette.surfaceAlt }} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -408,6 +413,7 @@ const styles = StyleSheet.create({
   headerText: { gap: space.xs },
   done: {
     minHeight: hitTarget,
+    minWidth: hitTarget,
     paddingHorizontal: gutter,
     alignItems: 'center',
     justifyContent: 'center',
@@ -434,8 +440,8 @@ const styles = StyleSheet.create({
   limitLabel: { paddingHorizontal: gutter },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: rule.hair, paddingHorizontal: gutter },
   chip: {
-    minHeight: 56,
-    minWidth: 72,
+    minHeight: hitTarget,
+    minWidth: hitTarget,
     paddingHorizontal: space.md,
     alignItems: 'flex-start',
     justifyContent: 'center',

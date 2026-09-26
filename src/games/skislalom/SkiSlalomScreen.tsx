@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AnswerRow, HoldButton, StageLabel } from '../../components/GameStage';
 import { GameFrame, useGamePaused } from '../../components/GameFrame';
@@ -8,7 +8,6 @@ import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { hitTarget, palette, playPalette, rule } from '../../theme/tokens';
-import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, type GameScreenProps } from '../types';
 import {
@@ -38,10 +37,18 @@ function Flag({ x, y, k, colour, mark }: { x: number; y: number; k: number; colo
     <View style={{ position: 'absolute', left: (x - 1.5) * k, top: (y - POLE) * k }}>
       <View style={[styles.pole, { width: 3 * k, height: POLE * k }]} />
       <View style={[styles.flag, { left: 3 * k, width: FLAG * k, height: FLAG * 0.8 * k, backgroundColor: colour }]}>
-        {mark ? (
-          <Text allowFontScaling={false} style={[styles.mark, { fontSize: 11 * k, lineHeight: 12 * k }]}>
-            {mark === 'in' ? '✓' : '✕'}
-          </Text>
+        {mark === 'in' ? (
+          // A tick: a short stroke and a long one.
+          <>
+            <View style={[styles.mark, { left: 3 * k, top: 6 * k, width: 5 * k, height: 2 * k, transform: [{ rotate: '45deg' }] }]} />
+            <View style={[styles.mark, { left: 5 * k, top: 5 * k, width: 9 * k, height: 2 * k, transform: [{ rotate: '-50deg' }] }]} />
+          </>
+        ) : mark === 'missed' ? (
+          // A cross.
+          <>
+            <View style={[styles.mark, { left: 3 * k, top: 5.5 * k, width: 10 * k, height: 2 * k, transform: [{ rotate: '45deg' }] }]} />
+            <View style={[styles.mark, { left: 3 * k, top: 5.5 * k, width: 10 * k, height: 2 * k, transform: [{ rotate: '-45deg' }] }]} />
+          </>
         ) : null}
       </View>
     </View>
@@ -238,8 +245,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   pole: { backgroundColor: palette.ink },
-  flag: { position: 'absolute', top: 0, borderWidth: rule.hair, borderColor: palette.ink, alignItems: 'center', justifyContent: 'center' },
-  mark: { fontFamily: fonts.heavy, color: palette.bg },
+  flag: { position: 'absolute', top: 0, borderWidth: rule.hair, borderColor: palette.ink },
+  mark: { position: 'absolute', backgroundColor: palette.bg },
   pine: {
     position: 'absolute',
     left: 0,

@@ -75,7 +75,16 @@ export type IconName =
   | 'duck'
   | 'code'
   | 'clockface'
-  | 'rhyme';
+  | 'rhyme'
+  // The group games, their category, and Count Around's two actions
+  | 'group'
+  | 'market'
+  | 'countaround'
+  | 'starjar'
+  | 'mazeteam'
+  | 'echo'
+  | 'clap'
+  | 'stomp';
 
 export function Icon({
   name,
@@ -832,6 +841,101 @@ export function Icon({
           <View style={[at(size, 0.06, 0.58, 0.22, 0.22), { borderWidth: s / 2, borderColor: color, transform: [{ rotate: '45deg' }] }]} />
           <View style={[at(size, 0.4, 0.58, 0.22, 0.22), { backgroundColor: color }]} />
           <View style={[at(size, 0.72, 0.58, 0.22, 0.22), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'group':
+      // Three people side by side: a head and shoulders each.
+      return (
+        <View style={box} {...hidden}>
+          {[0.06, 0.37, 0.68].map((left) => (
+            <React.Fragment key={left}>
+              <View style={[at(size, left + 0.06, 0.2, 0.14, 0.14), { borderRadius: size, backgroundColor: color }]} />
+              <View style={[at(size, left, 0.4, 0.26, 0.36), { backgroundColor: color }]} />
+            </React.Fragment>
+          ))}
+        </View>
+      );
+
+    case 'market':
+      // A shopping bag with its handle.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.34, 0.08, 0.32, 0.24), { borderWidth: s, borderBottomWidth: 0, borderColor: color }]} />
+          <View style={[at(size, 0.14, 0.32, 0.72, 0.58), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'countaround':
+      // Players round a table: a ring of marks, one of them lit.
+      return (
+        <View style={box} {...hidden}>
+          {Array.from({ length: 6 }, (_, i) => {
+            const a = (i * Math.PI) / 3;
+            const cx = 0.5 + 0.36 * Math.sin(a);
+            const cy = 0.5 - 0.36 * Math.cos(a);
+            return (
+              <View
+                key={i}
+                style={[at(size, cx - 0.1, cy - 0.1, 0.2, 0.2), i === 0 ? { backgroundColor: color } : { borderWidth: s / 2, borderColor: color }]}
+              />
+            );
+          })}
+        </View>
+      );
+
+    case 'starjar':
+      // A jar with a star in it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.3, 0.06, 0.4, 0.1), { backgroundColor: color }]} />
+          <View style={[at(size, 0.16, 0.2, 0.68, 0.74), { borderWidth: s, borderColor: color }]} />
+          <View style={[styles.center, at(size, 0.16, 0.26, 0.68, 0.66)]}>
+            <Text style={{ fontSize: size * 0.44, lineHeight: size * 0.52, color }} allowFontScaling={false}>
+              ★
+            </Text>
+          </View>
+        </View>
+      );
+
+    case 'mazeteam':
+      // A maze wall, and two explorers' marks side by side.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.08, 0.08, 0.84, 0.84), { borderWidth: s, borderColor: color, borderBottomWidth: 0 }]} />
+          <View style={[at(size, 0.5, 0.08, 0, 0.44), { width: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.2, 0.62, 0.22, 0.22), { backgroundColor: color }]} />
+          <View style={[at(size, 0.58, 0.62, 0.22, 0.22), { borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'echo':
+      // A drum, and the beat coming back off it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.06, 0.24, 0.52, 0.52), { borderRadius: size, borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.66, 0.34, 0, 0.32), { width: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.82, 0.24, 0, 0.52), { width: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'clap':
+      // Two hands meeting: two bars leaning in.
+      return (
+        <View style={[styles.center, box]} {...hidden}>
+          <View style={[at(size, 0.24, 0.14, 0.2, 0.62), { backgroundColor: color, transform: [{ rotate: '20deg' }] }]} />
+          <View style={[at(size, 0.56, 0.14, 0.2, 0.62), { backgroundColor: color, transform: [{ rotate: '-20deg' }] }]} />
+          <View style={[at(size, 0.1, 0.82, 0.8, 0), { height: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'stomp':
+      // A boot coming down on the ground.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.3, 0.1, 0.24, 0.56), { backgroundColor: color }]} />
+          <View style={[at(size, 0.3, 0.56, 0.5, 0.18), { backgroundColor: color }]} />
+          <View style={[at(size, 0.06, 0.84, 0.88, 0), { height: s, backgroundColor: color }]} />
         </View>
       );
 

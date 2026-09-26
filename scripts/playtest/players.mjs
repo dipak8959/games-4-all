@@ -1209,6 +1209,7 @@ export async function playHungryWorm(page, report) {
         const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
         let presses = 0;
         let lastHead = null;
+        let lastDecided = 0;
         let busy = false;
         const started = performance.now();
         const frame = async (now) => {
@@ -1225,8 +1226,12 @@ export async function playHungryWorm(page, report) {
             const heading = (board.getAttribute('aria-label') ?? '').match(/heading (\w+)/)?.[1];
             const head = segs[0];
             const started = !document.body.innerText.includes('PRESS AN ARROW');
-            if (head !== lastHead || !started) {
+            // Decide again when the head moves — or when it hasn't for a
+            // while: a bumped worm stops and waits for a new way.
+            const stuck = document.body.innerText.includes('BUMP!') && now - lastDecided > 350;
+            if (head !== lastHead || !started || stuck) {
               lastHead = head;
+              lastDecided = now;
               const next = (cell, dir) => {
                 const r = Math.floor(cell / cols);
                 const c = cell % cols;
@@ -1821,6 +1826,192 @@ export async function playRhymeTime(page, report) {
   report.ok(`found ${found} rhymes`);
 }
 
+/** Group games start by asking how many players. */
+async function choosePlayers(page, n) {
+  await page.getByLabel(`${n} players`, { exact: true }).click();
+  await page.waitForTimeout(300);
+}
+
+/**
+ * Market Memory, played as a team with a good memory: every turn it taps
+ * what went in the bag, in the order it went in, then adds the first thing
+ * on the shelf that isn't already the last one in.
+ */
+export async function playMarketMemory(page, report) {
+  await choosePlayers(page, 3);
+  const bag = [];
+  let taps = 0;
+  for (let guard = 0; guard < 400; guard += 1) {
+    if (await roundResult(page)) break;
+    const el = page.locator('[data-testid^="bag:"]');
+    if (!(await el.count())) break;
+    const [, , recalled, phase] = (await el.getAttribute('data-testid')).split(':');
+    if (await page.getByLabel('Got it, carry on').count()) {
+      report.bug('Market Memory', 'a perfect memory slipped');
+      await page.getByLabel('Got it, carry on').click();
+      continue;
+    }
+    if (phase === 'recall') {
+      await page.getByLabel(bag[Number(recalled)], { exact: true }).click();
+    } else {
+      const names = [];
+      for (const b of await page.getByRole('button').all()) {
+        const label = (await b.getAttribute('aria-label')) ?? '';
+        if (/^(orange|blue|green|yellow|pink) (circle|square|triangle|star|diamond|heart)( in a box)?$/.test(label)) names.push(label);
+      }
+      const pick = names.find((n) => n !== bag[bag.length - 1]) ?? names[0];
+      bag.push(pick);
+      await page.getByLabel(pick, { exact: true }).click();
+    }
+    taps += 1;
+    await page.waitForTimeout(120);
+  }
+  report.ok(`filled the bag with ${bag.length} things in ${taps} taps`);
+}
+
+/** Count Around: reads the count and the rules, and says the right thing. */
+export async function playCountAround(page, report) {
+  await choosePlayers(page, 4);
+  let said = 0;
+  for (let guard = 0; guard < 120; guard += 1) {
+    if (await roundResult(page)) break;
+    const el = page.locator('[data-testid^="count:"]');
+    if (!(await el.count())) break;
+    const n = Number((await el.getAttribute('data-testid')).split(':')[1]);
+    const rulesEl = page.locator('[aria-label^="On every"]');
+    const rules = (await rulesEl.count())
+      ? [...(await rulesEl.getAttribute('aria-label')).matchAll(/On every (\d+)/g)].map((m) => Number(m[1]))
+      : [];
+    const clap = rules[0] && n % rules[0] === 0;
+    const stomp = rules[1] && n % rules[1] === 0;
+    const say = clap && stomp ? 'both' : clap ? 'clap' : stomp ? 'stomp' : String(n);
+    if (/^\d+$/.test(say)) await page.getByRole('button', { name: say, exact: true }).click();
+    else await page.getByLabel(say, { exact: true }).click();
+    said += 1;
+    await page.waitForTimeout(100);
+  }
+  report.ok(`counted round ${said} times`);
+}
+
+/** Star Jar: three players, one of each kind of question; works each out. */
+export async function playStarJar(page, report) {
+  await choosePlayers(page, 3);
+  for (const [i, words] of ['counting', 'adding and taking away', 'times tables'].entries()) {
+    await page.getByLabel(`Player ${i + 1}: ${words}`, { exact: true }).click();
+    await page.waitForTimeout(200);
+  }
+  let answered = 0;
+  for (let guard = 0; guard < 40; guard += 1) {
+    if (await roundResult(page)) break;
+    const q = page.locator('[data-testid^="question:"]');
+    if (!(await q.count())) break;
+    const label = await q.getAttribute('aria-label');
+    let value;
+    const dots = label.match(/^(\d+) dots to count$/);
+    if (dots) value = Number(dots[1]);
+    else {
+      const [, a, op, b] = label.match(/^(\d+) (plus|take away|times|divided by) (\d+)$/);
+      const [x, y] = [Number(a), Number(b)];
+      value = op === 'plus' ? x + y : op === 'take away' ? x - y : op === 'times' ? x * y : x / y;
+    }
+    await page.getByRole('button', { name: String(value), exact: true }).click();
+    answered += 1;
+    await page.waitForTimeout(150);
+  }
+  report.ok(`answered ${answered} questions for the jar`);
+}
+
+/**
+ * Maze Team: two players, one arrow pair each — the arrows say whose they
+ * are. Explores the way a team would, depth first, one square at a time,
+ * starting afresh when the key opens a door.
+ */
+export async function playMazeTeam(page, report) {
+  await choosePlayers(page, 2);
+  let presses = 0;
+  let current = '';
+  let tried = new Map();
+  let parent = new Map();
+  let keyed = false;
+  const step = (cols, at, dir) => (dir === 'up' ? at - cols : dir === 'down' ? at + cols : dir === 'left' ? at - 1 : at + 1);
+  const back = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  for (let guard = 0; guard < 2000; guard += 1) {
+    if (await roundResult(page)) break;
+    const board = page.locator('[data-testid^="mazeteam:"]');
+    if (!(await board.count()) || (await page.getByText('YOU MADE IT — TOGETHER', { exact: true }).count())) {
+      await page.waitForTimeout(250);
+      continue;
+    }
+    const [, size, index, atText] = (await board.getAttribute('data-testid')).split(':');
+    const cols = Number(size.split('x')[0]);
+    const at = Number(atText);
+    const hasKeyNow = !(await page.getByText('GET THE KEY, THEN THE FLAG', { exact: true }).count());
+    if (index !== current || hasKeyNow !== keyed) {
+      current = index;
+      keyed = hasKeyNow;
+      tried = new Map();
+      parent = new Map();
+    }
+    const open = ((await board.getAttribute('aria-label')).match(/Open: ([a-z, ]+)\./)?.[1] ?? '').split(', ').filter((d) => d && d !== 'nothing');
+    if (!tried.has(at)) tried.set(at, new Set());
+    const done = tried.get(at);
+    const way = open.find((d) => !done.has(d) && d !== parent.get(at)) ?? parent.get(at);
+    if (!way) {
+      report.bug('Maze Team', 'nowhere left to try');
+      return;
+    }
+    done.add(way);
+    const to = step(cols, at, way);
+    if (!parent.has(to) && way !== parent.get(at)) parent.set(to, back[way]);
+    await page.getByLabel(new RegExp(`^Go ${way}, for Player`)).click();
+    presses += 1;
+    await page.waitForTimeout(60);
+  }
+  report.ok(`walked the mazes with ${presses} presses between two players`);
+}
+
+/**
+ * Echo Beat: two players. Makes each beat from a fixed set of gaps, and
+ * copies the beat it made — with real presses, so the gaps are the real
+ * ones the drum heard.
+ */
+export async function playEchoBeat(page, report) {
+  await choosePlayers(page, 2);
+  const drumAt = async () => {
+    const box = await page.locator('[data-testid^="drum:"]').boundingBox();
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  };
+  const tapBeat = async (gaps) => {
+    const at = await drumAt();
+    await page.mouse.click(at.x, at.y);
+    for (const g of gaps) {
+      await page.waitForTimeout(g);
+      await page.mouse.click(at.x, at.y);
+    }
+  };
+  let made = null;
+  let beats = 0;
+  for (let guard = 0; guard < 200; guard += 1) {
+    if (await roundResult(page)) break;
+    const drum = page.locator('[data-testid^="drum:"]');
+    if (!(await drum.count())) break;
+    const phase = (await drum.getAttribute('data-testid')).split(':')[1];
+    if (phase === 'make') {
+      const doing = await page.locator('[data-testid^="turn:"]').getAttribute('aria-label');
+      const n = Number(doing.match(/(\d+) taps/)[1]);
+      made = Array.from({ length: n - 1 }, (_, i) => [300, 600, 450, 350, 700][i % 5]);
+      await tapBeat(made);
+      beats += 1;
+    } else if (phase === 'copy') {
+      await tapBeat(made);
+    } else {
+      await page.waitForTimeout(200);
+    }
+    await page.waitForTimeout(150);
+  }
+  report.ok(`made and echoed ${beats} beats`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -1854,4 +2045,9 @@ export const PLAYERS = {
   'Code Cracker': playCodeCracker,
   "What's the Time?": playClockTime,
   'Rhyme Time': playRhymeTime,
+  'Market Memory': playMarketMemory,
+  'Count Around': playCountAround,
+  'Star Jar': playStarJar,
+  'Maze Team': playMazeTeam,
+  'Echo Beat': playEchoBeat,
 };

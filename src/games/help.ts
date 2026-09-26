@@ -303,6 +303,58 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'cat rhymes with hat. blue rhymes with shoe, even though they are spelt differently.',
     grows: 'Longer words, a word that starts the same to trick the eye, rhymes spelt differently, look-alikes that do not rhyme, then two-syllable words.',
   },
+  marketmemory: {
+    goal: 'Fill the bag together, one thing each, round the group.',
+    steps: [
+      'Choose how many players. Each player has a shape with their number on it.',
+      'The first player puts one thing in the bag.',
+      'The next player taps everything in the bag, in order, then adds one more. Everyone can help remember!',
+      'A slip? The bag is shown, and the player carries on from where they were.',
+    ],
+    example: 'The bag has a star, then a square. Tap the star, tap the square, then add something new.',
+    grows: 'A fuller bag, more things to choose from, a shelf that gets shuffled, and things that look more alike.',
+  },
+  countaround: {
+    goal: 'Count to the number at the top together, one number each.',
+    steps: [
+      'Choose how many players. Take turns: tap the next number.',
+      'From level 3, some numbers get a CLAP instead of the number. Tap CLAP for those.',
+      'Later, some get a STOMP, and some get BOTH.',
+    ],
+    example: 'CLAP on every 5: one, two, three, four, CLAP, six, seven …',
+    grows: 'A longer count, then claps on fives, then on threes, then claps and stomps together.',
+  },
+  starjar: {
+    goal: 'Fill the star jar together: every right answer adds a star.',
+    steps: [
+      'Choose how many players, then each player picks their questions: counting dots, adding and taking away, or times tables.',
+      'Take turns. Each player answers three questions.',
+      'A wrong answer is dimmed. Try again!',
+    ],
+    example: 'A four-year-old counts dots while a grown-up does times tables, and both fill the same jar.',
+    grows: 'More dots to count, bigger sums, and bigger times tables.',
+  },
+  mazeteam: {
+    goal: 'Get the explorer to the flag, twice, as a team.',
+    steps: [
+      'Choose two, three or four players. Each arrow has a player mark on it: only that player presses it.',
+      'The explorer moves one square per press, so talk it through: whose turn is it?',
+      'In bigger mazes, get the key first to open the door.',
+    ],
+    example: 'With two players, one has left and right, the other up and down. "Up, then I go right!"',
+    grows: 'Bigger mazes, then a key and a door.',
+  },
+  echobeat: {
+    goal: 'Echo eight rhythms round the group.',
+    steps: [
+      'Choose how many players. The first player taps a beat on the drum.',
+      'The drum lights up to play it back. The next player copies it.',
+      'Then it is their turn to make a beat for the player after them.',
+      'Not quite? Watch it again and have another go.',
+    ],
+    example: 'Tap, tap … tap: two close together, then one after a pause. The next player taps the same.',
+    grows: 'Longer beats, a closer copy needed, and no marks to show the pattern.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

@@ -673,6 +673,71 @@ const SCENES: Readonly<Record<string, Draw>> = {
       </Glyph>
     </>
   ),
+  // A shelf of things and the bag they're going into.
+  marketmemory: (u, c) => (
+    <>
+      <Block u={u} x={8} y={40} w={84} h={3} color={c.fg} />
+      <Disc u={u} cx={20} cy={30} r={8} color={c.fg} />
+      <Block u={u} x={34} y={22} w={16} h={16} color={c.fg} />
+      <Peak u={u} cx={68} top={20} w={18} h={18} color={c.fg} />
+      <Frame u={u} x={36} y={48} w={28} h={14} color={c.hi} line={3} />
+      <Block u={u} x={26} y={60} w={48} h={32} color={c.hi} />
+    </>
+  ),
+  // Players round the table, and the number the count is on.
+  countaround: (u, c) => (
+    <>
+      {Array.from({ length: 6 }, (_, i) => {
+        const a = (i * Math.PI) / 3;
+        return <Block key={i} u={u} x={50 + 38 * Math.sin(a) - 6} y={50 - 38 * Math.cos(a) - 6} w={12} h={12} color={c.fg} />;
+      })}
+      <Glyph u={u} x={20} y={30} w={60} size={34} color={c.hi}>
+        7
+      </Glyph>
+    </>
+  ),
+  // A jar, most of the way full of stars.
+  starjar: (u, c) => (
+    <>
+      <Block u={u} x={32} y={8} w={36} h={8} color={c.fg} />
+      <Frame u={u} x={20} y={20} w={60} h={72} color={c.fg} line={4} />
+      {[
+        [28, 62],
+        [48, 62],
+        [28, 42],
+      ].map(([x, y]) => (
+        <Glyph key={`${x}${y}`} u={u} x={x} y={y} w={24} size={20} color={c.fg}>
+          ★
+        </Glyph>
+      ))}
+      <Glyph u={u} x={48} y={42} w={24} size={20} color={c.hi}>
+        ★
+      </Glyph>
+    </>
+  ),
+  // A maze with two explorers' marks, and the flag.
+  mazeteam: (u, c) => (
+    <>
+      <Frame u={u} x={10} y={10} w={80} h={80} color={c.fg} line={3} />
+      <Block u={u} x={10} y={40} w={52} h={3} color={c.fg} />
+      <Block u={u} x={38} y={62} w={52} h={3} color={c.fg} />
+      <Block u={u} x={18} y={70} w={12} h={12} color={c.hi} />
+      <Frame u={u} x={36} y={70} w={12} h={12} color={c.hi} line={2.5} />
+      <Block u={u} x={74} y={16} w={2.5} h={14} color={c.fg} />
+      <Block u={u} x={76.5} y={16} w={9} h={6} color={c.fg} />
+    </>
+  ),
+  // A drum mid-beat, and the beat's marks along the top.
+  echobeat: (u, c) => (
+    <>
+      {[16, 30, 64].map((x) => (
+        <Block key={x} u={u} x={x} y={12} w={5} h={14} color={c.fg} />
+      ))}
+      <Block u={u} x={12} y={18} w={76} h={2} color={c.fg} />
+      <Ring u={u} cx={50} cy={62} r={28} color={c.fg} line={4} />
+      <Disc u={u} cx={50} cy={62} r={16} color={c.hi} />
+    </>
+  ),
 };
 
 /** Hue of a `#rrggbb` colour, in degrees. */

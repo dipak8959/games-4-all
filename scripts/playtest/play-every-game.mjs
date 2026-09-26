@@ -79,6 +79,11 @@ await play('Duck Crossing');
 await play('Code Cracker');
 await play("What's the Time?");
 await play('Rhyme Time');
+await play('Market Memory');
+await play('Count Around');
+await play('Star Jar');
+await play('Maze Team');
+await play('Echo Beat');
 
 console.log('\n=== age 9 ===');
 await setAge(page, 9);
@@ -124,6 +129,11 @@ for (const title of [
   'Tall Tower',
   'Duck Crossing',
   'Code Cracker',
+  'Market Memory',
+  'Count Around',
+  'Star Jar',
+  'Maze Team',
+  'Echo Beat',
 ]) {
   const row = lines.findIndex((l) => l.trim() === title);
   const meta = lines.slice(row, row + 4).join(' ');

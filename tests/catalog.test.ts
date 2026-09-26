@@ -52,8 +52,11 @@ test('a young child sees exactly the preschool-appropriate games', () => {
       'bigtosmall',
       'counting',
       'duckcrossing',
+      'echobeat',
       'fruitcatch',
+      'marketmemory',
       'maze',
+      'mazeteam',
       'memory',
       'memorygrid',
       'oddoneout',
@@ -62,6 +65,7 @@ test('a young child sees exactly the preschool-appropriate games', () => {
       'puddlehop',
       'shadowmatch',
       'shapes',
+      'starjar',
       'talltower',
       'whichcup',
     ].sort(),
@@ -102,7 +106,7 @@ test('searchGames matches title or skill, case-insensitively', () => {
   assert.deepEqual(results.map((g) => g.id), ['wordbuilder']);
 
   const bySkill = searchGames(GAMES_META, 'arithmetic');
-  assert.deepEqual(bySkill.map((g) => g.id), ['numbercrunch']);
+  assert.deepEqual(bySkill.map((g) => g.id), ['numbercrunch', 'starjar']);
 });
 
 test('searchGames with an empty or whitespace query returns everything unfiltered', () => {

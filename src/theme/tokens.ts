@@ -129,6 +129,11 @@ export const tilePalette = {
   plum: '#9D3FCF',
   raspberry: '#CC3396',
   lichen: '#898D44',
+  lime: '#629720',
+  lagoon: '#2397A4',
+  orchid: '#C06DA7',
+  caramel: '#AA7431',
+  forest: '#347942',
 } as const;
 
 /** Resolves one of `playPalette`'s keys, falling back to the first colour so

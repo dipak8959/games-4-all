@@ -245,6 +245,12 @@ game where reading is the point rather than something to avoid:
   like Hoop Shot's ten throws — a ball that falls is served again when the
   child taps, nothing is taken away, and the stars come from how much of the
   wall came down.
+- **Group games have no winner.** The games for several players on one
+  device — Market Memory, Count Around, Star Jar, Maze Team, Echo Beat — are
+  co-operative: the group is one team with one goal, a slip is the team's
+  and costs the team a star, and nothing compares one player with another.
+  Players are a numbered shape, never a name, and nothing about who played
+  is stored.
 - **No zero score.** Completing a round always earns at least one star
   (`starsForMistakes`). Stars reward effort, not perfection.
 - **No engagement mechanics.** No streaks, no daily-login rewards, no

@@ -9,7 +9,7 @@ import { tilePalette } from '../theme/tokens';
  * tests — never has to load React Native screens just to read a title.
  */
 
-export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting' | 'timing' | 'arcade';
+export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting' | 'timing' | 'arcade' | 'group';
 
 export type GameCategoryDef = {
   readonly id: GameCategory;
@@ -27,6 +27,7 @@ export const GAME_CATEGORIES: readonly GameCategoryDef[] = [
   { id: 'sorting', label: 'Sorting', icon: 'shapes' },
   { id: 'timing', label: 'Timing', icon: 'hop' },
   { id: 'arcade', label: 'Arcade', icon: 'arcade' },
+  { id: 'group', label: 'Together', icon: 'group' },
 ];
 
 /**
@@ -699,6 +700,91 @@ export const GAMES_META: readonly GameMeta[] = [
     minAge: 5,
     // Early reading: cat and hat at five, food and good by eight or nine.
     maxAge: 9,
+  },
+  {
+    id: 'marketmemory',
+    title: 'Market Memory',
+    icon: 'market',
+    color: tilePalette.caramel,
+    skill: "Sequence memory, together: remembering a growing list in order, the way the old 'I went to market' game does",
+    roundEnds: "The bag holds the level's number of things.",
+    origin: 'public-domain',
+    priorArt: "'I went to market and bought...', a spoken memory-chain game played by families for generations, owned by no one.",
+    toldApartBy: 'Shape and box: no two things share both a shape and a box, and each is named by its colour too.',
+    ages: '4+',
+    category: 'group',
+    // A group game: four things in the bag suits a four-year-old in the
+    // family; twelve, shuffled, with twins, stretches the grown-ups too.
+    minAge: 4,
+    maxAge: 99,
+  },
+  {
+    id: 'countaround',
+    title: 'Count Around',
+    icon: 'countaround',
+    color: tilePalette.lagoon,
+    skill: 'Counting in turn: counting on, and spotting the multiples where you clap or stomp instead of saying the number',
+    roundEnds: 'The team reaches the target number.',
+    origin: 'public-domain',
+    priorArt: 'Counting-round games such as Fizz, played in classrooms and around tables for generations, owned by no one.',
+    toldApartBy: 'Numerals and two drawn actions: every choice is a number in digits, a pair of clapping hands, or a stomping boot.',
+    ages: '5+',
+    category: 'group',
+    // Counting to ten at five; claps on threes and stomps on fives up to
+    // forty-five keeps a table of grown-ups honest.
+    minAge: 5,
+    maxAge: 99,
+  },
+  {
+    id: 'starjar',
+    title: 'Star Jar',
+    icon: 'starjar',
+    color: tilePalette.orchid,
+    skill: 'Counting and arithmetic, each player at their own level, filling one shared jar',
+    roundEnds: 'Every player has answered three questions.',
+    origin: 'public-domain',
+    priorArt: 'Family quiz rounds with questions pitched to each player, a parlour game older than any company, owned by no one.',
+    toldApartBy: 'Numerals and dots to count: answers are numbers in digits.',
+    ages: '4+',
+    category: 'group',
+    // Every player picks their own kind of question, so it spans the whole
+    // family by design.
+    minAge: 4,
+    maxAge: 99,
+  },
+  {
+    id: 'mazeteam',
+    title: 'Maze Team',
+    icon: 'mazeteam',
+    color: tilePalette.lime,
+    skill: 'Working together: talking and planning a route when each player controls only some of the directions',
+    roundEnds: 'Two mazes finished.',
+    origin: 'public-domain',
+    priorArt: 'Mazes, older than writing, and the co-operative trick of sharing out the controls, a party-game staple owned by no one.',
+    toldApartBy: "Direction and player mark: each arrow shows which way it goes and which player's shape it belongs to.",
+    ages: '4+',
+    category: 'group',
+    // A small maze shared by two at four; thirteen rows with a key, four
+    // players an arrow each, is a real piece of teamwork at any age.
+    minAge: 4,
+    maxAge: 99,
+  },
+  {
+    id: 'echobeat',
+    title: 'Echo Beat',
+    icon: 'echo',
+    color: tilePalette.lichen,
+    skill: 'Rhythm: copying a beat someone else tapped, then making a new one for the next player',
+    roundEnds: 'Eight rhythms echoed.',
+    origin: 'public-domain',
+    priorArt: 'Call-and-response clapping games, as old as music and played in every playground, owned by no one.',
+    toldApartBy: "Light and position: the drum lights up on each beat, and a row of marks shows the beat's pattern.",
+    ages: '4+',
+    category: 'group',
+    // Three slow beats copied loosely at four; six, copied closely with no
+    // marks to help, is a musician's ear at any age.
+    minAge: 4,
+    maxAge: 99,
   },
 ];
 

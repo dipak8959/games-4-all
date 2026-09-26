@@ -9,7 +9,7 @@ model is not a policy document; it is a build gate (see
 
 ## What's in it
 
-Thirty-two games spanning early childhood through adulthood — this is a "whole
+Thirty-seven games spanning early childhood through adulthood — this is a "whole
 family shares one device" app, not just a kids' app, so the oldest content
 here is built to actually hold up for a grown-up, not just tolerate one:
 
@@ -47,6 +47,19 @@ here is built to actually hold up for a grown-up, not just tolerate one:
 | **Code Cracker** | Deduction from clues | 6+ |
 | **What's the Time?** | Telling the time on an analogue clock | 5-10 |
 | **Rhyme Time** | Hearing rhymes in written words | 5-9 |
+| **Market Memory** | Sequence memory, together | 4+ |
+| **Count Around** | Counting in turn, and multiples | 5+ |
+| **Star Jar** | Counting and sums, each at their own level | 4+ |
+| **Maze Team** | Working together on a route | 4+ |
+| **Echo Beat** | Rhythm | 4+ |
+
+The last five are **group games**, for everyone on one device: pick how
+many players, and each gets a numbered shape as their mark — no names, so
+nobody needs to read. They're co-operative by design. The group plays as
+one team towards one goal: there is no winner, and nothing ever compares
+one player with another. Star Jar goes further: every player picks their
+own kind of question, so a four-year-old counting dots and a grown-up doing
+times tables fill the same jar.
 
 Bounce Bricks, Hungry Worm, Peekaboo Pals, Hoop Shot, Soft Landing, Tall
 Tower and Duck Crossing are arcade games — formats old enough to belong to everyone,
@@ -58,8 +71,8 @@ blocks, three ducklings — and there is no score or best to chase, only
 stars.
 
 Each also carries a category (Memory, Numbers, Words, Logic, Sorting, Timing,
-Arcade) shown as filter chips on Home, alongside a search box — with
-thirty-two games and
+Arcade, Together) shown as filter chips on Home, alongside a search box —
+with thirty-seven games and
 growing, finding the right one shouldn't require scrolling past all the
 others.
 

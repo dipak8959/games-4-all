@@ -75,8 +75,9 @@ await round('Puddle Hop', 'age 4');
 await round('Memory Grid', 'age 4');
 await round('Tall Tower', 'age 4');
 await round('Duck Crossing', 'age 4');
+for (const title of ['Market Memory', 'Star Jar', 'Maze Team', 'Echo Beat']) await round(title, 'age 4');
 await setAge(page, 5);
-for (const title of ['Lane Dash', 'Bounce Bricks', 'Hungry Worm', 'Hoop Shot', "What's the Time?", 'Rhyme Time']) {
+for (const title of ['Lane Dash', 'Bounce Bricks', 'Hungry Worm', 'Hoop Shot', "What's the Time?", 'Rhyme Time', 'Count Around']) {
   await round(title, 'age 5');
 }
 await setAge(page, 7);
@@ -118,6 +119,11 @@ for (const title of [
   'Tall Tower',
   'Duck Crossing',
   'Code Cracker',
+  'Market Memory',
+  'Count Around',
+  'Star Jar',
+  'Maze Team',
+  'Echo Beat',
 ]) {
   await round(title, 'age 17');
 }

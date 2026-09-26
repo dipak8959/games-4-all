@@ -41,6 +41,11 @@ import { specForLevel as duckSpec } from '../src/games/duckcrossing/logic.ts';
 import { specForLevel as codeSpec } from '../src/games/codecracker/logic.ts';
 import { specForLevel as clockSpec } from '../src/games/clocktime/logic.ts';
 import { specForLevel as rhymeSpec } from '../src/games/rhymetime/logic.ts';
+import { specForLevel as marketSpec } from '../src/games/marketmemory/logic.ts';
+import { specForLevel as countAroundSpec } from '../src/games/countaround/logic.ts';
+import { specForLevel as starJarSpec } from '../src/games/starjar/logic.ts';
+import { specForLevel as mazeTeamSpec } from '../src/games/mazeteam/logic.ts';
+import { specForLevel as echoSpec } from '../src/games/echobeat/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -329,6 +334,27 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
   rhymetime: (l) => {
     const spec = rhymeSpec(l);
     return [spec.tier, spec.choices, spec.sameStart ? 1 : 0, spec.spelledDifferently ? 1 : 0, spec.lookAlike ? 1 : 0];
+  },
+  marketmemory: (l) => {
+    const spec = marketSpec(l);
+    return [spec.target, spec.shelf, spec.shuffleShelf ? 1 : 0, spec.twins ? 1 : 0];
+  },
+  countaround: (l) => {
+    const spec = countAroundSpec(l);
+    return [spec.to, spec.rules.length];
+  },
+  starjar: (l) => {
+    const spec = starJarSpec(l);
+    return [spec.countMax, spec.addMax, spec.timesMax, spec.choices];
+  },
+  mazeteam: (l) => {
+    const spec = mazeTeamSpec(l);
+    return [spec.cols * spec.rows, spec.key ? 1 : 0];
+  },
+  echobeat: (l) => {
+    const spec = echoSpec(l);
+    // A closer copy is harder, and so is no marks to follow.
+    return [spec.beats, -spec.tolerance, spec.marks ? 0 : 1];
   },
 };
 

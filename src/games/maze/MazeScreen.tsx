@@ -206,7 +206,7 @@ export function MazeScreen({ level: initialLevel, onRoundComplete, onExit }: Gam
 
 /** The explorer: the same accent block with googly eyes as the Puddle Hop
  *  runner and the Lane Dash car, so a child knows which one is theirs. */
-function Explorer({ size }: { readonly size: number }) {
+export function Explorer({ size }: { readonly size: number }) {
   const body = size * 0.62;
   const eye = body * 0.34;
   return (
@@ -226,7 +226,7 @@ function Explorer({ size }: { readonly size: number }) {
 }
 
 /** The flag: a pole and a cloth. */
-function Flag({ size }: { readonly size: number }) {
+export function Flag({ size }: { readonly size: number }) {
   return (
     <View style={{ width: size, height: size }}>
       <View style={[styles.pole, { left: size * 0.3, top: size * 0.18, width: Math.max(2, size * 0.07), height: size * 0.66 }]} />
@@ -236,7 +236,7 @@ function Flag({ size }: { readonly size: number }) {
 }
 
 /** The key: a ring, a shaft and two teeth. */
-function KeyMark({ size }: { readonly size: number }) {
+export function KeyMark({ size }: { readonly size: number }) {
   const ring = size * 0.34;
   const line = Math.max(2, size * 0.08);
   return (
@@ -262,7 +262,15 @@ function KeyMark({ size }: { readonly size: number }) {
 }
 
 /** A locked door: a striped bar across the doorway it blocks. */
-function Door({ state, cell, wall }: { readonly state: MazeState; readonly cell: number; readonly wall: number }) {
+export function Door({
+  state,
+  cell,
+  wall,
+}: {
+  readonly state: Pick<MazeState, 'maze'>;
+  readonly cell: number;
+  readonly wall: number;
+}) {
   const [a, b] = state.maze.door as readonly [number, number];
   const cols = state.maze.cols;
   const across = Math.abs(a - b) === 1; // side by side: the door is upright

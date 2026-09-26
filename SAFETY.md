@@ -66,8 +66,11 @@ a limit still needs a grown-up.
 
 Two independent limits, both off by default and both parent-set:
 
-- **Per sitting** — how long one continuous session may run
-- **Per day** — total play across the calendar day, reset at local midnight
+- **Per sitting** — how long one continuous session may run. Moving between
+  games and back to Home is the same sitting; it ends when the app is put
+  away, relaunched, or switched to another profile.
+- **Per day** — total play across the calendar day, reset at local midnight,
+  including when the app has been left open on the stop screen overnight
 
 Time accrues only while a game is actually on screen and the app is
 foregrounded; menus and Parent Zone are free. Logic lives in

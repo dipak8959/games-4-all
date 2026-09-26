@@ -12,6 +12,7 @@ import { AccessibilityInfo, AppState, type AppStateStatus } from 'react-native';
 import { eraseAllData, readJson, StorageKeys, writeJson } from '../storage';
 import {
   accrue,
+  dayKey,
   emptyUsage,
   endSession,
   evaluate,
@@ -211,6 +212,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const id = setInterval(() => {
       if (!playingRef.current || !activeIdRef.current) {
         lastTickRef.current = Date.now();
+        // Left open past midnight, on Home or on the stop screen: the new
+        // day's allowance starts without waiting for the app to be reopened.
+        const idle = activeIdRef.current;
+        if (idle) {
+          setUsageById((prev) => {
+            const current = prev[idle];
+            if (!current || current.day === dayKey(new Date())) return prev;
+            const merged = { ...prev, [idle]: rolloverIfNeeded(current, new Date()) };
+            void writeJson(StorageKeys.usage, merged);
+            return merged;
+          });
+        }
         return;
       }
       const now = Date.now();
@@ -274,10 +287,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     playingRef.current = !adminRef.current.on;
   }, []);
 
+  // Leaving a game stops the clock but not the sitting: hopping out to Home
+  // and into another game is the same sitting, and a break screen that has
+  // just appeared must not clear itself. A sitting ends only when the app
+  // goes away, on a fresh launch, or when the profile changes.
   const stopPlaying = useCallback(() => {
-    playingRef.current = false;
     const id = activeIdRef.current;
-    if (id) persistUsage(id, endSession);
+    const now = Date.now();
+    // The seconds since the last tick count too.
+    if (playingRef.current && id) {
+      const elapsed = now - lastTickRef.current;
+      persistUsage(id, (u) => accrue(u, elapsed, new Date(now)));
+    }
+    playingRef.current = false;
+    lastTickRef.current = now;
   }, [persistUsage]);
 
   const levelForGame = useCallback(

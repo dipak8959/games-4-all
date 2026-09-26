@@ -56,7 +56,6 @@ export type DuckCrossingState = {
   /** Seconds left showing a bump, or a duckling home. */
   readonly flash: number;
   readonly flashKind: 'bump' | 'home' | null;
-  readonly started: boolean;
   readonly complete: boolean;
 };
 
@@ -130,7 +129,6 @@ export function createGame(rng: Rng, level: number): DuckCrossingState {
     time: 0,
     flash: 0,
     flashKind: null,
-    started: false,
     complete: false,
   };
 }
@@ -178,7 +176,8 @@ function bumpIfHit(state: DuckCrossingState): DuckCrossingState {
 
 export type Hop = 'up' | 'down' | 'left' | 'right';
 
-/** One hop. The first also sets the traffic going. */
+/** One hop. The traffic has been going all along — the duckling is safe
+ *  on the grass, so there's time to watch before stepping out. */
 export function hop(state: DuckCrossingState, way: Hop): DuckCrossingState {
   if (state.complete) return state;
   const { row, col } = state.duck;
@@ -188,7 +187,7 @@ export function hop(state: DuckCrossingState, way: Hop): DuckCrossingState {
       : way === 'down'
         ? { row: Math.max(0, row - 1), col }
         : { row, col: Math.max(0, Math.min(COLS - 1, col + (way === 'left' ? -1 : 1))) };
-  let next: DuckCrossingState = { ...state, started: true, duck: to };
+  let next: DuckCrossingState = { ...state, duck: to };
   if (next.rows[to.row] === 'pond') {
     const home = state.home + 1;
     next = {
@@ -205,7 +204,7 @@ export function hop(state: DuckCrossingState, way: Hop): DuckCrossingState {
 }
 
 export function step(state: DuckCrossingState, seconds: number): DuckCrossingState {
-  if (!state.started || state.complete) return state;
+  if (state.complete) return state;
   let next = state;
   let left = Math.min(seconds, 0.25);
   while (left > 0) {

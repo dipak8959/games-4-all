@@ -81,7 +81,7 @@ export function DuckCrossingScreen({ level: initialLevel, onRoundComplete, onExi
   const [area, setArea] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    if (!state.started || state.complete || paused) return undefined;
+    if (state.complete || paused) return undefined;
     let frame = 0;
     let last: number | null = null;
     const loop = (now: number) => {
@@ -92,7 +92,7 @@ export function DuckCrossingScreen({ level: initialLevel, onRoundComplete, onExi
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
-  }, [state.started, state.complete, paused]);
+  }, [state.complete, paused]);
 
   // Home is a little cheer; a bump, the gentle nudge.
   const seen = useRef({ home: 0, bumps: 0 });
@@ -131,7 +131,8 @@ export function DuckCrossingScreen({ level: initialLevel, onRoundComplete, onExi
           : 'Traffic just ahead.'
         : 'Grass just ahead.';
 
-  const label = !state.started
+  const fresh = state.home === 0 && state.bumps === 0 && duck.row === 0;
+  const label = fresh
     ? 'WATCH THE TRAFFIC, THEN HOP UP'
     : state.flashKind === 'bump'
       ? 'BUMP! BACK TO THE GRASS'

@@ -139,9 +139,13 @@ test('standing still in a lane gets bumped when traffic comes, and put back on t
   assert.ok(s.duck.row < 2);
 });
 
-test('nothing moves before the first hop, and hops stay on the board', () => {
+test('the traffic runs from the start, with the duckling safe on the grass, and hops stay on the board', () => {
   const s = createGame(seededRng(7), 2);
-  assert.deepEqual(step(s, 3), s);
+  let later = s;
+  for (let i = 0; i < 12; i += 1) later = step(later, 0.25);
+  assert.ok(later.time > 2.9, 'the traffic is moving before anyone hops');
+  assert.deepEqual(later.duck, s.duck);
+  assert.equal(later.bumps, 0, 'nothing drives on the grass');
   let edge = s;
   for (let i = 0; i < 10; i += 1) edge = hop(edge, 'left');
   assert.equal(edge.duck.col, 0);

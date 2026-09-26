@@ -9,7 +9,7 @@ import { tilePalette } from '../theme/tokens';
  * tests — never has to load React Native screens just to read a title.
  */
 
-export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting' | 'timing' | 'arcade' | 'group';
+export type GameCategory = 'memory' | 'numbers' | 'words' | 'logic' | 'sorting' | 'timing' | 'arcade' | 'together';
 
 export type GameCategoryDef = {
   readonly id: GameCategory;
@@ -27,7 +27,7 @@ export const GAME_CATEGORIES: readonly GameCategoryDef[] = [
   { id: 'sorting', label: 'Sorting', icon: 'shapes' },
   { id: 'timing', label: 'Timing', icon: 'hop' },
   { id: 'arcade', label: 'Arcade', icon: 'arcade' },
-  { id: 'group', label: 'Together', icon: 'group' },
+  { id: 'together', label: 'Together', icon: 'group' },
 ];
 
 /**
@@ -712,7 +712,7 @@ export const GAMES_META: readonly GameMeta[] = [
     priorArt: "'I went to market and bought...', a spoken memory-chain game played by families for generations, owned by no one.",
     toldApartBy: 'Shape and box: no two things share both a shape and a box, and each is named by its colour too.',
     ages: '4+',
-    category: 'group',
+    category: 'together',
     // A group game: four things in the bag suits a four-year-old in the
     // family; twelve, shuffled, with twins, stretches the grown-ups too.
     minAge: 4,
@@ -729,7 +729,7 @@ export const GAMES_META: readonly GameMeta[] = [
     priorArt: 'Counting-round games such as Fizz, played in classrooms and around tables for generations, owned by no one.',
     toldApartBy: 'Numerals and two drawn actions: every choice is a number in digits, a pair of clapping hands, or a stomping boot.',
     ages: '5+',
-    category: 'group',
+    category: 'together',
     // Counting to ten at five; claps on threes and stomps on fives up to
     // forty-five keeps a table of grown-ups honest.
     minAge: 5,
@@ -746,7 +746,7 @@ export const GAMES_META: readonly GameMeta[] = [
     priorArt: 'Family quiz rounds with questions pitched to each player, a parlour game older than any company, owned by no one.',
     toldApartBy: 'Numerals and dots to count: answers are numbers in digits.',
     ages: '4+',
-    category: 'group',
+    category: 'together',
     // Every player picks their own kind of question, so it spans the whole
     // family by design.
     minAge: 4,
@@ -763,7 +763,7 @@ export const GAMES_META: readonly GameMeta[] = [
     priorArt: 'Mazes, older than writing, and the co-operative trick of sharing out the controls, a party-game staple owned by no one.',
     toldApartBy: "Direction and player mark: each arrow shows which way it goes and which player's shape it belongs to.",
     ages: '4+',
-    category: 'group',
+    category: 'together',
     // A small maze shared by two at four; thirteen rows with a key, four
     // players an arrow each, is a real piece of teamwork at any age.
     minAge: 4,
@@ -780,7 +780,7 @@ export const GAMES_META: readonly GameMeta[] = [
     priorArt: 'Call-and-response clapping games, as old as music and played in every playground, owned by no one.',
     toldApartBy: "Light and position: the drum lights up on each beat, and a row of marks shows the beat's pattern.",
     ages: '4+',
-    category: 'group',
+    category: 'together',
     // Three slow beats copied loosely at four; six, copied closely with no
     // marks to help, is a musician's ear at any age.
     minAge: 4,

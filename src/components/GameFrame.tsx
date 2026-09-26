@@ -1,5 +1,5 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { BackHandler, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from './BigButton';
 import { NumberedRow } from './FactGrid';
@@ -71,6 +71,17 @@ export function GameFrame({
   const help = session ? helpFor(session.gameId) : undefined;
   const open = session?.paused ?? false;
   const setOpen = useCallback((next: boolean) => session?.setPaused(next), [session]);
+
+  // With "How to play" open, Android's back closes it, as its own close
+  // does, rather than leaving the game underneath.
+  useEffect(() => {
+    if (!open) return undefined;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setOpen(false);
+      return true;
+    });
+    return () => sub.remove();
+  }, [open, setOpen]);
 
   return (
     <Screen padded={false}>

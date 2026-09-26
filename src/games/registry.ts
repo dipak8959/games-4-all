@@ -8,6 +8,8 @@ import { CountAroundScreen } from './countaround/CountAroundScreen';
 import { CountingScreen } from './counting/CountingScreen';
 import { DuckCrossingScreen } from './duckcrossing/DuckCrossingScreen';
 import { EchoBeatScreen } from './echobeat/EchoBeatScreen';
+import { PaperPlaneScreen } from './paperplane/PaperPlaneScreen';
+import { CloudHopperScreen } from './cloudhopper/CloudHopperScreen';
 import { FruitCatchScreen } from './fruitcatch/FruitCatchScreen';
 import { HoopShotScreen } from './hoopshot/HoopShotScreen';
 import { HungryWormScreen } from './hungryworm/HungryWormScreen';
@@ -84,6 +86,8 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   starjar: StarJarScreen,
   mazeteam: MazeTeamScreen,
   echobeat: EchoBeatScreen,
+  paperplane: PaperPlaneScreen,
+  cloudhopper: CloudHopperScreen,
 };
 
 export const GAMES: readonly GameDefinition[] = GAMES_META.map((meta) => {

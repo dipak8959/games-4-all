@@ -2018,6 +2018,141 @@ export async function playEchoBeat(page, report) {
   report.ok(`made and echoed ${beats} beats`);
 }
 
+/**
+ * Holds one of a game's on-screen buttons down with the real mouse, from a
+ * loop running in the page: `__hold(name)` presses that button (letting go
+ * of any other), `__hold(null)` lets go.
+ */
+const holders = new WeakMap();
+async function holdButtons(page, labels) {
+  const buttons = {};
+  for (const [name, label] of Object.entries(labels)) {
+    const box = await page.getByLabel(label, { exact: true }).boundingBox();
+    buttons[name] = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  }
+  const known = holders.get(page);
+  if (known) {
+    known.buttons = buttons;
+    return;
+  }
+  const state = { buttons, held: null };
+  holders.set(page, state);
+  await page.exposeFunction('__hold', async (which) => {
+    if (state.held === which) return;
+    if (state.held) await page.mouse.up();
+    state.held = null;
+    const at = which && state.buttons[which];
+    if (!at) return;
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    state.held = which;
+  });
+}
+
+/**
+ * Cloud Hopper, played by eye: always steer under the next cloud up, and
+ * let go once the hopper is over it. It reads the clouds and the hopper
+ * from where they're drawn.
+ */
+export async function playCloudHopper(page, report) {
+  await holdButtons(page, { left: 'Steer left', right: 'Steer right' });
+  const misses = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let busy = false;
+        let misses = 0;
+        let whoops = false;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 180000) {
+            await window.__hold(null);
+            resolve(misses);
+            return;
+          }
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const text = document.body.innerText;
+          if (text.includes('WHOOPS') && !whoops) misses += 1;
+          whoops = text.includes('WHOOPS');
+          const sky = document.querySelector('[data-testid^="sky:"]')?.dataset.testid.split(':');
+          const hopper = document.querySelector('[data-testid="hopper"]')?.getBoundingClientRect();
+          let want = null;
+          if (sky && hopper) {
+            const target = Math.min(Number(sky[1]) + 1, Number(sky[2]));
+            const cloud = document.querySelector(`[data-testid="cloud:${target}"]`)?.getBoundingClientRect();
+            if (text.includes('HOLD AN ARROW')) want = 'right';
+            else if (cloud) {
+              const off = cloud.left + cloud.width / 2 - (hopper.left + hopper.width / 2);
+              want = Math.abs(off) < cloud.width / 6 ? null : off > 0 ? 'right' : 'left';
+            }
+          }
+          await window.__hold(want);
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`bounced to the sun with ${misses} miss${misses === 1 ? '' : 'es'}`);
+}
+
+/**
+ * Paper Plane, flown by eye: aim for the middle of the next gap, holding
+ * when the plane, at the speed it's going, would soon be below that line.
+ */
+export async function playPaperPlane(page, report) {
+  await holdButtons(page, { climb: 'Hold to climb' });
+  const bumps = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let busy = false;
+        let bumps = 0;
+        let bumping = false;
+        let history = [];
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 180000) {
+            await window.__hold(null);
+            resolve(bumps);
+            return;
+          }
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const text = document.body.innerText;
+          if (text.includes('BUMP!') && !bumping) bumps += 1;
+          bumping = text.includes('BUMP!');
+          const plane = document.querySelector('[data-testid="plane"]')?.getBoundingClientRect();
+          let want = null;
+          if (text.includes('HOLD TO TAKE OFF')) want = 'climb';
+          else if (plane) {
+            const y = plane.top + plane.height / 2;
+            history.push({ t: now, y });
+            history = history.filter((h) => now - h.t < 120);
+            const span = (history[history.length - 1].t - history[0].t) / 1000;
+            const vy = span > 0 ? (history[history.length - 1].y - history[0].y) / span : 0;
+            // The next gap whose far side is still ahead of the plane's tail.
+            const tops = [...document.querySelectorAll('[data-testid$=":top"][data-testid^="stack:"]')]
+              .map((el) => ({ id: el.dataset.testid.split(':')[1], box: el.getBoundingClientRect() }))
+              .filter((s) => s.box.right > plane.left)
+              .sort((a, b) => a.box.left - b.box.left);
+            let target = null;
+            if (tops.length) {
+              const bottom = document.querySelector(`[data-testid="stack:${tops[0].id}:bottom"]`).getBoundingClientRect();
+              target = (tops[0].box.bottom + bottom.top) / 2;
+            }
+            if (target != null) want = y + vy * 0.3 > target ? 'climb' : null;
+            else want = vy > 40 ? 'climb' : null;
+          }
+          await window.__hold(want);
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`flew the course with ${bumps} bump${bumps === 1 ? '' : 's'}`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -2056,4 +2191,6 @@ export const PLAYERS = {
   'Star Jar': playStarJar,
   'Maze Team': playMazeTeam,
   'Echo Beat': playEchoBeat,
+  'Cloud Hopper': playCloudHopper,
+  'Paper Plane': playPaperPlane,
 };

@@ -84,7 +84,17 @@ export type IconName =
   | 'mazeteam'
   | 'echo'
   | 'clap'
-  | 'stomp';
+  | 'stomp'
+  | 'hopper'
+  | 'plane'
+  | 'golf'
+  | 'ski'
+  | 'rocks'
+  | 'fish'
+  | 'train'
+  | 'bubbles'
+  | 'marble'
+  | 'letters';
 
 export function Icon({
   name,
@@ -916,6 +926,137 @@ export function Icon({
           <View style={[at(size, 0.06, 0.24, 0.52, 0.52), { borderRadius: size, borderWidth: s, borderColor: color }]} />
           <View style={[at(size, 0.66, 0.34, 0, 0.32), { width: s, backgroundColor: color }]} />
           <View style={[at(size, 0.82, 0.24, 0, 0.52), { width: s, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'hopper':
+      // A ball in the air over a cloud.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.32, 0.06, 0.36, 0.36), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.08, 0.74, 0.84, 0.16), { backgroundColor: color }]} />
+          <View style={[at(size, 0.22, 0.62, 0.22, 0.22), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.52, 0.6, 0.26, 0.26), { borderRadius: size, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'plane':
+      // A paper dart, nose to the right, and its fold.
+      return (
+        <View style={box} {...hidden}>
+          <View
+            style={{
+              position: 'absolute',
+              left: size * 0.08,
+              top: size * 0.26,
+              width: 0,
+              height: 0,
+              borderTopWidth: size * 0.24,
+              borderBottomWidth: size * 0.24,
+              borderLeftWidth: size * 0.84,
+              borderTopColor: 'transparent',
+              borderBottomColor: 'transparent',
+              borderLeftColor: color,
+            }}
+          />
+        </View>
+      );
+
+    case 'golf':
+      // A flag in the hole, and the ball rolling up to it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.56, 0.08, 0, 0.7), { width: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.56, 0.08, 0.3, 0.2), { backgroundColor: color }]} />
+          <View style={[at(size, 0.46, 0.78, 0.26, 0), { height: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.1, 0.66, 0.2, 0.2), { borderRadius: size, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'ski':
+      // Two skis side by side, heading down the slope, and a gate flag.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.1, 0.4, 0.62, 0), { height: s, backgroundColor: color, transform: [{ rotate: '28deg' }] }]} />
+          <View style={[at(size, 0.1, 0.58, 0.62, 0), { height: s, backgroundColor: color, transform: [{ rotate: '28deg' }] }]} />
+          <View style={[at(size, 0.8, 0.08, 0, 0.56), { width: s / 2, backgroundColor: color }]} />
+          <View style={[at(size, 0.8, 0.08, 0.16, 0.16), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'rocks':
+      // A jagged rock, turned on its corner, and a chip broken off it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.14, 0.14, 0.5, 0.5), { borderWidth: s, borderColor: color, transform: [{ rotate: '45deg' }] }]} />
+          <View style={[at(size, 0.68, 0.62, 0.2, 0.2), { backgroundColor: color, transform: [{ rotate: '20deg' }] }]} />
+        </View>
+      );
+
+    case 'fish':
+      // A fish: a round body and a tail.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.34, 0.26, 0.58, 0.46), { borderRadius: size, backgroundColor: color }]} />
+          <View
+            style={{
+              position: 'absolute',
+              left: size * 0.06,
+              top: size * 0.26,
+              width: 0,
+              height: 0,
+              borderTopWidth: size * 0.23,
+              borderBottomWidth: size * 0.23,
+              borderRightWidth: size * 0.3,
+              borderTopColor: 'transparent',
+              borderBottomColor: 'transparent',
+              borderRightColor: color,
+            }}
+          />
+        </View>
+      );
+
+    case 'train':
+      // An engine: a long body, a cab, and wheels.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.08, 0.4, 0.84, 0.3), { backgroundColor: color }]} />
+          <View style={[at(size, 0.6, 0.18, 0.32, 0.24), { backgroundColor: color }]} />
+          <View style={[at(size, 0.16, 0.12, 0.1, 0.3), { backgroundColor: color }]} />
+          <View style={[at(size, 0.16, 0.66, 0.22, 0.22), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.6, 0.66, 0.22, 0.22), { borderRadius: size, backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'bubbles':
+      // Three bubbles, big, middling and small.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.06, 0.34, 0.54, 0.54), { borderRadius: size, borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.56, 0.12, 0.34, 0.34), { borderRadius: size, borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.66, 0.62, 0.2, 0.2), { borderRadius: size, borderWidth: s, borderColor: color }]} />
+        </View>
+      );
+
+    case 'marble':
+      // A board, a marble on it, and the hole to steer round.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.08, 0.08, 0.84, 0.84), { borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.22, 0.22, 0.24, 0.24), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.56, 0.54, 0.24, 0.24), { borderRadius: size, borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'letters':
+      // An A, and a letter falling towards it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.2, 0.3, 0, 0.6), { width: s, backgroundColor: color, transform: [{ rotate: '18deg' }] }]} />
+          <View style={[at(size, 0.44, 0.3, 0, 0.6), { width: s, backgroundColor: color, transform: [{ rotate: '-18deg' }] }]} />
+          <View style={[at(size, 0.2, 0.66, 0.3, 0), { height: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.7, 0.08, 0.18, 0.18), { backgroundColor: color }]} />
+          <View style={[at(size, 0.76, 0.34, 0.06, 0.12), { backgroundColor: color }]} />
         </View>
       );
 

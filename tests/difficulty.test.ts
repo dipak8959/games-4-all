@@ -46,6 +46,8 @@ import { specForLevel as countAroundSpec } from '../src/games/countaround/logic.
 import { specForLevel as starJarSpec } from '../src/games/starjar/logic.ts';
 import { specForLevel as mazeTeamSpec } from '../src/games/mazeteam/logic.ts';
 import { specForLevel as echoSpec } from '../src/games/echobeat/logic.ts';
+import { specForLevel as paperPlaneSpec } from '../src/games/paperplane/logic.ts';
+import { specForLevel as cloudHopperSpec } from '../src/games/cloudhopper/logic.ts';
 
 /**
  * Difficulty only ever goes one way.
@@ -355,6 +357,14 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
     const spec = echoSpec(l);
     // A closer copy is harder, and so is no marks to follow.
     return [spec.beats, -spec.tolerance, spec.marks ? 0 : 1];
+  },
+  cloudhopper: (l) => {
+    const spec = cloudHopperSpec(l);
+    return [spec.clouds, -spec.width, spec.gap, spec.spread, spec.drifting, spec.puffs];
+  },
+  paperplane: (l) => {
+    const spec = paperPlaneSpec(l);
+    return [spec.stacks, -spec.gap, spec.speed, spec.swing, -spec.spacing, spec.bobbing];
   },
 };
 

@@ -56,6 +56,8 @@ const GAME_SCREENS = [
   'src/games/whichcup/WhichCupScreen.tsx',
   'src/games/wordbuilder/WordBuilderScreen.tsx',
   'src/games/wordladder/WordLadderScreen.tsx',
+  'src/games/cloudhopper/CloudHopperScreen.tsx',
+  'src/games/paperplane/PaperPlaneScreen.tsx',
 ];
 
 /**
@@ -269,6 +271,8 @@ const MAY_DRAW_CIRCLES = [
   'src/games/duckcrossing/DuckCrossingScreen.tsx',
   'src/games/clocktime/ClockTimeScreen.tsx',
   'src/games/echobeat/EchoBeatScreen.tsx',
+  'src/games/cloudhopper/CloudHopperScreen.tsx',
+  'src/games/paperplane/PaperPlaneScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

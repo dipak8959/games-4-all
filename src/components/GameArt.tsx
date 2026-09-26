@@ -108,6 +108,27 @@ function Peak({ u, cx, top, w, h, color }: { u: number; cx: number; top: number;
   );
 }
 
+/** A wedge pointing right, its point at (x + w, y + h / 2). */
+function Wedge({ u, x, y, w, h, color }: { u: number; x: number; y: number; w: number; h: number; color: string }) {
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        left: x * u,
+        top: y * u,
+        width: 0,
+        height: 0,
+        borderTopWidth: (h / 2) * u,
+        borderBottomWidth: (h / 2) * u,
+        borderLeftWidth: w * u,
+        borderTopColor: 'transparent',
+        borderBottomColor: 'transparent',
+        borderLeftColor: color,
+      }}
+    />
+  );
+}
+
 function Glyph({
   u,
   x,
@@ -725,6 +746,32 @@ const SCENES: Readonly<Record<string, Draw>> = {
       <Frame u={u} x={36} y={70} w={12} h={12} color={c.hi} line={2.5} />
       <Block u={u} x={74} y={16} w={2.5} h={14} color={c.fg} />
       <Block u={u} x={76.5} y={16} w={9} h={6} color={c.fg} />
+    </>
+  ),
+  // A hopper in the air over a ladder of clouds, the sun at the top.
+  cloudhopper: (u, c) => (
+    <>
+      <Disc u={u} cx={78} cy={16} r={9} color={c.fg} />
+      {[
+        [14, 80, 36],
+        [48, 58, 34],
+        [22, 36, 30],
+      ].map(([x, y, w]) => (
+        <React.Fragment key={`${x}${y}`}>
+          <Block u={u} x={x} y={y} w={w} h={7} color={c.fg} />
+          <Disc u={u} cx={x + w / 2} cy={y} r={6} color={c.fg} />
+        </React.Fragment>
+      ))}
+      <Disc u={u} cx={64} cy={36} r={8} color={c.hi} />
+    </>
+  ),
+  // A paper plane heading for the gap between two stacks of cloud.
+  paperplane: (u, c) => (
+    <>
+      <Block u={u} x={62} y={6} w={18} h={32} color={c.fg} />
+      <Block u={u} x={62} y={64} w={18} h={30} color={c.fg} />
+      <Block u={u} x={6} y={88} w={88} h={6} color={c.fg} />
+      <Wedge u={u} x={12} y={40} w={40} h={16} color={c.hi} />
     </>
   ),
   // A drum mid-beat, and the beat's marks along the top.

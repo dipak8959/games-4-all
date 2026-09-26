@@ -134,6 +134,20 @@ export const tilePalette = {
   orchid: '#C06DA7',
   caramel: '#AA7431',
   forest: '#347942',
+  // Chosen for the ten games that followed, the same way: the colours
+  // furthest (CIELAB) from every tile already here, that clear 3:1 against
+  // both the picture and its ink, kept off the accent and short of neon.
+  iris: '#8C7ED9',
+  flamingo: '#D26277',
+  reed: '#858C70',
+  lavender: '#8C85A8',
+  rosewood: '#A1545B',
+  ocean: '#008CEE',
+  rust: '#AF4D38',
+  cherry: '#D24D54',
+  terracotta: '#C47062',
+  crimson: '#C4315B',
+  blush: '#A87E85',
 } as const;
 
 /** Resolves one of `playPalette`'s keys, falling back to the first colour so

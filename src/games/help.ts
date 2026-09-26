@@ -355,6 +355,26 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'Tap, tap … tap: two close together, then one after a pause. The next player taps the same.',
     grows: 'Longer beats, a closer copy needed, and no marks to show the pattern.',
   },
+  cloudhopper: {
+    goal: 'Bounce all the way up the clouds to the sun.',
+    steps: [
+      'The hopper bounces by itself. Hold an arrow, or one side of the sky, to steer it.',
+      'Steer under the next cloud up as the hopper comes down. It jumps up through clouds, and lands on top.',
+      'Missed? It floats back to the highest cloud it reached. Try again!',
+    ],
+    example: 'The next cloud is up and to the right: as the hopper rises, hold the right arrow, then let go over the cloud.',
+    grows: 'More clouds, narrower and further apart, then clouds that drift, and dashed clouds that puff away after one bounce.',
+  },
+  paperplane: {
+    goal: 'Fly the paper plane through every gap in the clouds, all the way to the field.',
+    steps: [
+      'Hold the button, or anywhere on the sky, to climb. Let go to glide down.',
+      'Line the plane up with the open sky between the clouds before it gets there.',
+      'A bump just wobbles the plane through. Keep flying!',
+    ],
+    example: 'The next gap is lower down: let go early, and hold again just before the gap so the plane flies level through it.',
+    grows: 'More clouds, smaller gaps, a faster plane, gaps further up and down, then gaps that bob.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

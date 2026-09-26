@@ -1,0 +1,12 @@
+{
+  "id": "trainswitch",
+  "title": "Train Switch",
+  "skill": "Planning ahead: setting the points in time to send each train to its own station",
+  "roundEnds": "Twelve trains have arrived.",
+  "category": "logic",
+  "minAge": 6,
+  "maxAge": 99,
+  "origin": "public-domain",
+  "priorArt": "Railway shunting and switching puzzles, played on model railways since the early 1900s.",
+  "toldApartBy": "Shape: each train and its station carry the same shape (circle, square, triangle, star, diamond, heart), in the same colour as well."
+}

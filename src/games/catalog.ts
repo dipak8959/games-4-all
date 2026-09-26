@@ -786,6 +786,42 @@ export const GAMES_META: readonly GameMeta[] = [
     minAge: 4,
     maxAge: 99,
   },
+  {
+    id: 'cloudhopper',
+    title: 'Cloud Hopper',
+    icon: 'hopper',
+    color: tilePalette.iris,
+    skill: 'Steering in mid-air: judging where a bounce will come down and moving under it in time',
+    roundEnds: 'The hopper reaches the sun at the top of the sky.',
+    origin: 'public-domain',
+    priorArt:
+      'Bounce-and-climb platform games, from pogo and trampoline toys to arcade climbers of the 1980s, a format owned by no one.',
+    toldApartBy: 'Shape: the hopper is round with eyes; clouds are wide bumpy strips; a cloud that puffs away after one bounce is drawn as a dotted outline.',
+    ages: '5+',
+    category: 'arcade',
+    // Twelve wide clouds a small hop apart suit a five-year-old; twenty-two
+    // narrow ones, drifting and puffing away, ask for real judgement at any age.
+    minAge: 5,
+    maxAge: 99,
+  },
+  {
+    id: 'paperplane',
+    title: 'Paper Plane',
+    icon: 'plane',
+    color: tilePalette.flamingo,
+    skill: 'Timing and control: rising and gliding to steer a path through gaps',
+    roundEnds: 'The plane lands on the field at the end of a course fixed before take-off.',
+    origin: 'public-domain',
+    priorArt:
+      'Hold-to-rise flying through gaps, from cave and helicopter flying games of the 1980s onward, a format owned by no one.',
+    toldApartBy: 'Shape: the plane is a paper dart; the way through is the open sky between tall stacks of clouds.',
+    ages: '4+',
+    category: 'arcade',
+    // Eight wide gaps, slow and level, is a four-year-old's first flight;
+    // eighteen narrow ones that swing and bob, fast, is hard at any age.
+    minAge: 4,
+    maxAge: 99,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

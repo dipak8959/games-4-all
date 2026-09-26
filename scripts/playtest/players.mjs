@@ -2458,6 +2458,128 @@ export async function playDeepSea(page, report) {
   report.ok(`caught eight fish, ${slips} put back`);
 }
 
+/**
+ * Train Switch, played by eye: for every junction, the nearest train on its
+ * way there whose station lies beyond it, and the points set for that
+ * train — flipped again once it has gone by.
+ */
+export async function playTrainSwitch(page, report) {
+  await canTap(page);
+  // The first tap on the yard starts the trains.
+  const yard = await page.locator('[data-testid="field"]').boundingBox();
+  await page.mouse.click(yard.x + 10, yard.y + 10);
+  const astray = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let busy = false;
+        const lastFlip = new Map();
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) {
+            const wrong = document.body.innerText.includes('WRONG STATION');
+            return resolve(wrong);
+          }
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const trains = [...document.querySelectorAll('[data-testid^="train:"]')].map((el) => {
+            const b = el.getBoundingClientRect();
+            return { shape: el.dataset.testid.split(':')[1], x: b.left + b.width / 2 };
+          });
+          for (const el of document.querySelectorAll('[data-testid^="junction:"]')) {
+            const [, id, set, up, down] = el.dataset.testid.split(':');
+            const b = el.getBoundingClientRect();
+            const jx = b.left + b.width / 2;
+            const ups = up.split('.');
+            const all = [...ups, ...down.split('.')];
+            const coming = trains.filter((t) => t.x < jx - 4 && all.includes(t.shape)).sort((a, c) => c.x - a.x)[0];
+            if (!coming) continue;
+            const want = ups.includes(coming.shape) ? '0' : '1';
+            if (want !== set && now - (lastFlip.get(id) ?? 0) > 250) {
+              lastFlip.set(id, now);
+              await window.__tapAt(jx, b.top + b.height / 2);
+            }
+          }
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`brought in every train${astray ? ', one or more astray' : ''}`);
+}
+
+/**
+ * Number Bubbles, played by eye: reads the target and the sum wanted from
+ * the banner, and taps a set of bubbles that makes it while they're all
+ * well in reach.
+ */
+export async function playNumberBubbles(page, report) {
+  await canTap(page);
+  const slips = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let busy = false;
+        let slips = 0;
+        let slipping = false;
+        let lastTap = 0;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) return resolve(slips);
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const text = document.body.innerText;
+          const over = /TOO MUCH|NOT THAT PAIR/.test(text);
+          if (over && !slipping) slips += 1;
+          slipping = over;
+          const target = Number(document.querySelector('[data-testid^="target:"]')?.dataset.testid.split(':')[1]);
+          const kind = text.includes('ADD THREE') ? 'add3' : text.includes('TAKE ONE') ? 'take' : text.includes('TIMES TWO') ? 'times' : 'add';
+          const field = document.querySelector('[data-testid="field"]')?.getBoundingClientRect();
+          if (field && target && now - lastTap > 700 && !text.includes('POP!')) {
+            const k = field.width / 320;
+            const all = [...document.querySelectorAll('[data-testid^="bubble:"]')].map((el) => {
+              const [, id, value, picked] = el.dataset.testid.split(':');
+              const b = el.getBoundingClientRect();
+              return { id, value: Number(value), picked: picked === '1', x: b.left + b.width / 2, y: b.top + b.height / 2 };
+            });
+            // One left picked from before: let it go first.
+            const stray = all.find((b) => b.picked);
+            if (stray) {
+              lastTap = now;
+              await window.__tapAt(stray.x, stray.y);
+              busy = false;
+              return requestAnimationFrame(frame);
+            }
+            const bubbles = all.filter((b) => b.y > field.top + 130 * k && b.y < field.bottom - 60 * k);
+            const size = kind === 'add3' ? 3 : 2;
+            const makes = (vs) => (kind === 'take' ? Math.abs(vs[0] - vs[1]) : kind === 'times' ? vs[0] * vs[1] : vs.reduce((a, c) => a + c, 0));
+            let found = null;
+            const pick = (from, chosen) => {
+              if (found) return;
+              if (chosen.length === size) {
+                if (makes(chosen.map((c) => c.value)) === target) found = chosen;
+                return;
+              }
+              for (let i = from; i < bubbles.length; i += 1) pick(i + 1, [...chosen, bubbles[i]]);
+            };
+            pick(0, []);
+            if (found) {
+              lastTap = now;
+              for (const b of found) {
+                const el = document.querySelector(`[data-testid^="bubble:${b.id}:"]`);
+                const box = el.getBoundingClientRect();
+                await window.__tapAt(box.left + box.width / 2, box.top + box.height / 2);
+              }
+            }
+          }
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`made every target, ${slips} slip${slips === 1 ? '' : 's'}`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -2502,4 +2624,6 @@ export const PLAYERS = {
   'Ski Slalom': playSkiSlalom,
   'Space Rocks': playSpaceRocks,
   'Deep Sea Fishing': playDeepSea,
+  'Train Switch': playTrainSwitch,
+  'Number Bubbles': playNumberBubbles,
 };

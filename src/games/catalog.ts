@@ -894,6 +894,40 @@ export const GAMES_META: readonly GameMeta[] = [
     minAge: 3,
     maxAge: 8,
   },
+  {
+    id: 'trainswitch',
+    title: 'Train Switch',
+    icon: 'train',
+    color: tilePalette.rust,
+    skill: 'Planning ahead: setting the points in time to send each train to its own station',
+    roundEnds: 'Twelve trains have arrived.',
+    origin: 'public-domain',
+    priorArt:
+      'Railway shunting and switching puzzles, played on model railways since the early 1900s.',
+    toldApartBy: 'Shape: each train and its station carry the same shape (circle, square, triangle, star, diamond, heart), in the same colour as well.',
+    ages: '6+',
+    category: 'logic',
+    // Two stations and one slow train at a time suit a six-year-old; six
+    // stations and trains close behind each other are real planning at any age.
+    minAge: 6,
+    maxAge: 99,
+  },
+  {
+    id: 'numberbubbles',
+    title: 'Number Bubbles',
+    icon: 'bubbles',
+    color: tilePalette.cherry,
+    skill: 'Number bonds: finding the numbers that add up to a target, and later take away and times',
+    roundEnds: 'Eight targets made.',
+    origin: 'original',
+    toldApartBy: 'Numbers: every bubble shows its number in large figures.',
+    ages: '6-12',
+    category: 'numbers',
+    // Making five from two small numbers is where six-year-olds are; times
+    // tables to a hundred, fast, carries on to twelve.
+    minAge: 6,
+    maxAge: 12,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

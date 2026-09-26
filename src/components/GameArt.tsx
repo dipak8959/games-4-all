@@ -826,6 +826,31 @@ const SCENES: Readonly<Record<string, Draw>> = {
       <Wedge u={u} x={70} y={66} w={14} h={20} color={c.hi} />
     </>
   ),
+  // A junction, its two lines, and the train heading for the points.
+  trainswitch: (u, c) => (
+    <>
+      <Block u={u} x={6} y={48} w={40} h={5} color={c.fg} />
+      <View style={{ position: 'absolute', left: 40 * u, top: 32 * u, width: 50 * u, height: 4 * u, backgroundColor: c.fg, transform: [{ rotate: '-24deg' }] }} />
+      <View style={{ position: 'absolute', left: 40 * u, top: 66 * u, width: 50 * u, height: 4 * u, backgroundColor: c.fg, transform: [{ rotate: '24deg' }] }} />
+      <Frame u={u} x={80} y={10} w={14} h={14} color={c.fg} line={3} />
+      <Frame u={u} x={80} y={76} w={14} h={14} color={c.fg} line={3} />
+      <Block u={u} x={10} y={36} w={26} h={16} color={c.hi} />
+    </>
+  ),
+  // Bubbles rising with their numbers, one picked.
+  numberbubbles: (u, c) => (
+    <>
+      <Ring u={u} cx={28} cy={68} r={18} color={c.fg} line={4} />
+      <Ring u={u} cx={72} cy={46} r={16} color={c.fg} line={4} />
+      <Disc u={u} cx={36} cy={24} r={14} color={c.hi} />
+      <Glyph u={u} x={16} y={57} w={24} size={20} color={c.fg}>
+        4
+      </Glyph>
+      <Glyph u={u} x={60} y={36} w={24} size={18} color={c.fg}>
+        6
+      </Glyph>
+    </>
+  ),
   // A drum mid-beat, and the beat's marks along the top.
   echobeat: (u, c) => (
     <>

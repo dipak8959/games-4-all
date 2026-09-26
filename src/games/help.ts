@@ -419,6 +419,28 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'The bubble shows a stripy fish with a pointy tail: wait until it swims under the boat, then tap.',
     grows: 'More fish at more depths, swimming faster, and more kinds to tell apart.',
   },
+  trainswitch: {
+    goal: 'Send every train to the station with its shape. Twelve trains.',
+    steps: [
+      'Tap a junction to flip its points. The arrow shows which way it sends trains.',
+      'Each train goes whichever way the points are set when it gets there.',
+      'Set each junction for the train that will reach it next, then flip it again for the one behind.',
+      'A train at the wrong station just unloads there. On to the next!',
+    ],
+    example: 'A star train is coming, and the star station is at the bottom: set each junction on its way to point down.',
+    grows: 'More stations and junctions, faster trains, and trains closer together.',
+  },
+  numberbubbles: {
+    goal: 'Make eight targets from the numbers in the bubbles.',
+    steps: [
+      'The target is at the top. Tap the bubbles whose numbers make it.',
+      'Tap a bubble again to let it go.',
+      'Too much? The bubbles float free. Try another pair!',
+      'Bubbles float round again, so there is no rush.',
+    ],
+    example: 'Make 10: tap a 6 and a 4.',
+    grows: 'Bigger numbers, three to add, then take one from another, then times two together.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

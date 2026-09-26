@@ -62,6 +62,8 @@ const GAME_SCREENS = [
   'src/games/skislalom/SkiSlalomScreen.tsx',
   'src/games/spacerocks/SpaceRocksScreen.tsx',
   'src/games/deepsea/DeepSeaScreen.tsx',
+  'src/games/trainswitch/TrainSwitchScreen.tsx',
+  'src/games/numberbubbles/NumberBubblesScreen.tsx',
 ];
 
 /**
@@ -281,6 +283,7 @@ const MAY_DRAW_CIRCLES = [
   'src/games/skislalom/SkiSlalomScreen.tsx',
   'src/games/spacerocks/SpaceRocksScreen.tsx',
   'src/games/deepsea/DeepSeaScreen.tsx',
+  'src/games/numberbubbles/NumberBubblesScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

@@ -78,7 +78,9 @@ foregrounded; menus and Parent Zone are free. Logic lives in
 midnight rollover, backgrounding, and device clock changes (a clock jump
 backwards or forwards cannot silently consume or refund the day's allowance).
 
-When a limit is reached the child sees a friendly stop screen. There is no way
+In the last two minutes before a limit, a game's header shows a small clock
+and the minutes left in place of the round's percentage, so the stop is
+never a surprise. When a limit is reached the child sees a friendly stop screen. There is no way
 to dismiss it and no "watch an advert for more time" — only a grown-up can
 change the limit.
 

@@ -465,6 +465,22 @@ console.log('\n=== leaving a finished round by the arrow at the top ===');
   }
 }
 
+console.log('\n=== coming back to where you were on Home ===');
+{
+  // A child who picked a kind of game and played one comes back to the same
+  // kind, not to the top of the whole list.
+  await page.getByLabel(/^Numbers games/).click();
+  await page.waitForTimeout(400);
+  if (await openGame(page, 'Number Crunch')) {
+    await page.getByLabel('Back to games').first().click();
+    await page.waitForTimeout(700);
+    if (await page.getByLabel(/^Numbers games, selected/).count()) report.ok('back from a game, Home is still showing Numbers games');
+    else report.bug('Home', 'back from a game, the kind of game chosen was forgotten');
+  }
+  await page.getByLabel(/^All games/).click();
+  await page.waitForTimeout(400);
+}
+
 // Nothing above should have left a round-complete card hanging around.
 if (await roundResult(page)) report.bug('chrome', 'a round-complete card survived returning to Home');
 

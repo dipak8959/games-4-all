@@ -355,7 +355,14 @@ function Toggle({
     >
       <Text style={type.rowTitle}>{label}</Text>
       <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
-        <Switch value={value} trackColor={{ true: palette.accent, false: palette.surfaceAlt }} />
+        {/* The thumb is the ground colour, on or off. On the web an "on"
+            thumb takes react-native-web's own teal unless told otherwise. */}
+        <Switch
+          value={value}
+          trackColor={{ true: palette.accent, false: palette.surfaceAlt }}
+          thumbColor={palette.bg}
+          {...({ activeThumbColor: palette.bg } as object)}
+        />
       </View>
     </Pressable>
   );

@@ -9,6 +9,8 @@ import { Rule } from './Rule';
 import { Screen } from './Screen';
 import { findGameMeta } from '../games/catalog';
 import { helpFor } from '../games/help';
+import { isInWindDown, MINUTE_MS } from '../safety/screenTime';
+import { useApp } from '../state/AppProvider';
 import { gutter, hitTarget, palette, rule, space } from '../theme/tokens';
 import { type } from '../theme/type';
 
@@ -88,6 +90,13 @@ export function GameFrame({
   readonly children: React.ReactNode;
 }) {
   const clamped = Math.max(0, Math.min(1, progress));
+  // The last minutes before a limit: the header says so, in place of the
+  // round's percentage, so the stop screen is never a surprise. It sits in
+  // the header so the game underneath never changes size mid-play.
+  const { verdict, usage, settings } = useApp();
+  const left = verdict.kind === 'ok' && isInWindDown(verdict) ? verdict.remainingMs : null;
+  const minutesLeft = left == null ? null : Math.max(1, Math.ceil(left / MINUTE_MS));
+  const endsTheDay = left != null && settings.dailyLimitMs != null && settings.dailyLimitMs - usage.playedTodayMs <= left;
   const session = useContext(SessionContext);
   const help = session ? helpFor(session.gameId) : undefined;
   const open = session?.paused ?? false;
@@ -124,7 +133,19 @@ export function GameFrame({
           </Text>
         </View>
 
-        <Text style={type.mono}>{Math.round(clamped * 100)}%</Text>
+        {minutesLeft != null ? (
+          <View
+            style={styles.nearly}
+            accessible
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={`${minutesLeft} ${minutesLeft === 1 ? 'minute' : 'minutes'} of play left, then ${endsTheDay ? "that's all for today" : 'a break'}`}
+          >
+            <Icon name="clock" size={16} color={palette.ink} />
+            <Text style={type.monoStrong}>{`${minutesLeft} MIN`}</Text>
+          </View>
+        ) : (
+          <Text style={type.mono}>{Math.round(clamped * 100)}%</Text>
+        )}
 
         {help ? (
           <Pressable
@@ -242,6 +263,7 @@ const styles = StyleSheet.create({
   helpText: { textAlign: 'center' },
   pressed: { backgroundColor: 'rgba(32,30,29,0.10)' },
   titleWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  nearly: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   track: { height: 10, backgroundColor: palette.surface, borderTopWidth: rule.hair, borderTopColor: palette.border },
   fill: { height: '100%', backgroundColor: palette.ink },
   body: { flex: 1, paddingHorizontal: gutter, paddingTop: space.md },

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { GameArt } from '../components/GameArt';
@@ -39,6 +39,15 @@ import { fonts, type } from '../theme/type';
  * (`gamesForAge`). And where the handoff shows grayscale key art, this app
  * draws the game's own mark: it ships no image files at all, by design.
  */
+/**
+ * Where Home was left — the filter, the search, how far down — for each
+ * profile, for as long as the app is open. A child who picked "Arcade" and
+ * scrolled down to a game comes back from it to the same place, not to the
+ * top of the whole list. Memory only: none of it is saved.
+ */
+type Place = { readonly query: string; readonly category: GameCategory | null; readonly y: number };
+const places = new Map<string, Place>();
+
 export function HomeScreen({
   onOpenGame,
   onOpenParentZone,
@@ -51,8 +60,15 @@ export function HomeScreen({
   readonly onOpenPlayTime: () => void;
 }) {
   const { progress, settings, profiles, activeProfile, updateSettings, levelForGame, admin, lockAdmin } = useApp();
-  const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<GameCategory | null>(null);
+  const placeKey = activeProfile?.id ?? '';
+  const [query, setQuery] = useState(() => places.get(placeKey)?.query ?? '');
+  const [category, setCategory] = useState<GameCategory | null>(() => places.get(placeKey)?.category ?? null);
+  const scroller = useRef<ScrollView>(null);
+  const scrolledTo = useRef(places.get(placeKey)?.y ?? 0);
+  const restored = useRef(false);
+  useEffect(() => {
+    places.set(placeKey, { query, category, y: scrolledTo.current });
+  }, [placeKey, query, category]);
   const age = activeProfile?.age ?? DEFAULT_AGE;
 
   // Admin mode (for testing, see Parent Zone) lists every game on the
@@ -88,7 +104,21 @@ export function HomeScreen({
 
   return (
     <Screen padded={false}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView
+        ref={scroller}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        scrollEventThrottle={100}
+        onScroll={(e) => {
+          scrolledTo.current = e.nativeEvent.contentOffset.y;
+          places.set(placeKey, { query, category, y: scrolledTo.current });
+        }}
+        onContentSizeChange={() => {
+          if (restored.current) return;
+          restored.current = true;
+          if (scrolledTo.current > 0) scroller.current?.scrollTo({ y: scrolledTo.current, animated: false });
+        }}
+      >
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={type.mono}>OFFLINE SUPER APP</Text>

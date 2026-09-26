@@ -76,3 +76,14 @@ Each pass exits non-zero if it finds a bug or the page logs an error.
   now use `aria-checked` and `aria-selected`, which React Native maps to
   the same state on phones. Sudoku's cells were only "empty cell" or a
   digit; they now say their row and column.
+- Walking through as a family rather than a script found four things no
+  pass was looking for:
+  - A time limit arrived with no warning: the game vanished mid-round. The
+    last two minutes now show a small clock and the minutes left in the
+    game's header (screen-time.mjs checks it).
+  - Home forgot where a child was after every game: back at the top, the
+    kind of game they'd picked cleared (edge-cases.mjs checks it).
+  - Treasure Hunt's diagonal clue, a chevron turned 45°, read as a corner
+    ("┐"), not an arrow. It has a shaft now.
+  - On the web, react-native-web drew the "on" switches' thumbs in its own
+    teal.

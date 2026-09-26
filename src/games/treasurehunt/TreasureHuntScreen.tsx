@@ -3,7 +3,6 @@ import { Dimensions, StyleSheet, Text, View } from 'react-native';
 
 import { AnswerButton, AnswerRow, StageLabel, StageScroll, fitTiles } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
-import { Icon } from '../../components/Icon';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
@@ -24,10 +23,37 @@ import {
 /** How long a found treasure stays on show before the next map. */
 const FOUND_MS = 1200;
 
-/** The 'back' icon points left; this turns it to point any of eight ways. */
+/** How far to turn an arrow that points right, to point any of eight ways. */
 function arrowTurn(dx: number, dy: number): number {
-  const angle = (Math.atan2(dy, dx) * 180) / Math.PI; // 0 = right, 90 = down
-  return angle + 180;
+  return (Math.atan2(dy, dx) * 180) / Math.PI; // 0 = right, 90 = down
+}
+
+/**
+ * An arrow with a shaft. A chevron on its own, turned to a diagonal, reads
+ * as a corner ("┐") rather than "up and to the right"; the shaft makes the
+ * way it points plain to a child who has never seen a compass.
+ */
+function Pointer({ size, turn }: { readonly size: number; readonly turn: number }) {
+  const stroke = Math.max(3, Math.round(size * 0.1));
+  const head = size * 0.36;
+  return (
+    <View style={{ width: size, height: size, transform: [{ rotate: `${turn}deg` }] }}>
+      <View style={[styles.stroke, { left: size * 0.1, right: size * 0.2, top: (size - stroke) / 2, height: stroke }]} />
+      <View
+        style={{
+          position: 'absolute',
+          right: size * 0.16,
+          top: (size - head) / 2,
+          width: head,
+          height: head,
+          borderTopWidth: stroke,
+          borderRightWidth: stroke,
+          borderColor: palette.ink,
+          transform: [{ rotate: '45deg' }],
+        }}
+      />
+    </View>
+  );
 }
 
 function arrowWords(dx: number, dy: number): string {
@@ -103,11 +129,7 @@ export function TreasureHuntScreen({ level: initialLevel, onRoundComplete, onExi
             } else if (dug && map.clue === 'arrow') {
               const { dx, dy } = arrowFrom(map, cell);
               label = `${where}: the treasure is ${arrowWords(dx, dy)}`;
-              content = (
-                <View style={{ transform: [{ rotate: `${arrowTurn(dx, dy)}deg` }] }}>
-                  <Icon name="back" size={tile * 0.46} color={palette.ink} />
-                </View>
-              );
+              content = <Pointer size={tile * 0.62} turn={arrowTurn(dx, dy)} />;
             } else if (dug) {
               const steps = stepsFrom(map, cell);
               label = `${where}: the treasure is ${steps} ${steps === 1 ? 'step' : 'steps'} away`;
@@ -159,6 +181,7 @@ const styles = StyleSheet.create({
   // button. A dug square is the hole: the clue sits on the plain ground.
   sand: { width: 6, height: 6, backgroundColor: palette.border },
   hole: { alignItems: 'center', justifyContent: 'center' },
+  stroke: { position: 'absolute', backgroundColor: palette.ink },
   steps: { alignItems: 'center' },
   stepsNumber: { fontFamily: fonts.heavy, fontSize: font.h2, color: palette.ink, includeFontPadding: false },
   lid: { backgroundColor: palette.ink },

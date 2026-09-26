@@ -141,9 +141,11 @@ export function CodeCrackerScreen({ level: initialLevel, onRoundComplete, onExit
       <ScrollView ref={history} style={styles.history} contentContainerStyle={styles.historyInner}>
         {state.guesses.length === 0 ? (
           <Text style={styles.hint}>
+            {/* One line for each peg, so a narrow screen never wraps a peg
+                away from what it means. */}
             {state.perSlot
-              ? 'UNDER EACH SHAPE: ■ RIGHT HERE   □ SOMEWHERE ELSE'
-              : 'PEGS: ■ RIGHT SHAPE, RIGHT PLACE   □ RIGHT SHAPE, WRONG PLACE'}
+              ? 'UNDER EACH SHAPE:\n■ RIGHT HERE\n□ SOMEWHERE ELSE'
+              : 'PEGS:\n■ RIGHT SHAPE, RIGHT PLACE\n□ RIGHT SHAPE, WRONG PLACE'}
           </Text>
         ) : null}
         {state.guesses.map((g, i) => (

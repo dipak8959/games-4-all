@@ -2,9 +2,10 @@
  * Pass 4: the limits a grown-up sets actually hold.
  *
  * The page runs on a clock this pass controls, so ten minutes of play take a
- * moment. A sitting is one sitting however many games it spans; the stop
- * screen stays up until a grown-up changes the limit; and a day's allowance
- * comes back at midnight even if the app was left open on the stop screen.
+ * moment. A sitting is one sitting however many games it spans; the game
+ * says when two minutes are left; the stop screen stays up until a grown-up
+ * changes the limit; and a day's allowance comes back at midnight even if
+ * the app was left open on the stop screen.
  *
  * See harness.mjs for how to run this.
  */
@@ -36,13 +37,17 @@ async function setLimit(which, choice) {
 console.log('=== a sitting spans games ===');
 await setLimit('sitting', '10 minutes');
 await openGame(page, 'Sort It Out');
-await play(8);
-if (await onBreak()) report.bug('sitting', 'the break came after 8 of 10 minutes');
-else report.ok('still playing after 8 of 10 minutes');
+await play(8.5);
+if (await onBreak()) report.bug('sitting', 'the break came after 8½ of 10 minutes');
+else report.ok('still playing after 8½ of 10 minutes');
+// Two minutes out, the game's header says so: the stop is never a surprise.
+const headsUp = page.getByLabel(/^2 minutes of play left, then a break$/);
+if (await headsUp.count()) report.ok('two minutes out, the header says "2 MIN" left');
+else report.bug('sitting', 'no heads-up in the game two minutes before the break');
 await page.getByLabel('Back to games').click();
 await page.waitForTimeout(400);
 await openGame(page, 'How Many?');
-await play(3);
+await play(2.5);
 await page.waitForTimeout(400);
 if (await onBreak()) report.ok('break time after 11 minutes across two games');
 else report.bug('sitting', 'no break after 11 minutes across two games — going Home restarted the sitting');

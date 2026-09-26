@@ -774,6 +774,37 @@ const SCENES: Readonly<Record<string, Draw>> = {
       <Wedge u={u} x={12} y={40} w={40} h={16} color={c.hi} />
     </>
   ),
+  // A putting green from above: the ball, the cup, and its flag.
+  minigolf: (u, c) => (
+    <>
+      <Frame u={u} x={8} y={8} w={84} h={84} color={c.fg} line={4} />
+      <Block u={u} x={8} y={48} w={52} h={6} color={c.fg} />
+      <Disc u={u} cx={70} cy={30} r={8} color={c.hi} />
+      <Block u={u} x={69} y={10} w={3} h={20} color={c.hi} />
+      <Block u={u} x={72} y={10} w={12} h={8} color={c.hi} />
+      <Disc u={u} cx={32} cy={76} r={6} color={c.fg} />
+    </>
+  ),
+  // Two gates of flags down a slope, and the skier between them.
+  skislalom: (u, c) => (
+    <>
+      {[
+        [14, 18],
+        [54, 18],
+        [36, 60],
+        [76, 60],
+      ].map(([x, y]) => (
+        <React.Fragment key={`${x}${y}`}>
+          <Block u={u} x={x} y={y} w={3} h={24} color={c.fg} />
+          <Block u={u} x={x + 3} y={y} w={12} h={9} color={c.fg} />
+        </React.Fragment>
+      ))}
+      <Disc u={u} cx={44} cy={38} r={5} color={c.hi} />
+      <Block u={u} x={39} y={43} w={10} h={10} color={c.hi} />
+      <Block u={u} x={36} y={46} w={3} h={14} color={c.hi} />
+      <Block u={u} x={49} y={46} w={3} h={14} color={c.hi} />
+    </>
+  ),
   // A drum mid-beat, and the beat's marks along the top.
   echobeat: (u, c) => (
     <>

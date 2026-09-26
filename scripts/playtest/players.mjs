@@ -2153,6 +2153,171 @@ export async function playPaperPlane(page, report) {
   report.ok(`flew the course with ${bumps} bump${bumps === 1 ? '' : 's'}`);
 }
 
+/**
+ * Mini Golf, played by eye. It reads the course from what's drawn — the
+ * ball, the cup, walls, water and any sliding bar — and plans straight
+ * putts: at the cup if the way is clear, else to a point from which it is.
+ * It learns how fast the green is from its first putt, and waits for the
+ * bar to be out of the way before hitting across it.
+ */
+export async function playMiniGolf(page, report) {
+  const green = () => page.locator('[data-testid^="green:"]').getAttribute('data-testid');
+  const read = () =>
+    page.evaluate(() => {
+      const box = (el) => el.getBoundingClientRect();
+      const course = document.querySelector('[data-testid="course"]');
+      const ball = document.querySelector('[data-testid="ball"]');
+      if (!course || !ball) return null;
+      const c = box(course);
+      const b = box(ball);
+      const k = b.width / 12;
+      const o = { x: c.left + 2, y: c.top + 2 };
+      const f = (r) => ({ x: (r.left - o.x) / k, y: (r.top - o.y) / k, w: r.width / k, h: r.height / k });
+      const centre = (r) => ({ x: (r.left + r.width / 2 - o.x) / k, y: (r.top + r.height / 2 - o.y) / k });
+      const sweeper = document.querySelector('[data-testid="sweeper"]');
+      return {
+        k,
+        origin: o,
+        ball: centre(b),
+        cup: centre(box(document.querySelector('[data-testid="cup"]'))),
+        blocks: [...document.querySelectorAll('[data-testid="wall"], [data-testid="water"]')].map((el) => f(box(el))),
+        sweeper: sweeper ? f(box(sweeper)) : null,
+      };
+    });
+  const hits = (a, b, r, pad) => {
+    // Does the segment a→b pass within `pad` of the rectangle r?
+    const x0 = r.x - pad, x1 = r.x + r.w + pad, y0 = r.y - pad, y1 = r.y + r.h + pad;
+    let t0 = 0, t1 = 1;
+    const d = { x: b.x - a.x, y: b.y - a.y };
+    for (const [p, q] of [[-d.x, a.x - x0], [d.x, x1 - a.x], [-d.y, a.y - y0], [d.y, y1 - a.y]]) {
+      if (p === 0) { if (q < 0) return false; continue; }
+      const t = q / p;
+      if (p < 0) { if (t > t1) return false; if (t > t0) t0 = t; } else { if (t < t0) return false; if (t < t1) t1 = t; }
+    }
+    return true;
+  };
+  const clear = (a, b, blocks) => !blocks.some((r) => hits(a, b, r, 9));
+  let friction = 200;
+  let putts = 0;
+  for (let guard = 0; guard < 120; guard += 1) {
+    if (await roundResult(page)) break;
+    const phase = (await green()).split(':')[2];
+    if (phase !== 'aiming') {
+      await page.waitForTimeout(120);
+      continue;
+    }
+    const s = await read();
+    if (!s) break;
+    let target = s.cup;
+    let last = true;
+    if (!clear(s.ball, s.cup, s.blocks)) {
+      let best = null;
+      for (let x = 24; x <= 296; x += 12) {
+        for (let y = 24; y <= 456; y += 12) {
+          const p = { x, y };
+          if (s.blocks.some((r) => hits(p, p, r, 12))) continue;
+          if (!clear(s.ball, p, s.blocks) || !clear(p, s.cup, s.blocks)) continue;
+          const len = Math.hypot(p.x - s.ball.x, p.y - s.ball.y) + Math.hypot(s.cup.x - p.x, s.cup.y - p.y);
+          if (!best || len < best.len) best = { p, len };
+        }
+      }
+      if (best) {
+        target = best.p;
+        last = false;
+      }
+    }
+    const dist = Math.hypot(target.x - s.ball.x, target.y - s.ball.y) + (last ? 5 : 0);
+    const speed = Math.sqrt(2 * friction * dist);
+    const pull = Math.min(140, (speed / 520) * 140);
+    const ux = (target.x - s.ball.x) / Math.hypot(target.x - s.ball.x, target.y - s.ball.y);
+    const uy = (target.y - s.ball.y) / Math.hypot(target.x - s.ball.x, target.y - s.ball.y);
+    // A sliding bar across the way: wait for it to be well clear.
+    if (s.sweeper) {
+      const barY = s.sweeper.y + s.sweeper.h / 2;
+      const crosses = (s.ball.y - barY) * (target.y - barY) < 0;
+      if (crosses) {
+        const tAt = (s.ball.y - barY) / (s.ball.y - target.y);
+        const crossX = s.ball.x + (target.x - s.ball.x) * tAt;
+        for (let wait = 0; wait < 80; wait += 1) {
+          const now = await read();
+          const a = now.sweeper.x + now.sweeper.w / 2;
+          await page.waitForTimeout(50);
+          const b = (await read()).sweeper;
+          const bx = b.x + b.w / 2;
+          const away = Math.abs(bx - crossX) > Math.abs(a - crossX);
+          if (away && Math.abs(bx - crossX) > 60) break;
+        }
+      }
+    }
+    const now = await read();
+    const from = { x: now.origin.x + now.ball.x * now.k, y: now.origin.y + now.ball.y * now.k };
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(from.x - ux * pull * now.k, from.y - uy * pull * now.k, { steps: 5 });
+    await page.mouse.up();
+    putts += 1;
+    // Learn the green from how far that putt rolled.
+    await page.waitForTimeout(300);
+    for (let i = 0; i < 80 && (await green()).split(':')[2] === 'rolling'; i += 1) await page.waitForTimeout(100);
+    const after = await read();
+    const phaseNow = (await green()).split(':')[2];
+    if (after && phaseNow === 'aiming' && putts <= 1) {
+      const rolled = Math.hypot(after.ball.x - s.ball.x, after.ball.y - s.ball.y);
+      if (rolled > 30) friction = (speed * speed) / (2 * rolled) || friction;
+    }
+  }
+  report.ok(`played the course in ${putts} putts`);
+}
+
+/**
+ * Ski Slalom, skied by eye: head for the middle of the next gate, letting
+ * go early enough that the carve straightens out over it.
+ */
+export async function playSkiSlalom(page, report) {
+  await holdButtons(page, { left: 'Carve left', right: 'Carve right' });
+  const through = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let busy = false;
+        let history = [];
+        const started = performance.now();
+        const frame = async (now) => {
+          const slope = document.querySelector('[data-testid^="slope:"]');
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 180000) {
+            await window.__hold(null);
+            resolve(slope ? slope.getAttribute('aria-label') : '');
+            return;
+          }
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const text = document.body.innerText;
+          const skier = document.querySelector('[data-testid="skier"]')?.getBoundingClientRect();
+          const gateNo = slope ? Number(slope.dataset.testid.split(':')[1]) : 0;
+          const gate = document.querySelector(`[data-testid="gate:${gateNo}"]`)?.getBoundingClientRect();
+          let want = null;
+          if (text.includes('HOLD AN ARROW')) want = 'right';
+          else if (skier && gate) {
+            const x = skier.left + skier.width / 2;
+            history.push({ t: now, x });
+            history = history.filter((h) => now - h.t < 100);
+            const span = (history[history.length - 1].t - history[0].t) / 1000;
+            const vx = span > 0 ? (history[history.length - 1].x - history[0].x) / span : 0;
+            const k = skier.width / 24;
+            const dx = gate.left + gate.width / 2 - x;
+            const stopping = (vx * vx) / (2 * 700 * k);
+            if (Math.abs(dx) < 3 * k || (Math.sign(dx) === Math.sign(vx) && stopping >= Math.abs(dx) - 2 * k)) want = null;
+            else want = dx > 0 ? 'right' : 'left';
+          }
+          await window.__hold(want);
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`skied the run: ${through}`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -2193,4 +2358,6 @@ export const PLAYERS = {
   'Echo Beat': playEchoBeat,
   'Cloud Hopper': playCloudHopper,
   'Paper Plane': playPaperPlane,
+  'Mini Golf': playMiniGolf,
+  'Ski Slalom': playSkiSlalom,
 };

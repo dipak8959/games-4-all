@@ -46,6 +46,8 @@ import { specForLevel as countAroundSpec } from '../src/games/countaround/logic.
 import { specForLevel as starJarSpec } from '../src/games/starjar/logic.ts';
 import { specForLevel as mazeTeamSpec } from '../src/games/mazeteam/logic.ts';
 import { specForLevel as echoSpec } from '../src/games/echobeat/logic.ts';
+import { specForLevel as skiSpec } from '../src/games/skislalom/logic.ts';
+import { specForLevel as miniGolfSpec } from '../src/games/minigolf/logic.ts';
 import { specForLevel as paperPlaneSpec } from '../src/games/paperplane/logic.ts';
 import { specForLevel as cloudHopperSpec } from '../src/games/cloudhopper/logic.ts';
 
@@ -365,6 +367,14 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
   paperplane: (l) => {
     const spec = paperPlaneSpec(l);
     return [spec.stacks, -spec.gap, spec.speed, spec.swing, -spec.spacing, spec.bobbing];
+  },
+  minigolf: (l) => {
+    const spec = miniGolfSpec(l);
+    return [-spec.cup, -spec.friction, spec.hardest];
+  },
+  skislalom: (l) => {
+    const spec = skiSpec(l);
+    return [spec.gates, -spec.gateWidth, spec.speed, spec.swing, -spec.spacing, spec.trees];
   },
 };
 

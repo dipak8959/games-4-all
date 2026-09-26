@@ -822,6 +822,42 @@ export const GAMES_META: readonly GameMeta[] = [
     minAge: 4,
     maxAge: 99,
   },
+  {
+    id: 'minigolf',
+    title: 'Mini Golf',
+    icon: 'golf',
+    color: tilePalette.reed,
+    skill: 'Angles and strength: aiming a putt, including off a wall, and judging how hard to hit it',
+    roundEnds: 'Six holes played.',
+    origin: 'public-domain',
+    priorArt:
+      'Miniature golf, played on garden and seaside courses since the early 1900s.',
+    toldApartBy: 'Shape: the ball is a small circle, the hole a dark circle with a flag; walls are solid bars and water is drawn with ripples.',
+    ages: '5+',
+    category: 'arcade',
+    // Six open holes and a big cup suit a five-year-old; water, sweepers,
+    // pockets, a small cup and a fast green ask for real touch at any age.
+    minAge: 5,
+    maxAge: 99,
+  },
+  {
+    id: 'skislalom',
+    title: 'Ski Slalom',
+    icon: 'ski',
+    color: tilePalette.lavender,
+    skill: 'Steering and looking ahead: carving a line through gates on a slope that keeps coming',
+    roundEnds: 'The skier crosses the finish at the bottom of a run fixed before the start.',
+    origin: 'public-domain',
+    priorArt:
+      'Slalom skiing, a sport since the 1920s, and downhill skiing games owned by no one.',
+    toldApartBy: 'Shape: gates are pairs of flags on poles, trees are stacked triangles, the skier is a figure on two skis.',
+    ages: '5+',
+    category: 'arcade',
+    // Eight wide gates on a gentle run suit a five-year-old; eighteen narrow
+    // ones, fast and far across, with trees, are a real race at any age.
+    minAge: 5,
+    maxAge: 99,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

@@ -375,6 +375,28 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'The next gap is lower down: let go early, and hold again just before the gap so the plane flies level through it.',
     grows: 'More clouds, smaller gaps, a faster plane, gaps further up and down, then gaps that bob.',
   },
+  minigolf: {
+    goal: 'Putt the ball into the cup on six holes.',
+    steps: [
+      'Put a finger on the green and pull back, away from where you want the ball to go.',
+      'The further you pull, the harder the putt. The dots show which way, and how hard.',
+      'Let go to putt. Bounce it off a wall to get round a corner!',
+      'Water puts the ball back where you hit it from.',
+    ],
+    example: 'The cup is straight up and close: pull back down just a little, and let go.',
+    grows: 'Walls to get round, a sliding bar, water, and a cup tucked in a pocket, with a smaller cup and a faster green.',
+  },
+  skislalom: {
+    goal: 'Ski between the flags of every gate, down to the finish.',
+    steps: [
+      'Hold an arrow, or one side of the slope, to push off and carve that way. Let go to go straight.',
+      'Pass between each pair of flags. A tick means you made it.',
+      'Start turning early: carving takes a moment to get going, and a moment to stop.',
+      'Mind the trees! A tumble is just a tumble: up you get.',
+    ],
+    example: 'The next gate is to the right: hold right, and let go just before you are lined up with it.',
+    grows: 'More gates, narrower gates, a faster run, gates further across, then trees.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

@@ -66,12 +66,12 @@ function Root() {
   // Android's back button and back gesture: one step back to Home, the way
   // every screen's own Back does — never straight out of the app from the
   // middle of a game. On Home, and on the stop screen that stands in for
-  // it, back does what the system does. (The gate and confirm dialogs
-  // close themselves, and "How to play" closes before the game does.)
+  // it, back does what the system does. In a game the frame answers it
+  // (see GameFrame), and the gate and confirm dialogs close themselves.
   useEffect(() => {
     const onStopScreen = limitReached && route.name !== 'parent' && route.name !== 'profiles';
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (route.name === 'home' || onStopScreen) return false;
+      if (route.name === 'home' || route.name === 'game' || onStopScreen) return false;
       setRoute({ name: 'home' });
       return true;
     });

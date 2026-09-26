@@ -245,8 +245,9 @@ function solve(grid, size, boxH, boxW) {
 export async function playSudoku(page, report) {
   const read = async () => {
     const out = [];
-    for (const c of await page.getByLabel(/^(empty cell|\d+)$/).all()) {
-      out.push(await c.getAttribute('aria-label'));
+    // "Row 2, column 5: 7, given" / "Row 2, column 6: empty".
+    for (const c of await page.getByLabel(/^Row \d+, column \d+: /).all()) {
+      out.push((await c.getAttribute('aria-label')).split(': ')[1].split(',')[0]);
     }
     return out;
   };
@@ -261,7 +262,7 @@ export async function playSudoku(page, report) {
   // Box shape by board size, matching `sizeForLevel` in the game's logic.
   const boxH = size === 6 ? 2 : size === 4 ? 2 : 3;
   const boxW = size === 6 ? 3 : size === 4 ? 2 : 3;
-  const grid = values.map((v) => (v === 'empty cell' ? 0 : Number(v)));
+  const grid = values.map((v) => (v === 'empty' ? 0 : Number(v)));
   const given = grid.map((v) => v !== 0);
   if (!solve(grid, size, boxH, boxW)) {
     report.bug('Sudoku', `the ${size}x${size} puzzle dealt has no solution`);
@@ -272,7 +273,7 @@ export async function playSudoku(page, report) {
   for (let i = 0; i < grid.length; i += 1) {
     if (given[i]) continue;
     if (await roundResult(page)) break;
-    const cell = (await page.getByLabel(/^(empty cell|\d+)$/).all())[i];
+    const cell = page.getByLabel(new RegExp(`^Row ${Math.floor(i / size) + 1}, column ${(i % size) + 1}: `));
     await cell.click();
     await page.waitForTimeout(110);
     await page.getByLabel(`Enter ${grid[i]}`).click();

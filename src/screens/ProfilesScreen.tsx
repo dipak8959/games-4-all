@@ -147,7 +147,7 @@ function ProfileRow({
     <View style={styles.row}>
       <Pressable
         accessibilityRole="radio"
-        accessibilityState={{ selected: isActive }}
+        aria-checked={isActive}
         accessibilityLabel={`${profile.name}, age ${profile.age}${isActive ? ', current profile' : ''}`}
         onPress={onSwitch}
         style={({ pressed }) => [styles.rowMain, pressed && styles.pressedTint]}

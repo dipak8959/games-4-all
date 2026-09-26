@@ -112,8 +112,7 @@ export function SudokuScreen({ level: initialLevel, onRoundComplete, onExit }: G
                   <Pressable
                     key={col}
                     accessibilityRole="button"
-                    accessibilityLabel={cell.value != null ? `${cell.value}` : 'empty cell'}
-                    accessibilityState={{ disabled: cell.given, selected: isSelected }}
+                    accessibilityLabel={`Row ${row + 1}, column ${col + 1}: ${cell.value ?? 'empty'}${cell.given ? ', given' : ''}${isSelected ? ', chosen' : ''}`}
                     disabled={cell.given}
                     onPress={() => onSelectCell(index)}
                     style={cellStyle}

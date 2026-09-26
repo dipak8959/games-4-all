@@ -41,7 +41,7 @@ export function ProfileEditor({
             key={choice}
             accessibilityRole="radio"
             accessibilityLabel={`${choice} colour`}
-            accessibilityState={{ selected: avatar === choice }}
+            aria-checked={avatar === choice}
             onPress={() => setAvatar(choice)}
             style={[styles.swatch, { backgroundColor: playColor(choice) }, avatar === choice && styles.selectedEdge]}
           >
@@ -57,7 +57,7 @@ export function ProfileEditor({
             key={choice}
             accessibilityRole="radio"
             accessibilityLabel={choice}
-            accessibilityState={{ selected: name === choice }}
+            aria-checked={name === choice}
             onPress={() => setName(choice)}
             style={[styles.chip, name === choice && styles.chipSelected]}
           >

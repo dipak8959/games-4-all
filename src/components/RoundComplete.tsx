@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from './BigButton';
+import { useFinishedRound } from './GameFrame';
 import { Icon } from './Icon';
 import { Rule } from './Rule';
 import { palette, rule, space } from '../theme/tokens';
@@ -30,6 +31,7 @@ export function RoundComplete({
   readonly onExit: () => void;
   readonly reduceMotion: boolean;
 }) {
+  useFinishedRound(onExit);
   const rise = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
   const text = PRAISE[Math.max(0, Math.min(PRAISE.length - 1, stars))];
 

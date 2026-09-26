@@ -435,6 +435,36 @@ if (await openGame(page, 'Number Crunch')) {
   }
 }
 
+console.log('\n=== leaving a finished round by the arrow at the top ===');
+{
+  // The round-complete card has its own "Back to games", which records the
+  // round. The arrow at the top of the screen is still there under it, and a
+  // child is as likely to tap that: the round must count either way.
+  const starsFor = async (title) => {
+    const label = await page.evaluate(
+      (t) => [...document.querySelectorAll('[aria-label]')].map((e) => e.getAttribute('aria-label')).find((l) => l.startsWith(`${t}. `) && l.endsWith(' earned.')) ?? '',
+      title,
+    );
+    return Number(label.match(/(\d+) stars? earned/)?.[1] ?? NaN);
+  };
+  const before = await starsFor('How Many?');
+  if (await openGame(page, 'How Many?')) {
+    await PLAYERS['How Many?'](page, report);
+    const result = await waitForRound(page, 8000);
+    if (!result) {
+      report.bug('How Many?', 'the round did not finish');
+      await backHome(page, report, 'How Many?');
+    } else {
+      // The header's arrow comes first on the page; the card's button second.
+      await page.getByLabel('Back to games').first().click();
+      await page.waitForTimeout(800);
+      const after = await starsFor('How Many?');
+      if (after === before + result.stars) report.ok(`the round still counts: ${before} → ${after} stars`);
+      else report.bug('How Many?', `left by the top arrow, a ${result.stars}-star round went unrecorded (${before} → ${after})`);
+    }
+  }
+}
+
 // Nothing above should have left a round-complete card hanging around.
 if (await roundResult(page)) report.bug('chrome', 'a round-complete card survived returning to Home');
 

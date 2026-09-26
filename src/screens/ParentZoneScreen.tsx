@@ -300,7 +300,7 @@ function AdminPanel() {
               <Pressable
                 key={String(level)}
                 accessibilityRole="radio"
-                accessibilityState={{ selected }}
+                aria-checked={selected}
                 accessibilityLabel={`${name}${selected ? ', selected' : ''}`}
                 onPress={() => setAdminLevel(level)}
                 style={({ pressed }) => [
@@ -349,7 +349,7 @@ function Toggle({
     <Pressable
       accessibilityRole="switch"
       accessibilityLabel={label}
-      accessibilityState={{ checked: value }}
+      aria-checked={value}
       onPress={() => onChange(!value)}
       style={({ pressed }) => [styles.row, pressed && styles.pressedTint]}
     >
@@ -381,7 +381,7 @@ function LimitPicker({
             <Pressable
               key={String(minutes)}
               accessibilityRole="radio"
-              accessibilityState={{ selected }}
+              aria-checked={selected}
               accessibilityLabel={minutes == null ? 'No limit' : `${minutes} minutes`}
               onPress={() => onChange(ms)}
               style={({ pressed }) => [

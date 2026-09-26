@@ -300,7 +300,7 @@ function ProfileCell({
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected }}
+      aria-checked={selected}
       accessibilityLabel={`${profile.name}, age ${profile.age}${selected ? ', playing now' : ''}. Switching needs a grown-up.`}
       onPress={onPress}
       style={({ pressed }) => [styles.cell, selected && styles.cellSelected, pressed && !selected && styles.pressedTint]}

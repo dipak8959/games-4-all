@@ -42,7 +42,7 @@ async function measure(where, { sudoku = false } = {}) {
     return out;
   });
   // Sudoku's cells: a 9x9 board cannot fit 72dp cells on a phone.
-  const small = [...new Set(found.small)].filter((s) => !(sudoku && /^(\d|empty cell) \d+x\d+$/.test(s)));
+  const small = [...new Set(found.small)].filter((s) => !(sudoku && /^Row \d+, column \d+: /.test(s)));
   const problems = [];
   if (found.sideways > 1) problems.push(`the page scrolls sideways by ${found.sideways}px`);
   if (small.length) problems.push(`under 72dp: ${small.slice(0, 5).join('; ')}${small.length > 5 ? ` (+${small.length - 5} more)` : ''}`);

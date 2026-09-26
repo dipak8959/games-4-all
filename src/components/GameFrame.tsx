@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from './BigButton';
@@ -24,14 +24,35 @@ type Session = {
   readonly gameId: string;
   readonly paused: boolean;
   readonly setPaused: (paused: boolean) => void;
+  /** The round-complete card's own "Back to games", while the card is up. */
+  readonly finished: React.MutableRefObject<(() => void) | null>;
 };
 
 const SessionContext = createContext<Session | null>(null);
 
 export function GameSession({ gameId, children }: { readonly gameId: string; readonly children: React.ReactNode }) {
   const [paused, setPaused] = useState(false);
-  const value = useMemo(() => ({ gameId, paused, setPaused }), [gameId, paused]);
+  const finished = useRef<(() => void) | null>(null);
+  const value = useMemo(() => ({ gameId, paused, setPaused, finished }), [gameId, paused]);
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+}
+
+/**
+ * While a finished round's card is up, every way out of the game — the
+ * frame's Back, Android's back — leaves through the card's own "Back to
+ * games". That is the door that records the round: without it, a child who
+ * finishes and taps the arrow at the top loses the stars, and the next round
+ * never moves up or down a level.
+ */
+export function useFinishedRound(exit: () => void): void {
+  const session = useContext(SessionContext);
+  useEffect(() => {
+    if (!session) return undefined;
+    session.finished.current = exit;
+    return () => {
+      if (session.finished.current === exit) session.finished.current = null;
+    };
+  }, [session, exit]);
 }
 
 /**
@@ -71,17 +92,18 @@ export function GameFrame({
   const help = session ? helpFor(session.gameId) : undefined;
   const open = session?.paused ?? false;
   const setOpen = useCallback((next: boolean) => session?.setPaused(next), [session]);
+  const leave = useCallback(() => (session?.finished.current ?? onExit)(), [session, onExit]);
 
-  // With "How to play" open, Android's back closes it, as its own close
-  // does, rather than leaving the game underneath.
+  // Android's back is this frame's Back: it closes "How to play" first, as
+  // the sheet's own close does, and otherwise leaves the game the same way.
   useEffect(() => {
-    if (!open) return undefined;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      setOpen(false);
+      if (open) setOpen(false);
+      else leave();
       return true;
     });
     return () => sub.remove();
-  }, [open, setOpen]);
+  }, [open, setOpen, leave]);
 
   return (
     <Screen padded={false}>
@@ -89,7 +111,7 @@ export function GameFrame({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back to games"
-          onPress={onExit}
+          onPress={leave}
           style={({ pressed }) => [styles.back, pressed && styles.pressed]}
         >
           <Icon name="back" size={26} color={palette.ink} />

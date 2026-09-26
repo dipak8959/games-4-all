@@ -45,7 +45,7 @@ export function TabBar({
           <Pressable
             key={tab.key}
             accessibilityRole="tab"
-            accessibilityState={{ selected }}
+            aria-selected={selected}
             accessibilityLabel={tab.spoken}
             onPress={() => onSelect(tab.key)}
             style={({ pressed }) => [

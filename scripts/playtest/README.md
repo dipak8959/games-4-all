@@ -65,3 +65,14 @@ Each pass exits non-zero if it finds a bug or the page logs an error.
   33dp line inside its 72dp box. Also under 72dp: the profile button,
   Parent Zone's limit chips and switches, and the profile editor's colours
   and names.
+- A finished round left by the arrow at the top of the screen was never
+  recorded. The round-complete card covers the game but not its header, and
+  only the card's own "Back to games" saved the stars and moved the level.
+  Every way out (the arrow, and Android's back) now goes through the card
+  while it is up.
+- react-native-web ignores `accessibilityState`, so on the web a screen
+  reader heard no selected or checked state at all: not which limit was
+  set, which colour or name was chosen, or whether a switch was on. These
+  now use `aria-checked` and `aria-selected`, which React Native maps to
+  the same state on phones. Sudoku's cells were only "empty cell" or a
+  digit; they now say their row and column.

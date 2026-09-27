@@ -48,6 +48,9 @@ import { fonts, type } from '../theme/type';
 type Place = { readonly query: string; readonly category: GameCategory | null; readonly y: number };
 const places = new Map<string, Place>();
 
+/** A tile's picture takes three quarters of the tile, with its colour round it. */
+const TILE_ART = 0.75;
+
 export function HomeScreen({
   onOpenGame,
   onOpenParentZone,
@@ -393,7 +396,7 @@ function Hero({
       style={({ pressed }) => [styles.hero, { backgroundColor: game.color }, pressed && styles.heroPressed]}
     >
       <View style={styles.heroArt}>
-        <GameArt id={game.id} color={game.color} />
+        <GameArt id={game.id} color={game.color} scale={TILE_ART} />
       </View>
       <View style={styles.heroPlate}>
         <Text style={[type.mono, styles.heroKicker]}>ON DEVICE · READY TO PLAY</Text>
@@ -428,7 +431,7 @@ function GameCell({
         style={({ pressed }) => [styles.gameCellMain, pressed && styles.pressedTint]}
       >
         <View style={styles.thumb}>
-          <GameArt id={game.id} color={game.color} />
+          <GameArt id={game.id} color={game.color} scale={TILE_ART} />
         </View>
         <Text style={styles.gameTitle} numberOfLines={2}>
           {game.title}

@@ -912,12 +912,17 @@ export const GAMES_WITH_ART: readonly string[] = Object.keys(SCENES);
  * A game's picture, filling its container: give the parent a size (or an
  * aspect ratio) and the scene scales to it.
  */
-export function GameArt({ id, color }: { readonly id: string; readonly color: string }) {
+/**
+ * A game's picture on its colour. `scale` is how much of the space the
+ * drawing takes — all of it by default, less where the picture is a tile
+ * and needs room round it.
+ */
+export function GameArt({ id, color, scale = 1 }: { readonly id: string; readonly color: string; readonly scale?: number }) {
   const [size, setSize] = useState(0);
   const draw = SCENES[id];
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
-    setSize(Math.min(width, height));
+    setSize(Math.min(width, height) * scale);
   };
   const colours: Colours = {
     fg: palette.bg,

@@ -67,6 +67,7 @@ for (const title of [
   'Maze Explorer',
   'Balloon Count',
   'Peekaboo Pals',
+  'Deep Sea Fishing',
 ]) {
   await round(title, 'age 3');
 }
@@ -75,16 +76,21 @@ await round('Puddle Hop', 'age 4');
 await round('Memory Grid', 'age 4');
 await round('Tall Tower', 'age 4');
 await round('Duck Crossing', 'age 4');
-for (const title of ['Market Memory', 'Star Jar', 'Maze Team', 'Echo Beat']) await round(title, 'age 4');
+for (const title of ['Market Memory', 'Star Jar', 'Maze Team', 'Echo Beat', 'Paper Plane']) await round(title, 'age 4');
 await setAge(page, 5);
-for (const title of ['Lane Dash', 'Bounce Bricks', 'Hungry Worm', 'Hoop Shot', "What's the Time?", 'Rhyme Time', 'Count Around']) {
+for (const title of ['Lane Dash', 'Bounce Bricks', 'Hungry Worm', 'Hoop Shot', "What's the Time?", 'Rhyme Time', 'Count Around', 'Cloud Hopper', 'Mini Golf', 'Ski Slalom', 'Letter Drop']) {
   await round(title, 'age 5');
 }
+await setAge(page, 6);
+for (const title of ['Train Switch', 'Number Bubbles', 'Marble Maze']) await round(title, 'age 6');
 await setAge(page, 7);
-for (const title of ['Shadow Match', 'Big to Small', 'Tile Slide', 'Soft Landing', 'Code Cracker']) await round(title, 'age 7');
+for (const title of ['Shadow Match', 'Big to Small', 'Tile Slide', 'Soft Landing', 'Code Cracker', 'Space Rocks']) await round(title, 'age 7');
 await setAge(page, 8);
 await round('Balloon Count', 'age 8');
 await round('Rhyme Time', 'age 8');
+await round('Deep Sea Fishing', 'age 8');
+await setAge(page, 9);
+await round('Letter Drop', 'age 9');
 await setAge(page, 10);
 await round('Which Cup?', 'age 10');
 await round('Word Ladder', 'age 10');
@@ -92,7 +98,7 @@ await round('Fruit Catch', 'age 10');
 await round('Peekaboo Pals', 'age 10');
 await round("What's the Time?", 'age 10');
 await setAge(page, 12);
-for (const title of ['Maze Explorer', 'Treasure Hunt', 'Water Works']) await round(title, 'age 12');
+for (const title of ['Maze Explorer', 'Treasure Hunt', 'Water Works', 'Number Bubbles']) await round(title, 'age 12');
 
 console.log('\n=== age 17: every game at full difficulty ===');
 await setAge(page, 17);
@@ -124,6 +130,13 @@ for (const title of [
   'Star Jar',
   'Maze Team',
   'Echo Beat',
+  'Cloud Hopper',
+  'Paper Plane',
+  'Mini Golf',
+  'Ski Slalom',
+  'Space Rocks',
+  'Train Switch',
+  'Marble Maze',
 ]) {
   await round(title, 'age 17');
 }

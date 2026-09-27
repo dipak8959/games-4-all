@@ -84,6 +84,15 @@ await play('Count Around');
 await play('Star Jar');
 await play('Maze Team');
 await play('Echo Beat');
+await play('Cloud Hopper');
+await play('Paper Plane');
+await play('Mini Golf');
+await play('Ski Slalom');
+await play('Deep Sea Fishing');
+await play('Train Switch');
+await play('Number Bubbles');
+await play('Marble Maze');
+await play('Letter Drop');
 
 console.log('\n=== age 9 ===');
 await setAge(page, 9);
@@ -97,6 +106,7 @@ await play('Tile Slide');
 await play('Treasure Hunt');
 await play('Water Works');
 await play('Soft Landing');
+await play('Space Rocks');
 
 console.log('\n=== age 12 ===');
 await setAge(page, 12);
@@ -134,6 +144,16 @@ for (const title of [
   'Star Jar',
   'Maze Team',
   'Echo Beat',
+  'Cloud Hopper',
+  'Paper Plane',
+  'Mini Golf',
+  'Ski Slalom',
+  'Space Rocks',
+  'Deep Sea Fishing',
+  'Train Switch',
+  'Number Bubbles',
+  'Marble Maze',
+  'Letter Drop',
 ]) {
   const row = lines.findIndex((l) => l.trim() === title);
   const meta = lines.slice(row, row + 4).join(' ');

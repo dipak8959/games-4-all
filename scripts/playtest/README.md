@@ -87,3 +87,11 @@ Each pass exits non-zero if it finds a bug or the page logs an error.
     ("┐"), not an arrow. It has a shaft now.
   - On the web, react-native-web drew the "on" switches' thumbs in its own
     teal.
+- Number Bubbles put each new bubble at the bottom of its column wherever
+  the others were, so a new one could rise on top of an old one and a tap
+  meant for one number landed on the other. A popped bubble's place now
+  stays empty until it comes round again.
+- Marble Maze's marble stopped dead mid-board. In a browser, holding and
+  sliding selected the page's text, the browser began dragging the
+  selection, and cancelled the press the game was following. No game's
+  text can be selected now, which fixes any game played by sliding.

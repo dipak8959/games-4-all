@@ -441,6 +441,28 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'Make 10: tap a 6 and a 4.',
     grows: 'Bigger numbers, three to add, then take one from another, then times two together.',
   },
+  marblemaze: {
+    goal: 'Roll the marble up to the star on three boards.',
+    steps: [
+      'Hold the board where the marble should roll. It rolls towards your finger.',
+      'Slide your finger to steer. Let go and the marble slows down.',
+      'Go through the door in each wall, and round the holes.',
+      'Down a hole? The marble comes back at the last door. Try again!',
+    ],
+    example: 'The door is on the left: hold just below it, then just above it once the marble is through.',
+    grows: 'More walls, narrower doors, more holes close to the way through, and a faster marble.',
+  },
+  letterdrop: {
+    goal: 'Spell five words from their pictures.',
+    steps: [
+      'Look at the picture. Its word goes in the boxes, one letter at a time.',
+      'Letters fall down the screen. Tap the one the word needs next.',
+      'The right letter jumps into its box. The underlined box is the next one.',
+      'Not that one? It keeps falling, and the one you need will come.',
+    ],
+    example: 'The picture is a cat: tap C, then A, then T.',
+    grows: 'At first the word is written faintly in the boxes. Then just the picture, longer words, more letters that are not in the word, and faster falling.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

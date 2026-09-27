@@ -928,6 +928,42 @@ export const GAMES_META: readonly GameMeta[] = [
     minAge: 6,
     maxAge: 12,
   },
+  {
+    id: 'marblemaze',
+    title: 'Marble Maze',
+    icon: 'marble',
+    color: tilePalette.terracotta,
+    skill: 'Fine control and planning: tilting a board so a rolling marble follows a path past the holes',
+    roundEnds: 'Three boards rolled to the goal.',
+    origin: 'public-domain',
+    priorArt:
+      'Tilting marble labyrinths, wooden toys since the 1940s.',
+    toldApartBy: 'Shape: the marble is a circle with a shine, holes are dark rings, the goal is a ring with a star.',
+    ages: '6+',
+    category: 'logic',
+    // A wide door and two holes suit a six-year-old; four walls with
+    // narrow doors and holes close to the way through ask for real control.
+    minAge: 6,
+    maxAge: 99,
+  },
+  {
+    id: 'letterdrop',
+    title: 'Letter Drop',
+    icon: 'letters',
+    color: tilePalette.crimson,
+    skill: 'Spelling: picking out the letters of a word, in order, as they fall',
+    roundEnds: 'Five words spelled.',
+    origin: 'original',
+    readingIsTheSkill: true,
+    toldApartBy: 'Letters: each falling letter is drawn large; the picture shows the word to spell.',
+    ages: '5-9',
+    category: 'words',
+    // Three-letter words written out faintly to match suit a five-year-old
+    // starting to read; five letters from the picture alone, falling fast, suit a
+    // confident speller. Older readers have Word Ladder and Spell It.
+    minAge: 5,
+    maxAge: 9,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

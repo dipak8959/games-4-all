@@ -64,6 +64,8 @@ const GAME_SCREENS = [
   'src/games/deepsea/DeepSeaScreen.tsx',
   'src/games/trainswitch/TrainSwitchScreen.tsx',
   'src/games/numberbubbles/NumberBubblesScreen.tsx',
+  'src/games/marblemaze/MarbleMazeScreen.tsx',
+  'src/games/letterdrop/LetterDropScreen.tsx',
 ];
 
 /**
@@ -284,6 +286,7 @@ const MAY_DRAW_CIRCLES = [
   'src/games/spacerocks/SpaceRocksScreen.tsx',
   'src/games/deepsea/DeepSeaScreen.tsx',
   'src/games/numberbubbles/NumberBubblesScreen.tsx',
+  'src/games/marblemaze/MarbleMazeScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

@@ -105,7 +105,7 @@ test('findGameMeta returns undefined for an unknown id', () => {
 
 test('searchGames matches title or skill, case-insensitively', () => {
   const results = searchGames(GAMES_META, 'SPELL');
-  assert.deepEqual(results.map((g) => g.id), ['wordbuilder']);
+  assert.deepEqual(results.map((g) => g.id), ['wordbuilder', 'letterdrop']);
 
   const bySkill = searchGames(GAMES_META, 'arithmetic');
   assert.deepEqual(bySkill.map((g) => g.id), ['numbercrunch', 'starjar']);

@@ -2580,6 +2580,162 @@ export async function playNumberBubbles(page, report) {
   report.ok(`made every target, ${slips} slip${slips === 1 ? '' : 's'}`);
 }
 
+const marbleHook = new WeakSet();
+
+/**
+ * Marble Maze, played by eye: finds the doors in the walls, and holds the
+ * board a little ahead of the marble along the way through them — easing
+ * off before each turn, as a careful hand would.
+ */
+export async function playMarbleMaze(page, report) {
+  if (!marbleHook.has(page)) {
+    marbleHook.add(page);
+    let down = false;
+    await page.exposeFunction('__marbleHold', async (x, y) => {
+      if (x == null) {
+        if (down) await page.mouse.up();
+        down = false;
+        return;
+      }
+      await page.mouse.move(x, y);
+      if (!down) await page.mouse.down();
+      down = true;
+    });
+  }
+  const drops = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const THROUGH = 21;
+        let busy = false;
+        let drops = 0;
+        let dropping = false;
+        let board = -1;
+        let start = null;
+        const started = performance.now();
+        const seg = (p, a, b) => {
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const l2 = dx * dx + dy * dy;
+          const t = l2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)) : 0;
+          return { d: Math.hypot(p.x - (a.x + dx * t), p.y - (a.y + dy * t)), t };
+        };
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) {
+            await window.__marbleHold(null);
+            return resolve(drops);
+          }
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const stageId = document.querySelector('[data-testid^="board:"]')?.dataset.testid ?? '';
+          const [, index, phase] = stageId.split(':');
+          const marbleId = document.querySelector('[data-testid^="marble:"]')?.dataset.testid;
+          const field = document.querySelector('[data-testid="field"]')?.getBoundingClientRect();
+          if (phase === 'dropped' && !dropping) drops += 1;
+          dropping = phase === 'dropped';
+          if (!marbleId || !field || phase !== 'rolling') {
+            await window.__marbleHold(null);
+          } else {
+            const [, mx, my, vx, vy] = marbleId.split(':').map(Number);
+            const m = { x: mx, y: my };
+            if (Number(index) !== board) {
+              board = Number(index);
+              start = { ...m };
+            }
+            const bars = [...document.querySelectorAll('[data-testid^="bar:"]')]
+              .map((el) => el.dataset.testid.split(':').map(Number))
+              .map(([, door, y]) => ({ door, y }))
+              .sort((a, b) => b.y - a.y);
+            const [, gx, gy] = document.querySelector('[data-testid^="goal:"]').dataset.testid.split(':').map(Number);
+            const way = [start];
+            for (const b of bars) way.push({ x: b.door, y: b.y + THROUGH }, { x: b.door, y: b.y - THROUGH });
+            way.push({ x: gx, y: gy });
+            let best = 1;
+            let bestD = Infinity;
+            for (let i = 1; i < way.length; i += 1) {
+              const { d } = seg(m, way[i - 1], way[i]);
+              if (d <= bestD + 0.5) {
+                best = i;
+                bestD = Math.min(d, bestD);
+              }
+            }
+            if (Math.hypot(way[best].x - m.x, way[best].y - m.y) < 6 && best < way.length - 1) best += 1;
+            const a = way[best - 1];
+            const b = way[best];
+            const length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+            const ahead = Math.min(1, seg(m, a, b).t + 22 / length);
+            const carrot = { x: a.x + (b.x - a.x) * ahead, y: a.y + (b.y - a.y) * ahead };
+            const toEnd = Math.hypot(b.x - m.x, b.y - m.y);
+            // A little gentler than the logic's careful player: the page
+            // answers a frame or so late.
+            const turning = best < way.length - 1 ? 28 : 60;
+            const allowed = Math.min(85, Math.sqrt(turning * turning + 2 * 0.35 * 150 * toEnd));
+            const cd = Math.hypot(carrot.x - m.x, carrot.y - m.y) || 1;
+            const ex = ((carrot.x - m.x) / cd) * allowed - vx;
+            const ey = ((carrot.y - m.y) / cd) * allowed - vy;
+            const ed = Math.hypot(ex, ey);
+            if (ed < 3) await window.__marbleHold(null);
+            else {
+              const k = field.width / 320;
+              const fx = Math.max(12, Math.min(308, m.x + (ex / ed) * 40));
+              const fy = Math.max(12, Math.min(468, m.y + (ey / ed) * 40));
+              await window.__marbleHold(field.left + fx * k, field.top + fy * k);
+            }
+          }
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`rolled every board home, ${drops} drop${drops === 1 ? '' : 's'}`);
+}
+
+/**
+ * Letter Drop, played by eye: reads the word from the picture (as its label
+ * says it), and taps the letter the word needs next once it has fallen into
+ * reach below the picture.
+ */
+export async function playLetterDrop(page, report) {
+  await canTap(page);
+  const mistakes = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let busy = false;
+        let mistakes = 0;
+        let wrong = false;
+        let lastTap = 0;
+        const started = performance.now();
+        const frame = async (now) => {
+          if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) return resolve(mistakes);
+          if (busy) return requestAnimationFrame(frame);
+          busy = true;
+          const text = document.body.innerText;
+          const not = text.includes('NOT THAT ONE');
+          if (not && !wrong) mistakes += 1;
+          wrong = not;
+          const picture = document.querySelector('[data-testid^="picture:"]')?.dataset.testid;
+          const field = document.querySelector('[data-testid="field"]')?.getBoundingClientRect();
+          if (picture && field && now - lastTap > 250) {
+            const [, word, filled] = picture.split(':');
+            const need = word[Number(filled)];
+            const k = field.width / 320;
+            const letter = [...document.querySelectorAll('[data-testid^="letter:"]')]
+              .map((el) => ({ char: el.dataset.testid.split(':')[2], box: el.getBoundingClientRect() }))
+              .find((l) => l.char === need && l.box.top + l.box.height / 2 > field.top + 160 * k && l.box.top + l.box.height / 2 < field.bottom - 30 * k);
+            if (letter) {
+              lastTap = now;
+              await window.__tapAt(letter.box.left + letter.box.width / 2, letter.box.top + letter.box.height / 2);
+            }
+          }
+          busy = false;
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+  report.ok(`spelled every word, ${mistakes} wrong tap${mistakes === 1 ? '' : 's'}`);
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -2626,4 +2782,6 @@ export const PLAYERS = {
   'Deep Sea Fishing': playDeepSea,
   'Train Switch': playTrainSwitch,
   'Number Bubbles': playNumberBubbles,
+  'Marble Maze': playMarbleMaze,
+  'Letter Drop': playLetterDrop,
 };

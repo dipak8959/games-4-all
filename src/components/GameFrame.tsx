@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { BackHandler, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { BigButton } from './BigButton';
 import { NumberedRow } from './FactGrid';
@@ -115,7 +115,7 @@ export function GameFrame({
   }, [open, setOpen, leave]);
 
   return (
-    <Screen padded={false}>
+    <Screen padded={false} style={NO_SELECTING}>
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
@@ -233,6 +233,14 @@ function HelpSheet({ gameId, title, onClose }: { readonly gameId: string; readon
     </View>
   );
 }
+
+/**
+ * In a browser, holding a finger down and sliding it selects the page's
+ * text, and dragging that selection starts the browser's own drag — which
+ * cancels the press the game was following, mid-slide. Nothing in a game is
+ * text to copy, so none of it can be selected.
+ */
+const NO_SELECTING: ViewStyle | undefined = Platform.OS === 'web' ? ({ userSelect: 'none' } as ViewStyle) : undefined;
 
 const styles = StyleSheet.create({
   header: {

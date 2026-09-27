@@ -46,6 +46,8 @@ import { specForLevel as countAroundSpec } from '../src/games/countaround/logic.
 import { specForLevel as starJarSpec } from '../src/games/starjar/logic.ts';
 import { specForLevel as mazeTeamSpec } from '../src/games/mazeteam/logic.ts';
 import { specForLevel as echoSpec } from '../src/games/echobeat/logic.ts';
+import { specForLevel as letterSpec } from '../src/games/letterdrop/logic.ts';
+import { specForLevel as marbleSpec } from '../src/games/marblemaze/logic.ts';
 import { KINDS as KINDS_ORDER, specForLevel as bubblesSpec } from '../src/games/numberbubbles/logic.ts';
 import { specForLevel as trainSpec } from '../src/games/trainswitch/logic.ts';
 import { specForLevel as deepSeaSpec } from '../src/games/deepsea/logic.ts';
@@ -395,6 +397,14 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
   numberbubbles: (l) => {
     const spec = bubblesSpec(l);
     return [KINDS_ORDER.indexOf(spec.kind), spec.bubbles, spec.speed];
+  },
+  marblemaze: (l) => {
+    const spec = marbleSpec(l);
+    return [spec.bars, -spec.door, spec.holes, -spec.room, spec.tilt];
+  },
+  letterdrop: (l) => {
+    const spec = letterSpec(l);
+    return [spec.length, Number(!spec.showWord), spec.speed, spec.decoys, spec.lanes];
   },
 };
 

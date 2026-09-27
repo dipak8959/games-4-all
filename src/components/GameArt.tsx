@@ -851,6 +851,29 @@ const SCENES: Readonly<Record<string, Draw>> = {
       </Glyph>
     </>
   ),
+  // A wall with a door, a hole, the finish ring, and the marble rolling up.
+  marblemaze: (u, c) => (
+    <>
+      <Block u={u} x={6} y={46} w={40} h={6} color={c.fg} />
+      <Block u={u} x={70} y={46} w={24} h={6} color={c.fg} />
+      <Ring u={u} cx={72} cy={22} r={13} color={c.fg} line={4} />
+      <Disc u={u} cx={24} cy={74} r={10} color={c.fg} />
+      <Disc u={u} cx={58} cy={70} r={11} color={c.hi} />
+    </>
+  ),
+  // Letters falling, and the word's boxes with one letter in.
+  letterdrop: (u, c) => (
+    <>
+      <Frame u={u} x={12} y={8} w={22} h={22} color={c.fg} line={3} />
+      <Frame u={u} x={39} y={8} w={22} h={22} color={c.fg} line={3} />
+      <Frame u={u} x={66} y={8} w={22} h={22} color={c.fg} line={3} />
+      <Glyph u={u} x={12} y={9} w={22} size={18} color={c.fg}>
+        A
+      </Glyph>
+      <Block u={u} x={16} y={46} w={24} h={24} color={c.fg} />
+      <Block u={u} x={58} y={62} w={26} h={26} color={c.hi} />
+    </>
+  ),
   // A drum mid-beat, and the beat's marks along the top.
   echobeat: (u, c) => (
     <>

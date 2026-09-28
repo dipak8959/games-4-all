@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BigButton } from './BigButton';
 import { useFinishedRound } from './GameFrame';
 import { Icon } from './Icon';
+import { nextQuote } from './quotes';
 import { Rule } from './Rule';
 import { palette, rule, space } from '../theme/tokens';
 import { type } from '../theme/type';
@@ -19,6 +20,9 @@ const PRAISE: readonly string[] = ['Nice try!', 'Great job!', 'Great job!', 'Ama
  * earned, praises the effort, and offers "play again" or "go back". The praise
  * text is short and paired with large star marks so a pre-reader gets the
  * message from the picture alone.
+ *
+ * Under the stars, a few words from a sportsperson about practice and
+ * trying again — a different one each round.
  */
 export function RoundComplete({
   stars,
@@ -34,6 +38,8 @@ export function RoundComplete({
   useFinishedRound(onExit);
   const rise = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
   const text = PRAISE[Math.max(0, Math.min(PRAISE.length - 1, stars))];
+  // Chosen once, when the round ends, so it stays put while the card is up.
+  const [quote] = useState(nextQuote);
 
   useEffect(() => {
     if (reduceMotion) {
@@ -46,7 +52,7 @@ export function RoundComplete({
   }, [rise, reduceMotion]);
 
   return (
-    <View style={styles.overlay}>
+    <ScrollView style={styles.overlay} contentContainerStyle={styles.overlayInner}>
       <Animated.View
         style={[
           styles.card,
@@ -68,10 +74,15 @@ export function RoundComplete({
           ))}
         </View>
 
+        <View style={styles.quote} accessible accessibilityLabel={`${quote.text} ${quote.who}, ${quote.sport}.`}>
+          <Text style={[type.body, styles.quoteText]}>{`“${quote.text}”`}</Text>
+          <Text style={type.mono}>{`${quote.who.toUpperCase()} · ${quote.sport.toUpperCase()}`}</Text>
+        </View>
+
         <BigButton label="Play again" icon="replay" onPress={onPlayAgain} chevron />
         <BigButton label="Back to games" icon="home" onPress={onExit} tone="quiet" style={styles.gap} />
       </Animated.View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -83,6 +94,11 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(32,30,29,0.55)',
+  },
+  // A small phone may not fit the whole card: it scrolls rather than
+  // losing its buttons off the edge.
+  overlayInner: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.lg,
@@ -98,5 +114,7 @@ const styles = StyleSheet.create({
   },
   praise: { marginTop: -space.sm },
   stars: { flexDirection: 'row', gap: space.sm, minHeight: 40 },
+  quote: { gap: space.xs, borderLeftWidth: rule.major, borderLeftColor: palette.ink, paddingLeft: space.md },
+  quoteText: { color: palette.ink },
   gap: { marginTop: space.sm },
 });

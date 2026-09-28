@@ -2987,6 +2987,179 @@ export async function playAngleJudge(page, report) {
   report.ok('set every angle');
 }
 
+/** Orbit Hop, played by eye: learns how fast the rocks come round from two
+ *  looks, then keeps to a ring that's clear, hopping late and towards the
+ *  star when it can. */
+export async function playOrbitHop(page, report) {
+  await withHelpers(page);
+  const bumps = await page.evaluate(async () => {
+    const RINGS = [62, 102, 142];
+    const read = () => {
+      const sat = document.querySelector('[data-testid^="sat:"]')?.dataset.testid.split(':').map(Number);
+      const star = document.querySelector('[data-testid^="star:"]')?.dataset.testid.split(':').map(Number);
+      const rocks = [...document.querySelectorAll('[data-testid^="rock:"]')].map((el) => el.dataset.testid.split(':').map(Number));
+      return sat && star ? { ring: sat[1], angle: sat[2], star: { ring: star[1], angle: star[2] }, rocks: rocks.map((r) => ({ ring: r[1], angle: r[2] })), t: performance.now() } : null;
+    };
+    const gap = (ra, a, rb, b) => Math.hypot(RINGS[ra] * Math.cos(a) - RINGS[rb] * Math.cos(b), RINGS[ra] * Math.sin(a) - RINGS[rb] * Math.sin(b));
+    const button = (label) => document.querySelector(`[aria-label="${label}"]`);
+    // How fast things turn: two looks a moment apart.
+    const a = read();
+    await window.__wait(400);
+    const b = read();
+    const turn = (x, y) => (((y - x) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+    const dt = (b.t - a.t) / 1000;
+    const speed = turn(a.angle, b.angle) / dt;
+    const rockSpeed = -turn(a.rocks[0].angle, b.rocks[0].angle) / dt;
+    let bumps = 0;
+    let bumping = false;
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 200000) {
+      const s = read();
+      if (!s) { await window.__wait(50); continue; }
+      const bump = document.body.innerText.includes('BUMP!');
+      if (bump && !bumping) bumps += 1;
+      bumping = bump;
+      const until = (ring) => {
+        for (let t = 0.08; t <= 2; t += 1 / 60) {
+          const at = s.angle + speed * t;
+          if (s.rocks.some((r) => r.ring === ring && gap(ring, at, ring, r.angle - rockSpeed * t) < 27)) return t;
+        }
+        return 2;
+      };
+      const time = [0, 1, 2].map(until);
+      let want = s.ring;
+      if (time[s.ring] < 0.45) want = [0, 1, 2].sort((x, y) => time[y] - time[x] || Math.abs(x - s.ring) - Math.abs(y - s.ring))[0];
+      else if (s.star.ring !== s.ring && time[s.star.ring] > 0.8) want = s.star.ring;
+      for (let r = s.ring; r !== want; r += want > r ? 1 : -1) await window.__tapEl(button(want > r ? 'Hop out' : 'Hop in'));
+      await window.__wait(30);
+    }
+    return bumps;
+  });
+  report.ok(`collected every star, ${bumps} bump${bumps === 1 ? '' : 's'}`);
+}
+
+/** Dot to Dot, played by counting: taps the dots in order, then the first
+ *  again to close the picture. */
+export async function playDotToDot(page, report) {
+  await withHelpers(page);
+  await page.evaluate(async () => {
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 120000) {
+      if (/^A [A-Z]+!$/m.test(document.body.innerText)) { await window.__wait(200); continue; }
+      const dots = [...document.querySelectorAll('[data-testid^="dot:"]')].map((el) => {
+        const [, i, label, joined] = el.dataset.testid.split(':');
+        return { el, i: Number(i), label: Number(label), joined: joined === '1' };
+      }).sort((x, y) => x.label - y.label);
+      const next = dots.find((d) => !d.joined) ?? dots[0];
+      const b = next.el.firstElementChild.getBoundingClientRect();
+      await window.__tapAt(b.left + b.width / 2, b.top + b.height / 2);
+      await window.__wait(150);
+    }
+  });
+  report.ok('joined every picture');
+}
+
+/** Bead Patterns, played by eye: finds the shortest repeat in the string
+ *  and taps the bead it says comes next. */
+export async function playBeadPattern(page, report) {
+  await withHelpers(page);
+  await page.evaluate(async () => {
+    const colour = { sun: 'yellow', berry: 'red', sky: 'blue', leaf: 'green', grape: 'purple' };
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 120000) {
+      const id = document.querySelector('[data-testid^="string:"]')?.dataset.testid;
+      if (!id) { await window.__wait(100); continue; }
+      const beads = id.slice(7).split(',');
+      let next = null;
+      for (let p = 1; p <= 4 && !next; p += 1) {
+        if (beads.every((b, i) => i < p || b === beads[i - p])) next = beads[beads.length - p];
+      }
+      const [shape, color] = next.split('.');
+      const btn = document.querySelector(`[aria-label="${colour[color]} ${shape}"]`);
+      if (btn) await window.__tapEl(btn);
+      await window.__wait(250);
+    }
+  });
+  report.ok('threaded every string');
+}
+
+/** Spot the Change, played by looking place by place — and remembering the
+ *  top picture for when it's covered. */
+export async function playSpotChange(page, report) {
+  await withHelpers(page);
+  await page.evaluate(async () => {
+    let remembered = null;
+    let lastAfter = '';
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 120000) {
+      const before = [...document.querySelectorAll('[data-testid^="before:"]')].map((el) => el.dataset.testid.split(':')[2]);
+      const afterEls = [...document.querySelectorAll('[data-testid^="after:"]')];
+      const after = afterEls.map((el) => el.dataset.testid.split(':')[2]);
+      const key = after.join(',');
+      if (key !== lastAfter) {
+        // A new pair: look at the top picture while it's there.
+        lastAfter = key;
+        remembered = before.length ? before : null;
+      }
+      if (before.length) remembered = before;
+      if (!remembered) { await window.__wait(100); continue; }
+      const i = after.findIndex((a, n) => a !== remembered[n]);
+      if (i >= 0) await window.__tapEl(afterEls[i]);
+      await window.__wait(300);
+    }
+  });
+  report.ok('found every change');
+}
+
+/** Stop and Go, played with self-control: holds WALK only while the signal
+ *  says go, and lets go when it warns or says stop. */
+export async function playStopGo(page, report) {
+  await holdButtons(page, { walk: 'Walk. Hold to walk, let go to stop.' });
+  const oops = await page.evaluate(async () => {
+    let oops = 0;
+    let oopsing = false;
+    const started = performance.now();
+    while (!document.querySelector('[aria-label="Play again"]') && performance.now() - started < 200000) {
+      const light = document.querySelector('[data-testid^="light:"]')?.dataset.testid.split(':')[1];
+      const oop = document.body.innerText.includes('A STEP BACK');
+      if (oop && !oopsing) oops += 1;
+      oopsing = oop;
+      await window.__hold(light === 'go' && !oop ? 'walk' : null);
+      await new Promise((r) => setTimeout(r, 30));
+    }
+    await window.__hold(null);
+    return oops;
+  });
+  report.ok(`crossed five times, ${oops} step${oops === 1 ? '' : 's'} back`);
+}
+
+/** Mirror Picture, played by reflecting: fills each square across the line
+ *  from a filled one. */
+export async function playMirrorPicture(page, report) {
+  await withHelpers(page);
+  await page.evaluate(async () => {
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 120000) {
+      if (document.body.innerText.includes('A PERFECT MIRROR')) { await window.__wait(200); continue; }
+      const given = [...document.querySelectorAll('[data-testid^="given:"]')].map((el) => el.dataset.testid.split(':')[2] === '1');
+      const fills = [...document.querySelectorAll('[data-testid^="fill:"]')];
+      const across = document.body.innerText.includes('BOTTOM HALF');
+      // The fill half's shape: two wide beside the line, four wide below it.
+      const cols = across ? 4 : 2;
+      const rows = given.length / cols;
+      const want = fills.map((_, i) => {
+        const r = Math.floor(i / cols);
+        const c = i % cols;
+        return across ? given[(rows - 1 - r) * cols + c] : given[r * cols + (cols - 1 - c)];
+      });
+      const wrong = fills.findIndex((el, i) => (el.dataset.testid.split(':')[2] === '1') !== want[i]);
+      if (wrong >= 0) await window.__tapEl(fills[wrong]);
+      await window.__wait(120);
+    }
+  });
+  report.ok('mirrored every picture');
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -3042,4 +3215,10 @@ export const PLAYERS = {
   'Balance Scale': playBalanceScale,
   'Secret Codes': playSecretCodes,
   'Angle Judge': playAngleJudge,
+  'Orbit Hop': playOrbitHop,
+  'Dot to Dot': playDotToDot,
+  'Bead Patterns': playBeadPattern,
+  'Spot the Change': playSpotChange,
+  'Stop and Go': playStopGo,
+  'Mirror Picture': playMirrorPicture,
 };

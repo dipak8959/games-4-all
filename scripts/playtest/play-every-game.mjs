@@ -93,6 +93,11 @@ await play('Train Switch');
 await play('Number Bubbles');
 await play('Marble Maze');
 await play('Letter Drop');
+await play('Dot to Dot');
+await play('Bead Patterns');
+await play('Spot the Change');
+await play('Stop and Go');
+await play('Mirror Picture');
 
 console.log('\n=== age 9 ===');
 await setAge(page, 9);
@@ -107,10 +112,18 @@ await play('Treasure Hunt');
 await play('Water Works');
 await play('Soft Landing');
 await play('Space Rocks');
+await play('Tower of Hanoi');
+await play('Number Patterns');
+await play('Balance Scale');
+await play('Flip It');
 
 console.log('\n=== age 12 ===');
 await setAge(page, 12);
 await play('Word Ladder');
+await play('Binary Bits');
+await play('Secret Codes');
+await play('Angle Judge');
+await play('Orbit Hop');
 
 console.log('\nParent Zone');
 await page.getByLabel('Parent zone, grown-ups only').click();
@@ -154,6 +167,19 @@ for (const title of [
   'Number Bubbles',
   'Marble Maze',
   'Letter Drop',
+  'Dot to Dot',
+  'Bead Patterns',
+  'Spot the Change',
+  'Stop and Go',
+  'Mirror Picture',
+  'Tower of Hanoi',
+  'Number Patterns',
+  'Balance Scale',
+  'Flip It',
+  'Binary Bits',
+  'Secret Codes',
+  'Angle Judge',
+  'Orbit Hop',
 ]) {
   const row = lines.findIndex((l) => l.trim() === title);
   const meta = lines.slice(row, row + 4).join(' ');

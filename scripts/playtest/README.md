@@ -95,3 +95,11 @@ Each pass exits non-zero if it finds a bug or the page logs an error.
   sliding selected the page's text, the browser began dragging the
   selection, and cancelled the press the game was following. No game's
   text can be selected now, which fixes any game played by sliding.
+- Orbit Hop's player hopped two rings in one go, which a finger can't: it
+  crossed the middle ring for the moment between taps, sometimes onto a
+  rock. The logic test's pilot allowed the same, so both now hop one ring
+  at a time — and the game still needs no bump at any level.
+- Dot to Dot's numbers sat to the right of every dot, so on a 320dp phone
+  a dot near the right edge pushed its number off the picture and the
+  page scrolled sideways (tap-targets.mjs). Numbers now sit on the side
+  nearer the middle.

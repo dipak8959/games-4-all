@@ -18,6 +18,8 @@ const PRESS_AT_ONCE = { delayPressIn: 0 } as object;
 const SHOW_MS = 1800;
 const DOT = 8;
 const RING = 22;
+/** Room for a dot's number. */
+const LABEL = 34;
 
 /** A straight line between two dots. */
 function Line({ a, b, k, done }: { a: { x: number; y: number }; b: { x: number; y: number }; k: number; done: boolean }) {
@@ -107,7 +109,16 @@ export function DotToDotScreen({ level: initialLevel, onRoundComplete, onExit }:
               return (
                 <View key={i} testID={`dot:${i}:${d.label}:${joined ? 1 : 0}`} style={{ position: 'absolute', left: (d.x - DOT) * k, top: (d.y - DOT) * k }}>
                   <View style={[joined ? styles.dotJoined : styles.dot, { width: DOT * 2 * k, height: DOT * 2 * k, borderRadius: DOT * k }]} />
-                  <Text allowFontScaling={false} style={[styles.number, { fontSize: 15 * k, left: DOT * 2.2 * k, top: -DOT * 1.4 * k }]}>
+                  {/* The number beside its dot, on the side nearer the middle, so it
+                      never hangs off the picture. */}
+                  <Text
+                    allowFontScaling={false}
+                    style={[
+                      styles.number,
+                      { fontSize: 15 * k, width: LABEL * k, top: -DOT * 1.4 * k },
+                      d.x > FIELD_WIDTH / 2 ? { left: -LABEL * k - DOT * 0.2 * k, textAlign: 'right' } : { left: DOT * 2.2 * k },
+                    ]}
+                  >
                     {d.label}
                   </Text>
                 </View>
@@ -137,11 +148,11 @@ export function DotToDotScreen({ level: initialLevel, onRoundComplete, onExit }:
 
 const styles = StyleSheet.create({
   stage: { flex: 1, marginBottom: rule.major * 4 },
-  field: { position: 'absolute', top: 0, backgroundColor: palette.surface, borderWidth: rule.major, borderColor: palette.ink },
+  field: { position: 'absolute', top: 0, backgroundColor: palette.surface, borderWidth: rule.major, borderColor: palette.ink, overflow: 'hidden' },
   line: { position: 'absolute', backgroundColor: palette.ink },
   lineDone: { position: 'absolute', backgroundColor: palette.accent },
   ring: { position: 'absolute', borderWidth: rule.major * 2, borderColor: palette.accent },
   dot: { backgroundColor: palette.bg, borderWidth: rule.major, borderColor: palette.ink },
   dotJoined: { backgroundColor: palette.ink, borderWidth: rule.major, borderColor: palette.ink },
-  number: { position: 'absolute', fontFamily: fonts.heavy, color: palette.ink, width: 60 },
+  number: { position: 'absolute', fontFamily: fonts.heavy, color: palette.ink },
 });

@@ -16,18 +16,20 @@ function untilDanger(s: OrbitHopState, ring: number): number {
   return 2;
 }
 
-/** A careful pilot: stays put until a rock is close, then hops to whichever
- *  ring stays clear longest; heads for the star's ring when it's clear. */
+/** A careful pilot, with one finger: one hop a moment, like a real tap.
+ *  Stays put until a rock is close, then heads for whichever ring stays
+ *  clear longest — through a middle ring only if that's clear for now too;
+ *  heads for the star's ring when it's clear. */
 function pilot(s: OrbitHopState): OrbitHopState {
   const time = [0, 1, 2].map((r) => untilDanger(s, r));
+  const passable = (to: number) => Math.abs(to - s.ring) < 2 || time[1] > 0.2;
   let want = s.ring;
   if (time[s.ring] < 0.3) {
-    want = [0, 1, 2].sort((a, b) => time[b] - time[a] || Math.abs(a - s.ring) - Math.abs(b - s.ring))[0];
-  } else if (s.star.ring !== s.ring && time[s.star.ring] > 0.6) {
+    want = [0, 1, 2].filter(passable).sort((a, b) => time[b] - time[a] || Math.abs(a - s.ring) - Math.abs(b - s.ring))[0];
+  } else if (s.star.ring !== s.ring && time[s.star.ring] > 0.6 && passable(s.star.ring)) {
     want = s.star.ring;
   }
-  while (s.ring !== want) s = hop(s, want > s.ring ? 1 : -1);
-  return s;
+  return want === s.ring ? s : hop(s, want > s.ring ? 1 : -1);
 }
 
 test('a careful pilot collects every star without a bump, at every level', () => {

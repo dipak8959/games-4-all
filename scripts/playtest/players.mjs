@@ -3020,17 +3020,21 @@ export async function playOrbitHop(page, report) {
       if (bump && !bumping) bumps += 1;
       bumping = bump;
       const until = (ring) => {
-        for (let t = 0.08; t <= 2; t += 1 / 60) {
+        // From now: a rock already on that spot counts too.
+        for (let t = 0; t <= 2; t += 1 / 60) {
           const at = s.angle + speed * t;
           if (s.rocks.some((r) => r.ring === ring && gap(ring, at, ring, r.angle - rockSpeed * t) < 27)) return t;
         }
         return 2;
       };
       const time = [0, 1, 2].map(until);
+      // One finger: a hop at a time, and through the middle ring only if it
+      // is clear for the moment the finger takes.
+      const passable = (to) => Math.abs(to - s.ring) < 2 || time[1] > 0.3;
       let want = s.ring;
-      if (time[s.ring] < 0.45) want = [0, 1, 2].sort((x, y) => time[y] - time[x] || Math.abs(x - s.ring) - Math.abs(y - s.ring))[0];
-      else if (s.star.ring !== s.ring && time[s.star.ring] > 0.8) want = s.star.ring;
-      for (let r = s.ring; r !== want; r += want > r ? 1 : -1) await window.__tapEl(button(want > r ? 'Hop out' : 'Hop in'));
+      if (time[s.ring] < 0.45) want = [0, 1, 2].filter(passable).sort((x, y) => time[y] - time[x] || Math.abs(x - s.ring) - Math.abs(y - s.ring))[0];
+      else if (s.star.ring !== s.ring && time[s.star.ring] > 0.8 && passable(s.star.ring)) want = s.star.ring;
+      if (want !== s.ring) await window.__tapEl(button(want > s.ring ? 'Hop out' : 'Hop in'));
       await window.__wait(30);
     }
     return bumps;

@@ -551,6 +551,61 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'A rock is coming on your ring and the star is on the outer ring: tap OUT.',
     grows: 'More rocks, coming round faster.',
   },
+  dottodot: {
+    goal: 'Join the dots to find five pictures.',
+    steps: [
+      'Every dot has a number.',
+      'Tap the dots in order: 1, then 2, then 3.',
+      'A line joins each dot to the one before.',
+      'Go back to the first dot to finish, and see the picture.',
+    ],
+    example: 'Tap 1, 2, 3, 4, 5, then 1 again: it is a star!',
+    grows: 'More dots, then no ring round the next one, then counting in twos and in fives.',
+  },
+  beadpattern: {
+    goal: 'Finish eight strings of beads.',
+    steps: [
+      'The beads on the string make a pattern that repeats.',
+      'Look at the end of the string: the next bead is missing.',
+      'Tap the bead that comes next in the pattern.',
+      'Not that one? It stays off the string. Try another.',
+    ],
+    example: 'Circle, square, circle, square, circle… next is a square.',
+    grows: 'Longer patterns, more beads to choose from, two beads to add, then beads that are all one colour.',
+  },
+  spotchange: {
+    goal: 'Find what changed in eight pairs of pictures.',
+    steps: [
+      'Look at the top picture, then the bottom one.',
+      'One thing is different: a shape gone, a new shape, a shape swapped, or one moved.',
+      'Tap the place in the bottom picture that changed.',
+      'Not there? That place is crossed off. Look again.',
+    ],
+    example: 'The top picture has a star in the corner and the bottom one does not: tap that corner.',
+    grows: 'Bigger pictures, more kinds of change, then the top picture is covered after a few seconds.',
+  },
+  stopgo: {
+    goal: 'Walk across the park five times.',
+    steps: [
+      'When the round light at the bottom is on, it says go. Hold WALK to walk.',
+      'When the middle light comes on, get ready to stop.',
+      'When the square light at the top is on, it says stop. Let go of WALK.',
+      'Walk on a stop and you take a step back, and wait for the next go.',
+    ],
+    example: 'The round light is on: hold WALK. The square light comes on: let go straight away.',
+    grows: 'Shorter goes, less warning, and less time to let go.',
+  },
+  mirrorpicture: {
+    goal: 'Finish six mirror pictures.',
+    steps: [
+      'One half of the picture is drawn. The red line is the mirror.',
+      'Tap squares on the empty half to fill them in.',
+      'Make the empty half look like the drawn half seen in a mirror.',
+      'Filled one by mistake? Tap it again to empty it.',
+    ],
+    example: 'The square touching the line on the left means the square touching the line on the right.',
+    grows: 'Taller pictures with more squares, then the mirror line across the middle instead of down.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

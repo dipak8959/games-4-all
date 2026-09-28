@@ -46,6 +46,11 @@ import { specForLevel as countAroundSpec } from '../src/games/countaround/logic.
 import { specForLevel as starJarSpec } from '../src/games/starjar/logic.ts';
 import { specForLevel as mazeTeamSpec } from '../src/games/mazeteam/logic.ts';
 import { specForLevel as echoSpec } from '../src/games/echobeat/logic.ts';
+import { specForLevel as mirrorSpec } from '../src/games/mirrorpicture/logic.ts';
+import { specForLevel as stopSpec } from '../src/games/stopgo/logic.ts';
+import { specForLevel as spotSpec } from '../src/games/spotchange/logic.ts';
+import { specForLevel as beadSpec } from '../src/games/beadpattern/logic.ts';
+import { specForLevel as dotSpec } from '../src/games/dottodot/logic.ts';
 import { specForLevel as orbitSpec } from '../src/games/orbithop/logic.ts';
 import { specForLevel as angleSpec } from '../src/games/anglejudge/logic.ts';
 import { specForLevel as codesSpec } from '../src/games/secretcodes/logic.ts';
@@ -445,6 +450,26 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
   orbithop: (l) => {
     const spec = orbitSpec(l);
     return [spec.rocks, spec.rockSpeed];
+  },
+  dottodot: (l) => {
+    const spec = dotSpec(l);
+    return [spec.dots, spec.step, Number(!spec.hint)];
+  },
+  beadpattern: (l) => {
+    const spec = beadSpec(l);
+    return [spec.longest, spec.choices, spec.missing, Number(spec.lookAlike)];
+  },
+  spotchange: (l) => {
+    const spec = spotSpec(l);
+    return [spec.rows * spec.cols, spec.kinds, Number.isFinite(spec.showFor) ? -spec.showFor : -99];
+  },
+  stopgo: (l) => {
+    const spec = stopSpec(l);
+    return [-spec.goMin, -spec.warning, -spec.grace];
+  },
+  mirrorpicture: (l) => {
+    const spec = mirrorSpec(l);
+    return [spec.cells, Number(spec.across)];
   },
 };
 

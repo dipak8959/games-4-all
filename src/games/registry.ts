@@ -8,6 +8,11 @@ import { CountAroundScreen } from './countaround/CountAroundScreen';
 import { CountingScreen } from './counting/CountingScreen';
 import { DuckCrossingScreen } from './duckcrossing/DuckCrossingScreen';
 import { EchoBeatScreen } from './echobeat/EchoBeatScreen';
+import { MirrorPictureScreen } from './mirrorpicture/MirrorPictureScreen';
+import { StopGoScreen } from './stopgo/StopGoScreen';
+import { SpotChangeScreen } from './spotchange/SpotChangeScreen';
+import { BeadPatternScreen } from './beadpattern/BeadPatternScreen';
+import { DotToDotScreen } from './dottodot/DotToDotScreen';
 import { OrbitHopScreen } from './orbithop/OrbitHopScreen';
 import { AngleJudgeScreen } from './anglejudge/AngleJudgeScreen';
 import { SecretCodesScreen } from './secretcodes/SecretCodesScreen';
@@ -102,6 +107,11 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   starjar: StarJarScreen,
   mazeteam: MazeTeamScreen,
   echobeat: EchoBeatScreen,
+  mirrorpicture: MirrorPictureScreen,
+  stopgo: StopGoScreen,
+  spotchange: SpotChangeScreen,
+  beadpattern: BeadPatternScreen,
+  dottodot: DotToDotScreen,
   orbithop: OrbitHopScreen,
   anglejudge: AngleJudgeScreen,
   secretcodes: SecretCodesScreen,

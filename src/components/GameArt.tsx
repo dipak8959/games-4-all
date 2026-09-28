@@ -965,6 +965,59 @@ const SCENES: Readonly<Record<string, Draw>> = {
       <Block u={u} x={20} y={20} w={10} h={10} color={c.fg} />
     </>
   ),
+  // Dots round a picture, half of them joined.
+  dottodot: (u, c) => (
+    <>
+      <Disc u={u} cx={20} cy={78} r={6} color={c.fg} />
+      <Disc u={u} cx={50} cy={18} r={6} color={c.fg} />
+      <Disc u={u} cx={80} cy={78} r={6} color={c.fg} />
+      <Disc u={u} cx={50} cy={60} r={6} color={c.hi} />
+      <View style={{ position: 'absolute', left: 8 * u, top: 46 * u, width: 68 * u, height: 4 * u, backgroundColor: c.fg, transform: [{ rotate: '-63deg' }] }} />
+    </>
+  ),
+  // Beads on a string, the last one still to thread.
+  beadpattern: (u, c) => (
+    <>
+      <Block u={u} x={4} y={49} w={92} h={2} color={c.fg} />
+      <Disc u={u} cx={16} cy={50} r={10} color={c.fg} />
+      <Block u={u} x={30} y={40} w={20} h={20} color={c.fg} />
+      <Disc u={u} cx={64} cy={50} r={10} color={c.fg} />
+      <Frame u={u} x={78} y={40} w={20} h={20} color={c.hi} line={3} />
+    </>
+  ),
+  // Two pictures, alike but for one place.
+  spotchange: (u, c) => (
+    <>
+      <Frame u={u} x={6} y={10} w={40} h={40} color={c.fg} line={3} />
+      <Frame u={u} x={54} y={10} w={40} h={40} color={c.fg} line={3} />
+      <Block u={u} x={14} y={18} w={10} h={10} color={c.fg} />
+      <Block u={u} x={62} y={18} w={10} h={10} color={c.fg} />
+      <Disc u={u} cx={34} cy={38} r={6} color={c.fg} />
+      <Frame u={u} x={74} y={30} w={16} h={16} color={c.hi} line={3} />
+      <Block u={u} x={20} y={62} w={60} h={4} color={c.fg} />
+    </>
+  ),
+  // A signal post and the walker on the path.
+  stopgo: (u, c) => (
+    <>
+      <Frame u={u} x={8} y={10} w={24} h={64} color={c.fg} line={3} />
+      <Block u={u} x={13} y={16} w={14} h={14} color={c.fg} />
+      <Ring u={u} cx={20} cy={58} r={8} color={c.fg} line={3} />
+      <Block u={u} x={40} y={78} w={56} h={4} color={c.fg} />
+      <Disc u={u} cx={64} cy={66} r={11} color={c.hi} />
+    </>
+  ),
+  // A picture and its reflection across the line.
+  mirrorpicture: (u, c) => (
+    <>
+      <Block u={u} x={48} y={8} w={4} h={84} color={c.fg} />
+      <Block u={u} x={14} y={20} w={14} h={14} color={c.fg} />
+      <Block u={u} x={30} y={36} w={14} h={14} color={c.fg} />
+      <Block u={u} x={14} y={52} w={14} h={14} color={c.fg} />
+      <Block u={u} x={56} y={36} w={14} h={14} color={c.hi} />
+      <Frame u={u} x={72} y={20} w={14} h={14} color={c.fg} line={2} />
+    </>
+  ),
   // A drum mid-beat, and the beat's marks along the top.
   echobeat: (u, c) => (
     <>

@@ -74,6 +74,11 @@ const GAME_SCREENS = [
   'src/games/secretcodes/SecretCodesScreen.tsx',
   'src/games/anglejudge/AngleJudgeScreen.tsx',
   'src/games/orbithop/OrbitHopScreen.tsx',
+  'src/games/dottodot/DotToDotScreen.tsx',
+  'src/games/beadpattern/BeadPatternScreen.tsx',
+  'src/games/spotchange/SpotChangeScreen.tsx',
+  'src/games/stopgo/StopGoScreen.tsx',
+  'src/games/mirrorpicture/MirrorPictureScreen.tsx',
 ];
 
 /**
@@ -298,6 +303,8 @@ const MAY_DRAW_CIRCLES = [
   'src/games/balancescale/BalanceScaleScreen.tsx',
   'src/games/anglejudge/AngleJudgeScreen.tsx',
   'src/games/orbithop/OrbitHopScreen.tsx',
+  'src/games/dottodot/DotToDotScreen.tsx',
+  'src/games/stopgo/StopGoScreen.tsx',
 ];
 
 test('nothing rounds a corner', () => {

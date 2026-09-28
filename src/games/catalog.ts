@@ -1101,6 +1101,92 @@ export const GAMES_META: readonly GameMeta[] = [
     minAge: 10,
     maxAge: 99,
   },
+  {
+    id: 'dottodot',
+    title: 'Dot to Dot',
+    icon: 'dots',
+    color: tilePalette.amethyst,
+    skill: 'Number order: joining numbered dots in order to reveal a picture',
+    roundEnds: 'Five pictures joined.',
+    origin: 'public-domain',
+    priorArt:
+      "Connect-the-dots puzzles, in children's books since the early 1900s.",
+    toldApartBy: 'Numbers: each dot has its number beside it, and the next dot to join is ringed.',
+    ages: '3-7',
+    category: 'numbers',
+    // Five dots with the next one ringed suit a three-year-old learning
+    // numbers; twelve counted in fives with no ring suit a seven-year-old.
+    minAge: 3,
+    maxAge: 7,
+  },
+  {
+    id: 'beadpattern',
+    title: 'Bead Patterns',
+    icon: 'beads',
+    color: tilePalette.peony,
+    skill: 'Spotting a pattern and continuing it: which bead comes next on the string',
+    roundEnds: 'Eight strings finished.',
+    origin: 'original',
+    toldApartBy: 'Shape: every bead has its own shape as well as its colour.',
+    ages: '3-7',
+    category: 'logic',
+    // Round, square, round, square suits a three-year-old; patterns four
+    // beads long, two to add, told apart by shape alone, suit a seven-year-old.
+    minAge: 3,
+    maxAge: 7,
+  },
+  {
+    id: 'spotchange',
+    title: 'Spot the Change',
+    icon: 'spot',
+    color: tilePalette.lilac,
+    skill: 'Careful looking: finding what is different between two pictures',
+    roundEnds: 'Eight pairs of pictures checked.',
+    origin: 'public-domain',
+    priorArt:
+      'Spot-the-difference puzzles, in newspapers since the 1930s.',
+    toldApartBy: 'Shape and place: the change is a piece missing, moved or a different shape, never a colour alone.',
+    ages: '3-9',
+    category: 'memory',
+    // Four places and one shape gone suit a three-year-old; sixteen places,
+    // any kind of change and the top picture hidden in four seconds suit a nine-year-old.
+    minAge: 3,
+    maxAge: 9,
+  },
+  {
+    id: 'stopgo',
+    title: 'Stop and Go',
+    icon: 'signal',
+    color: tilePalette.laurel,
+    skill: 'Self-control: moving only on go, and standing still on stop',
+    roundEnds: 'Across the park five times.',
+    origin: 'public-domain',
+    priorArt:
+      'Red Light, Green Light, a playground game for well over a century.',
+    toldApartBy: 'Shape and place: go is a circle at the bottom of the signal, stop is a square at the top.',
+    ages: '3-7',
+    category: 'timing',
+    // Long goes with plenty of warning suit a three-year-old learning to
+    // stop; short goes and no warning test a seven-year-old's self-control.
+    minAge: 3,
+    maxAge: 7,
+  },
+  {
+    id: 'mirrorpicture',
+    title: 'Mirror Picture',
+    icon: 'mirror',
+    color: tilePalette.berry,
+    skill: 'Symmetry: finishing a picture so both halves match across the mirror line',
+    roundEnds: 'Six pictures finished.',
+    origin: 'original',
+    toldApartBy: 'Fill and place: filled squares are solid ink, and the mirror line is drawn down the middle.',
+    ages: '4-10',
+    category: 'logic',
+    // Four squares to mirror suit a four-year-old; sixteen, mirrored across
+    // the middle rather than down it, suit a ten-year-old.
+    minAge: 4,
+    maxAge: 10,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

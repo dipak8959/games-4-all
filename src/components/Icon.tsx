@@ -94,7 +94,20 @@ export type IconName =
   | 'train'
   | 'bubbles'
   | 'marble'
-  | 'letters';
+  | 'letters'
+  | 'dots'
+  | 'beads'
+  | 'spot'
+  | 'signal'
+  | 'mirror'
+  | 'hanoi'
+  | 'bits'
+  | 'cipher'
+  | 'angle'
+  | 'sequence'
+  | 'balance'
+  | 'flip'
+  | 'orbit';
 
 export function Icon({
   name,
@@ -1057,6 +1070,150 @@ export function Icon({
           <View style={[at(size, 0.2, 0.66, 0.3, 0), { height: s, backgroundColor: color }]} />
           <View style={[at(size, 0.7, 0.08, 0.18, 0.18), { backgroundColor: color }]} />
           <View style={[at(size, 0.76, 0.34, 0.06, 0.12), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'dots':
+      // Three dots, two joined by a line.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.12, 0.62, 0.2, 0.2), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.4, 0.16, 0.2, 0.2), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.68, 0.62, 0.2, 0.2), { borderRadius: size, borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.14, 0.44, 0.44, 0), { height: s, backgroundColor: color, transform: [{ rotate: '-57deg' }] }]} />
+        </View>
+      );
+
+    case 'beads':
+      // Beads on a string: round, square, round.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.04, 0.48, 0.92, 0), { height: s / 2, backgroundColor: color }]} />
+          <View style={[at(size, 0.08, 0.36, 0.24, 0.24), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.38, 0.36, 0.24, 0.24), { backgroundColor: color }]} />
+          <View style={[at(size, 0.68, 0.36, 0.24, 0.24), { borderRadius: size, borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'spot':
+      // Two frames side by side, one with a piece the other lacks.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.04, 0.2, 0.42, 0.6), { borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.54, 0.2, 0.42, 0.6), { borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.14, 0.36, 0.2, 0.2), { backgroundColor: color }]} />
+          <View style={[at(size, 0.14, 0.36, 0.2, 0.2), { left: size * 0.64, borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'signal':
+      // A signal post: a square at the top, a circle below.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.28, 0.04, 0.44, 0.72), { borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.38, 0.12, 0.24, 0.24), { backgroundColor: color }]} />
+          <View style={[at(size, 0.38, 0.44, 0.24, 0.24), { borderRadius: size, borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.47, 0.76, 0.06, 0.2), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'mirror':
+      // A line down the middle, a shape and its reflection.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.48, 0.04, 0.04, 0.92), { backgroundColor: color }]} />
+          <View style={[at(size, 0.12, 0.24, 0.24, 0.24), { backgroundColor: color }]} />
+          <View style={[at(size, 0.24, 0.52, 0.12, 0.24), { backgroundColor: color }]} />
+          <View style={[at(size, 0.64, 0.24, 0.24, 0.24), { borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.64, 0.52, 0.12, 0.24), { borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'hanoi':
+      // Three discs stacked, smallest on top, on a peg.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.48, 0.08, 0.04, 0.8), { backgroundColor: color }]} />
+          <View style={[at(size, 0.34, 0.32, 0.32, 0.14), { backgroundColor: color }]} />
+          <View style={[at(size, 0.22, 0.5, 0.56, 0.14), { borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.08, 0.68, 0.84, 0.14), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'bits':
+      // A row of switches, some on.
+      return (
+        <View style={box} {...hidden}>
+          {[0, 1, 2, 3].map((i) => (
+            <View
+              key={i}
+              style={[at(size, 0.04 + i * 0.24, 0.3, 0.2, 0.4), i % 3 === 0 ? { backgroundColor: color } : { borderWidth: s / 2, borderColor: color }]}
+            />
+          ))}
+        </View>
+      );
+
+    case 'cipher':
+      // A letter wheel: a ring with an arrow round it.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.12, 0.12, 0.76, 0.76), { borderRadius: size, borderWidth: s, borderColor: color }]} />
+          <View style={[at(size, 0.36, 0.36, 0.28, 0.28), { borderRadius: size, borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.46, 0.04, 0.08, 0.2), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'angle':
+      // Two lines from a point, and the arc between them.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.1, 0.82, 0.8, 0), { height: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.02, 0.5, 0.76, 0), { height: s, backgroundColor: color, transform: [{ rotate: '-45deg' }], left: size * 0.12, top: size * 0.54 }]} />
+          <View style={[at(size, 0.3, 0.56, 0.3, 0.3), { borderRadius: size, borderWidth: s / 2, borderColor: color, borderLeftColor: 'transparent', borderBottomColor: 'transparent' }]} />
+        </View>
+      );
+
+    case 'sequence':
+      // Boxes in a row, the last one empty.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.04, 0.36, 0.26, 0.26), { backgroundColor: color }]} />
+          <View style={[at(size, 0.37, 0.36, 0.26, 0.26), { backgroundColor: color }]} />
+          <View style={[at(size, 0.7, 0.36, 0.26, 0.26), { borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'balance':
+      // A beam on a post, tipped, with a pan each end.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.1, 0.34, 0.8, 0), { height: s, backgroundColor: color, transform: [{ rotate: '-12deg' }] }]} />
+          <View style={[at(size, 0.47, 0.34, 0.06, 0.54), { backgroundColor: color }]} />
+          <View style={[at(size, 0.3, 0.86, 0.4, 0), { height: s, backgroundColor: color }]} />
+          <View style={[at(size, 0.04, 0.44, 0.24, 0.12), { backgroundColor: color }]} />
+          <View style={[at(size, 0.72, 0.28, 0.24, 0.12), { borderWidth: s / 2, borderColor: color }]} />
+        </View>
+      );
+
+    case 'flip':
+      // A plus of tiles: the middle one and its neighbours.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.36, 0.06, 0.28, 0.28), { backgroundColor: color }]} />
+          <View style={[at(size, 0.06, 0.36, 0.28, 0.28), { backgroundColor: color }]} />
+          <View style={[at(size, 0.36, 0.36, 0.28, 0.28), { borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.66, 0.36, 0.28, 0.28), { backgroundColor: color }]} />
+          <View style={[at(size, 0.36, 0.66, 0.28, 0.28), { backgroundColor: color }]} />
+        </View>
+      );
+
+    case 'orbit':
+      // A planet, a ring round it, and a satellite on the ring.
+      return (
+        <View style={box} {...hidden}>
+          <View style={[at(size, 0.06, 0.06, 0.88, 0.88), { borderRadius: size, borderWidth: s / 2, borderColor: color }]} />
+          <View style={[at(size, 0.36, 0.36, 0.28, 0.28), { borderRadius: size, backgroundColor: color }]} />
+          <View style={[at(size, 0.74, 0.14, 0.16, 0.16), { backgroundColor: color }]} />
         </View>
       );
 

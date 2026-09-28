@@ -1,0 +1,12 @@
+{
+  "id": "dottodot",
+  "title": "Dot to Dot",
+  "skill": "Number order: joining numbered dots in order to reveal a picture",
+  "roundEnds": "Five pictures joined.",
+  "category": "numbers",
+  "minAge": 3,
+  "maxAge": 7,
+  "origin": "public-domain",
+  "priorArt": "Connect-the-dots puzzles, in children's books since the early 1900s.",
+  "toldApartBy": "Numbers: each dot has its number beside it, and the next dot to join is ringed."
+}

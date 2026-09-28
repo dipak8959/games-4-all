@@ -1,0 +1,12 @@
+{
+  "id": "spotchange",
+  "title": "Spot the Change",
+  "skill": "Careful looking: finding what is different between two pictures",
+  "roundEnds": "Eight pairs of pictures checked.",
+  "category": "memory",
+  "minAge": 3,
+  "maxAge": 9,
+  "origin": "public-domain",
+  "priorArt": "Spot-the-difference puzzles, in newspapers since the 1930s.",
+  "toldApartBy": "Shape and place: the change is a piece missing, moved or a different shape, never a colour alone."
+}

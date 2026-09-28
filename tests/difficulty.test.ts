@@ -46,6 +46,14 @@ import { specForLevel as countAroundSpec } from '../src/games/countaround/logic.
 import { specForLevel as starJarSpec } from '../src/games/starjar/logic.ts';
 import { specForLevel as mazeTeamSpec } from '../src/games/mazeteam/logic.ts';
 import { specForLevel as echoSpec } from '../src/games/echobeat/logic.ts';
+import { specForLevel as orbitSpec } from '../src/games/orbithop/logic.ts';
+import { specForLevel as angleSpec } from '../src/games/anglejudge/logic.ts';
+import { specForLevel as codesSpec } from '../src/games/secretcodes/logic.ts';
+import { specForLevel as scaleSpec } from '../src/games/balancescale/logic.ts';
+import { specForLevel as hanoiSpec } from '../src/games/hanoi/logic.ts';
+import { specForLevel as flipSpec } from '../src/games/flipit/logic.ts';
+import { specForLevel as bitsSpec } from '../src/games/binarybits/logic.ts';
+import { specForLevel as patternSpec } from '../src/games/numberpatterns/logic.ts';
 import { specForLevel as letterSpec } from '../src/games/letterdrop/logic.ts';
 import { specForLevel as marbleSpec } from '../src/games/marblemaze/logic.ts';
 import { KINDS as KINDS_ORDER, specForLevel as bubblesSpec } from '../src/games/numberbubbles/logic.ts';
@@ -405,6 +413,38 @@ const DIALS: Readonly<Record<string, (level: number) => readonly number[]>> = {
   letterdrop: (l) => {
     const spec = letterSpec(l);
     return [spec.length, Number(!spec.showWord), spec.speed, spec.decoys, spec.lanes];
+  },
+  numberpatterns: (l) => {
+    const spec = patternSpec(l);
+    return [spec.rules, Number(spec.anywhere), spec.choices];
+  },
+  binarybits: (l) => {
+    const spec = bitsSpec(l);
+    return [spec.bits, Number(!spec.showTotal), Number(spec.startOn)];
+  },
+  flipit: (l) => {
+    const spec = flipSpec(l);
+    return [spec.size, spec.moves];
+  },
+  hanoi: (l) => {
+    const spec = hanoiSpec(l);
+    return [spec.discs, -spec.allowance];
+  },
+  balancescale: (l) => {
+    const spec = scaleSpec(l);
+    return [spec.coins, spec.fewest];
+  },
+  secretcodes: (l) => {
+    const spec = codesSpec(l);
+    return [spec.most, spec.length, Number(spec.firstWordOnly)];
+  },
+  anglejudge: (l) => {
+    const spec = angleSpec(l);
+    return [-spec.step, -spec.tolerance, Number(spec.turnedBase), spec.most];
+  },
+  orbithop: (l) => {
+    const spec = orbitSpec(l);
+    return [spec.rocks, spec.rockSpeed];
   },
 };
 

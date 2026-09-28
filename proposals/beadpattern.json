@@ -1,0 +1,11 @@
+{
+  "id": "beadpattern",
+  "title": "Bead Patterns",
+  "skill": "Spotting a pattern and continuing it: which bead comes next on the string",
+  "roundEnds": "Eight strings finished.",
+  "category": "logic",
+  "minAge": 3,
+  "maxAge": 7,
+  "origin": "original",
+  "toldApartBy": "Shape: every bead has its own shape as well as its colour."
+}

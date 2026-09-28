@@ -148,6 +148,20 @@ export const tilePalette = {
   terracotta: '#C47062',
   crimson: '#C4315B',
   blush: '#A87E85',
+  // And for the thirteen after those, found the same way.
+  amethyst: '#AF70D2',
+  dusk: '#776293',
+  berry: '#A15477',
+  mulberry: '#7E6277',
+  citron: '#938C07',
+  cobalt: '#1C70BD',
+  petrol: '#317785',
+  pewter: '#7E858C',
+  cocoa: '#8C625B',
+  denim: '#3F70A1',
+  peony: '#D25BA1',
+  lilac: '#A877B6',
+  laurel: '#5B705B',
 } as const;
 
 /** Resolves one of `playPalette`'s keys, falling back to the first colour so

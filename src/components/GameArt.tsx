@@ -874,6 +874,97 @@ const SCENES: Readonly<Record<string, Draw>> = {
       <Block u={u} x={58} y={62} w={26} h={26} color={c.hi} />
     </>
   ),
+  // A row of numbers with the gap still to fill.
+  numberpatterns: (u, c) => (
+    <>
+      <Glyph u={u} x={4} y={36} w={24} size={20} color={c.fg}>
+        2
+      </Glyph>
+      <Glyph u={u} x={28} y={36} w={24} size={20} color={c.fg}>
+        4
+      </Glyph>
+      <Glyph u={u} x={52} y={36} w={24} size={20} color={c.fg}>
+        6
+      </Glyph>
+      <Block u={u} x={76} y={36} w={20} h={28} color={c.hi} />
+    </>
+  ),
+  // Four switches, two on.
+  binarybits: (u, c) => (
+    <>
+      <Frame u={u} x={6} y={34} w={20} h={32} color={c.fg} line={3} />
+      <Block u={u} x={29} y={34} w={20} h={32} color={c.hi} />
+      <Frame u={u} x={52} y={34} w={20} h={32} color={c.fg} line={3} />
+      <Block u={u} x={75} y={34} w={20} h={32} color={c.fg} />
+    </>
+  ),
+  // A board of tiles, one flipped with its neighbours.
+  flipit: (u, c) => (
+    <>
+      {[0, 1, 2].flatMap((r) =>
+        [0, 1, 2].map((q) =>
+          (r === 1 || q === 1) && !(r === 1 && q === 1) ? (
+            <Frame key={`${r}${q}`} u={u} x={14 + q * 25} y={14 + r * 25} w={22} h={22} color={c.fg} line={3} />
+          ) : (
+            <Block key={`${r}${q}`} u={u} x={14 + q * 25} y={14 + r * 25} w={22} h={22} color={r === 1 && q === 1 ? c.hi : c.fg} />
+          ),
+        ),
+      )}
+    </>
+  ),
+  // Three pegs, a stack on the first, one disc in the air.
+  hanoi: (u, c) => (
+    <>
+      <Block u={u} x={4} y={82} w={92} h={4} color={c.fg} />
+      <Block u={u} x={18} y={40} w={3} h={42} color={c.fg} />
+      <Block u={u} x={49} y={40} w={3} h={42} color={c.fg} />
+      <Block u={u} x={80} y={40} w={3} h={42} color={c.fg} />
+      <Block u={u} x={6} y={72} w={28} h={8} color={c.fg} />
+      <Block u={u} x={10} y={62} w={20} h={8} color={c.fg} />
+      <Block u={u} x={40} y={22} w={22} h={8} color={c.hi} />
+    </>
+  ),
+  // A scale tipped to its heavy side, and the coin that did it.
+  balancescale: (u, c) => (
+    <>
+      <View style={{ position: 'absolute', left: 14 * u, top: 40 * u, width: 72 * u, height: 4 * u, backgroundColor: c.fg, transform: [{ rotate: '-12deg' }] }} />
+      <Block u={u} x={48} y={40} w={4} h={44} color={c.fg} />
+      <Block u={u} x={34} y={84} w={32} h={4} color={c.fg} />
+      <Disc u={u} cx={22} cy={40} r={10} color={c.fg} />
+      <Disc u={u} cx={80} cy={22} r={10} color={c.hi} />
+    </>
+  ),
+  // A line of code, and the letters turning under it.
+  secretcodes: (u, c) => (
+    <>
+      <Glyph u={u} x={6} y={16} w={88} size={20} color={c.fg}>
+        KHOOR
+      </Glyph>
+      <Block u={u} x={6} y={48} w={88} h={3} color={c.fg} />
+      <Glyph u={u} x={6} y={58} w={88} size={20} color={c.hi}>
+        HELLO
+      </Glyph>
+    </>
+  ),
+  // Two lines from a point, and the turning one's handle.
+  anglejudge: (u, c) => (
+    <>
+      <Block u={u} x={18} y={76} w={70} h={4} color={c.fg} />
+      <View style={{ position: 'absolute', left: 4 * u, top: 48 * u, width: 70 * u, height: 4 * u, backgroundColor: c.fg, transform: [{ rotate: '-45deg' }], transformOrigin: 'left' } as object} />
+      <Disc u={u} cx={18} cy={78} r={5} color={c.fg} />
+      <Block u={u} x={60} y={20} w={14} h={14} color={c.hi} />
+    </>
+  ),
+  // A planet, its rings, the satellite and a rock.
+  orbithop: (u, c) => (
+    <>
+      <Ring u={u} cx={50} cy={50} r={40} color={c.fg} line={2} />
+      <Ring u={u} cx={50} cy={50} r={26} color={c.fg} line={2} />
+      <Disc u={u} cx={50} cy={50} r={12} color={c.fg} />
+      <Block u={u} x={80} y={40} w={14} h={14} color={c.hi} />
+      <Block u={u} x={20} y={20} w={10} h={10} color={c.fg} />
+    </>
+  ),
   // A drum mid-beat, and the beat's marks along the top.
   echobeat: (u, c) => (
     <>

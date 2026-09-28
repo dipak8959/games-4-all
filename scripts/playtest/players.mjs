@@ -2736,6 +2736,257 @@ export async function playLetterDrop(page, report) {
   report.ok(`spelled every word, ${mistakes} wrong tap${mistakes === 1 ? '' : 's'}`);
 }
 
+/** Taps the middle of the first element matching a selector, from inside
+ *  the page. */
+const TAP_HELPERS = `
+  window.__tapEl = async (el) => {
+    const b = el.getBoundingClientRect();
+    await window.__tapAt(b.left + b.width / 2, b.top + b.height / 2);
+  };
+  window.__wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  window.__done = () => !!document.querySelector('[aria-label="Play again"]');
+`;
+
+async function withHelpers(page) {
+  await canTap(page);
+  await page.evaluate(TAP_HELPERS);
+}
+
+/** Number Patterns, played by eye: tries each choice in the gap and takes
+ *  the one that makes the row follow a rule. */
+export async function playNumberPatterns(page, report) {
+  await withHelpers(page);
+  const tries = await page.evaluate(async () => {
+    const fits = (t) => {
+      const d = t.slice(1).map((n, i) => n - t[i]);
+      const same = (xs) => xs.every((x) => x === xs[0]);
+      if (same(d)) return true;
+      if (t.every((n) => n !== 0) && same(t.slice(1).map((n, i) => n / t[i]))) return true;
+      if (same(d.slice(1).map((x, i) => x - d[i]))) return true;
+      if (t.slice(2).every((n, i) => n === t[i] + t[i + 1])) return true;
+      return d.every((x, i) => x === d[i % 2]);
+    };
+    let taps = 0;
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 120000) {
+      const id = document.querySelector('[data-testid^="pattern:"]')?.dataset.testid;
+      if (!id) { await window.__wait(100); continue; }
+      const cells = id.slice(8).split(',');
+      const buttons = [...document.querySelectorAll('[role="button"]')].filter((b) => /^\d+$/.test(b.getAttribute('aria-label') ?? '') && !b.getAttribute('aria-disabled'));
+      const pick = buttons.find((b) => fits(cells.map((c) => (c === '?' ? Number(b.getAttribute('aria-label')) : Number(c))))) ?? buttons[0];
+      if (pick) {
+        taps += 1;
+        await window.__tapEl(pick);
+      }
+      await window.__wait(300);
+    }
+    return taps;
+  });
+  report.ok(`filled every gap in ${tries} taps`);
+}
+
+/** Binary Bits, played by eye: switches the bits whose values it needs. */
+export async function playBinaryBits(page, report) {
+  await withHelpers(page);
+  await page.evaluate(async () => {
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 120000) {
+      const target = Number(document.querySelector('[data-testid^="target:"]')?.dataset.testid.split(':')[1]);
+      if (document.body.innerText.includes('MADE IT')) { await window.__wait(200); continue; }
+      const bits = [...document.querySelectorAll('[data-testid^="bit:"]')].map((el) => {
+        const [, bit, on] = el.dataset.testid.split(':');
+        return { el, bit: Number(bit), on: on === '1' };
+      });
+      const wrong = bits.find((b) => b.on !== (((target >> b.bit) & 1) === 1));
+      if (wrong) await window.__tapEl(wrong.el);
+      await window.__wait(150);
+    }
+  });
+  report.ok('made every number');
+}
+
+/** Flip It, played by working it out: tries every set of taps on the top
+ *  row, the rest forced, and taps the shortest. */
+export async function playFlipIt(page, report) {
+  await withHelpers(page);
+  const taps = await page.evaluate(async () => {
+    const press = (b, n, cell) => {
+      const out = [...b];
+      const r = Math.floor(cell / n);
+      const c = cell % n;
+      for (const [dr, dc] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const rr = r + dr;
+        const cc = c + dc;
+        if (rr >= 0 && rr < n && cc >= 0 && cc < n) out[rr * n + cc] = !out[rr * n + cc];
+      }
+      return out;
+    };
+    const solve = (board, n) => {
+      let best = null;
+      for (let mask = 0; mask < 1 << n; mask += 1) {
+        let b = [...board];
+        const t = [];
+        for (let c = 0; c < n; c += 1) if ((mask >> c) & 1) { b = press(b, n, c); t.push(c); }
+        for (let r = 1; r < n; r += 1) for (let c = 0; c < n; c += 1) if (!b[(r - 1) * n + c]) { b = press(b, n, r * n + c); t.push(r * n + c); }
+        if (b.every(Boolean) && (!best || t.length < best.length)) best = t;
+      }
+      return best ?? [];
+    };
+    let count = 0;
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 120000) {
+      if (document.body.innerText.includes('ALL LIT')) { await window.__wait(200); continue; }
+      const tiles = [...document.querySelectorAll('[data-testid^="tile:"]')].map((el) => el.dataset.testid.split(':')[2] === '1');
+      const n = Math.round(Math.sqrt(tiles.length));
+      for (const cell of solve(tiles, n)) {
+        await window.__tapEl(document.querySelector(`[data-testid^="tile:${cell}:"]`));
+        count += 1;
+        await window.__wait(120);
+      }
+      await window.__wait(400);
+    }
+    return count;
+  });
+  report.ok(`lit every board in ${taps} taps`);
+}
+
+/** Tower of Hanoi, played the classic way round. */
+export async function playHanoi(page, report) {
+  await withHelpers(page);
+  const moves = await page.evaluate(async () => {
+    const solution = (n, from = 0, to = 2, spare = 1) => (n === 0 ? [] : [...solution(n - 1, from, spare, to), [from, to], ...solution(n - 1, spare, to, from)]);
+    const peg = (i) => document.querySelector(`[data-testid^="peg:${i}:"]`);
+    let count = 0;
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 200000) {
+      const first = peg(0)?.dataset.testid.split(':')[2] ?? '';
+      const discs = first ? first.split('.').length : 0;
+      if (!discs || document.body.innerText.includes('MOVED!')) { await window.__wait(200); continue; }
+      for (const [from, to] of solution(discs)) {
+        await window.__tapEl(peg(from));
+        await window.__wait(40);
+        await window.__tapEl(peg(to));
+        await window.__wait(40);
+        count += 1;
+      }
+      await window.__wait(600);
+    }
+    return count;
+  });
+  report.ok(`moved every tower in ${moves} moves`);
+}
+
+/** Balance Scale, played by deduction: splits the coins still in question
+ *  three ways, weighs, and picks the one left. */
+export async function playBalanceScale(page, report) {
+  await withHelpers(page);
+  const weighings = await page.evaluate(async () => {
+    let count = 0;
+    const started = performance.now();
+    const button = (label) => [...document.querySelectorAll('[role="button"]')].find((b) => (b.getAttribute('aria-label') ?? b.innerText).toUpperCase().includes(label));
+    while (!window.__done() && performance.now() - started < 150000) {
+      if (document.body.innerText.includes('FOUND IT')) { await window.__wait(200); continue; }
+      const coins = [...document.querySelectorAll('[data-testid^="coin:"]')].map((el) => {
+        const [, id, place, out] = el.dataset.testid.split(':');
+        return { el, id: Number(id), place, out: out === '1' };
+      });
+      const history = [...document.querySelectorAll('[data-testid^="weighing:"]')].map((el) => {
+        const [, l, r, result] = el.dataset.testid.split(':');
+        return { left: l ? l.split('.').map(Number) : [], right: r ? r.split('.').map(Number) : [], result };
+      });
+      const cands = coins.filter((c) => !c.out).map((c) => c.id).filter((c) =>
+        history.every((w) => {
+          const wt = (side) => side.length * 10 + (side.includes(c) ? 1 : 0);
+          const [l, r] = [wt(w.left), wt(w.right)];
+          return (l > r ? 'left' : r > l ? 'right' : 'level') === w.result;
+        }),
+      );
+      const picking = document.body.innerText.includes('TAP THE HEAVY COIN');
+      if (cands.length === 1) {
+        if (!picking) await window.__tapEl(button('PICK THE HEAVY'));
+        await window.__wait(150);
+        await window.__tapEl(document.querySelector(`[data-testid^="coin:${cands[0]}:"]`));
+        await window.__wait(1500);
+        continue;
+      }
+      let a = Math.ceil(cands.length / 3);
+      if (a * 2 > cands.length) a = Math.floor(cands.length / 2);
+      const left = cands.slice(0, a);
+      const right = cands.slice(a, a * 2);
+      for (const c of left) { await window.__tapEl(document.querySelector(`[data-testid^="coin:${c}:"]`)); await window.__wait(60); }
+      for (const c of right) {
+        for (let k = 0; k < 2; k += 1) { await window.__tapEl(document.querySelector(`[data-testid^="coin:${c}:"]`)); await window.__wait(60); }
+      }
+      await window.__tapEl(button('WEIGH'));
+      count += 1;
+      await window.__wait(300);
+    }
+    return count;
+  });
+  report.ok(`found every heavy coin in ${weighings} weighings`);
+}
+
+/** Secret Codes, played by reading: turns the wheel until every word is a
+ *  real one. Its dictionary is every word the messages use. */
+export async function playSecretCodes(page, report) {
+  await withHelpers(page);
+  const { readFileSync } = await import('node:fs');
+  const words = [...new Set([...readFileSync(new URL('../../src/games/secretcodes/logic.ts', import.meta.url), 'utf8').matchAll(/'([A-Z ]+)'/g)].flatMap((m) => m[1].split(' ')))];
+  const turns = await page.evaluate(async (dictionary) => {
+    const known = new Set(dictionary);
+    const shift = (t, by) => t.replace(/[A-Z]/g, (ch) => String.fromCharCode(65 + ((((ch.charCodeAt(0) - 65 + by) % 26) + 26) % 26)));
+    const button = (label) => [...document.querySelectorAll('[role="button"]')].find((b) => (b.innerText ?? '').toUpperCase().includes(label));
+    let count = 0;
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 150000) {
+      if (document.body.innerText.includes('CRACKED IT')) { await window.__wait(200); continue; }
+      const coded = document.querySelector('[data-testid="coded"]')?.innerText.trim();
+      const turn = Number(/BACK (\d+)/.exec(document.body.innerText)?.[1] ?? 0);
+      // Read it in the head at this turn: every word a real one?
+      const reads = shift(coded, -turn).split(/\s+/);
+      if (reads.every((w) => known.has(w))) {
+        await window.__tapEl(button('IT SAYS THIS'));
+        await window.__wait(300);
+        continue;
+      }
+      await window.__tapEl(button('ON ONE'));
+      count += 1;
+      await window.__wait(60);
+    }
+    return count;
+  }, words);
+  report.ok(`read every message, ${turns} turns of the wheel`);
+}
+
+/** Angle Judge, played with a good eye: points at the angle, checks the
+ *  line, nudges it a degree or two, and sets it. */
+export async function playAngleJudge(page, report) {
+  await withHelpers(page);
+  await page.evaluate(async () => {
+    const button = (label) => [...document.querySelectorAll('[role="button"]')].find((b) => (b.innerText ?? '').toUpperCase().includes(label));
+    const started = performance.now();
+    while (!window.__done() && performance.now() - started < 120000) {
+      if (/SPOT ON|YOU SET/.test(document.body.innerText)) { await window.__wait(200); continue; }
+      const [, target, base, aim] = document.querySelector('[data-testid^="angle:"]').dataset.testid.split(':').map(Number);
+      const box = document.querySelector('[data-testid="protractor"]').getBoundingClientRect();
+      const r = Math.min(box.width, box.height) * 0.4;
+      if (Math.abs(aim - target) > 0) {
+        if (Math.abs(aim - target) > 3) {
+          const rad = ((base + target) * Math.PI) / 180;
+          await window.__tapAt(box.left + box.width / 2 + Math.cos(rad) * r, box.top + box.height / 2 - Math.sin(rad) * r);
+        } else {
+          await window.__tapEl(button(aim < target ? '1° ON' : '1° BACK'));
+        }
+        await window.__wait(120);
+        continue;
+      }
+      await window.__tapEl(button('SET IT'));
+      await window.__wait(300);
+    }
+  });
+  report.ok('set every angle');
+}
+
 export const PLAYERS = {
   'Find the Pairs': playMemory,
   'How Many?': playCounting,
@@ -2784,4 +3035,11 @@ export const PLAYERS = {
   'Number Bubbles': playNumberBubbles,
   'Marble Maze': playMarbleMaze,
   'Letter Drop': playLetterDrop,
+  'Number Patterns': playNumberPatterns,
+  'Binary Bits': playBinaryBits,
+  'Flip It': playFlipIt,
+  'Tower of Hanoi': playHanoi,
+  'Balance Scale': playBalanceScale,
+  'Secret Codes': playSecretCodes,
+  'Angle Judge': playAngleJudge,
 };

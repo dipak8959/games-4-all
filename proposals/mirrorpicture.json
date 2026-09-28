@@ -1,0 +1,11 @@
+{
+  "id": "mirrorpicture",
+  "title": "Mirror Picture",
+  "skill": "Symmetry: finishing a picture so both halves match across the mirror line",
+  "roundEnds": "Six pictures finished.",
+  "category": "logic",
+  "minAge": 4,
+  "maxAge": 10,
+  "origin": "original",
+  "toldApartBy": "Fill and place: filled squares are solid ink, and the mirror line is drawn down the middle."
+}

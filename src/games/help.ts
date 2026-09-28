@@ -463,6 +463,94 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     example: 'The picture is a cat: tap C, then A, then T.',
     grows: 'At first the word is written faintly in the boxes. Then just the picture, longer words, more letters that are not in the word, and faster falling.',
   },
+  numberpatterns: {
+    goal: 'Fill the gap in ten rows of numbers.',
+    steps: [
+      'Look at how each number is made from the one before.',
+      'Work out the rule: add the same, take away, times, or something trickier.',
+      'Tap the number that goes in the gap.',
+      'Not that one? It is crossed off. Try another.',
+    ],
+    example: '2, 5, 8, 11, ? — each is 3 more than the last, so the gap is 14.',
+    grows: 'More kinds of rule, the gap anywhere in the row, and more numbers to choose from.',
+  },
+  binarybits: {
+    goal: 'Make ten numbers by switching bits on.',
+    steps: [
+      'Each switch is worth twice the one to its right: 1, 2, 4, 8 and on.',
+      'Switch on the ones that add up to the number at the top.',
+      'Tap a switch again to turn it off.',
+      'When the switches that are on make the number, it moves on to the next.',
+    ],
+    example: 'Make 13: switch on 8, 4 and 1.',
+    grows: 'More switches and bigger numbers, then no running total, then some switches already on.',
+  },
+  flipit: {
+    goal: 'Light every tile on six boards.',
+    steps: [
+      'Tap a tile and it flips, lit or dark.',
+      'The tiles above, below and either side of it flip too.',
+      'Plan your taps so every tile ends up lit.',
+      'The top of the screen says how few taps it can be done in.',
+    ],
+    example: 'One dark cross of five tiles: tap its middle once and they all light.',
+    grows: 'Bigger boards, and boards that take more taps.',
+  },
+  hanoi: {
+    goal: 'Move the whole stack to the right-hand peg, twice.',
+    steps: [
+      'Tap a peg to lift its top disc, then tap the peg to put it on.',
+      'Only one disc moves at a time.',
+      'A bigger disc can never go on a smaller one. If you try, it goes back.',
+      'Plan ahead: to move a big disc, the small ones must be out of the way.',
+    ],
+    example: 'Three discs: small to the right, middle to the middle, small onto the middle, then big to the right.',
+    grows: 'More discs, and fewer spare moves for three stars.',
+  },
+  balancescale: {
+    goal: 'Find the one heavy coin in six puzzles.',
+    steps: [
+      'Tap a coin to put it on the left pan, again for the right pan, again to take it off.',
+      'Tap WEIGH. The heavy side goes down. If the pans are level, the heavy coin is not on them.',
+      'When you know which coin it is, tap PICK THE HEAVY ONE, then tap the coin.',
+      'Try to find it in as few weighings as the top of the screen says.',
+    ],
+    example: 'Three coins: weigh 1 against 2. If level, it is 3. If not, it is the side that went down.',
+    grows: 'More coins, and more weighings to plan.',
+  },
+  secretcodes: {
+    goal: 'Read six secret messages.',
+    steps: [
+      'Every letter in the message has been moved the same number of places along the alphabet.',
+      'Turn the wheel with BACK ONE and ON ONE. Every letter moves with it.',
+      'When the message reads as real words, tap IT SAYS THIS.',
+      'Not yet? Keep turning.',
+    ],
+    example: 'IFMMP moved back one place reads HELLO.',
+    grows: 'Letters moved further, longer messages, then only the first word turns, so the rest is read in your head.',
+  },
+  anglejudge: {
+    goal: 'Set ten angles by eye.',
+    steps: [
+      'The angle to make is written at the top.',
+      'Tap or drag to point the line with the square handle. Nudge it a degree with the buttons.',
+      'Tap SET IT when it looks right.',
+      'If it was off, the angle wanted shows as a dotted line.',
+    ],
+    example: '90° is a square corner. 45° is half of that.',
+    grows: 'Angles in finer steps, less room either side, the fixed line tilted, then angles past a half turn.',
+  },
+  orbithop: {
+    goal: 'Collect twelve stars on the rings round the planet.',
+    steps: [
+      'Your satellite goes round and round on one of three rings.',
+      'Tap IN to hop a ring nearer the planet, OUT to hop further away.',
+      'Hop onto the ring the star is on, and it comes to you.',
+      'Rocks come round the other way. Hop out of their way. A bump only knocks the shield.',
+    ],
+    example: 'A rock is coming on your ring and the star is on the outer ring: tap OUT.',
+    grows: 'More rocks, coming round faster.',
+  },
 };
 
 export function helpFor(gameId: string): GameHelp | undefined {

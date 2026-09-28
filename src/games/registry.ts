@@ -8,6 +8,14 @@ import { CountAroundScreen } from './countaround/CountAroundScreen';
 import { CountingScreen } from './counting/CountingScreen';
 import { DuckCrossingScreen } from './duckcrossing/DuckCrossingScreen';
 import { EchoBeatScreen } from './echobeat/EchoBeatScreen';
+import { OrbitHopScreen } from './orbithop/OrbitHopScreen';
+import { AngleJudgeScreen } from './anglejudge/AngleJudgeScreen';
+import { SecretCodesScreen } from './secretcodes/SecretCodesScreen';
+import { BalanceScaleScreen } from './balancescale/BalanceScaleScreen';
+import { HanoiScreen } from './hanoi/HanoiScreen';
+import { FlipItScreen } from './flipit/FlipItScreen';
+import { BinaryBitsScreen } from './binarybits/BinaryBitsScreen';
+import { NumberPatternsScreen } from './numberpatterns/NumberPatternsScreen';
 import { LetterDropScreen } from './letterdrop/LetterDropScreen';
 import { MarbleMazeScreen } from './marblemaze/MarbleMazeScreen';
 import { NumberBubblesScreen } from './numberbubbles/NumberBubblesScreen';
@@ -94,6 +102,14 @@ const SCREEN_BY_ID: Readonly<Record<string, GameDefinition['Screen']>> = {
   starjar: StarJarScreen,
   mazeteam: MazeTeamScreen,
   echobeat: EchoBeatScreen,
+  orbithop: OrbitHopScreen,
+  anglejudge: AngleJudgeScreen,
+  secretcodes: SecretCodesScreen,
+  balancescale: BalanceScaleScreen,
+  hanoi: HanoiScreen,
+  flipit: FlipItScreen,
+  binarybits: BinaryBitsScreen,
+  numberpatterns: NumberPatternsScreen,
   letterdrop: LetterDropScreen,
   marblemaze: MarbleMazeScreen,
   numberbubbles: NumberBubblesScreen,

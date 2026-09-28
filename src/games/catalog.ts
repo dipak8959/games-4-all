@@ -964,6 +964,143 @@ export const GAMES_META: readonly GameMeta[] = [
     minAge: 5,
     maxAge: 9,
   },
+  {
+    id: 'numberpatterns',
+    title: 'Number Patterns',
+    icon: 'sequence',
+    color: tilePalette.cobalt,
+    skill: 'Finding the rule in a sequence of numbers, and what comes next',
+    roundEnds: 'Ten sequences finished.',
+    origin: 'original',
+    toldApartBy: 'Numbers: the sequence is written out, and the missing one is an empty box.',
+    ages: '9+',
+    category: 'numbers',
+    // Adding the same each time suits a nine-year-old; square numbers and
+    // each number the two before added up are a real puzzle for an adult.
+    minAge: 9,
+    maxAge: 99,
+  },
+  {
+    id: 'binarybits',
+    title: 'Binary Bits',
+    icon: 'bits',
+    color: tilePalette.petrol,
+    skill: 'Place value in binary: switching bits on to make a number',
+    roundEnds: 'Ten numbers made.',
+    origin: 'original',
+    toldApartBy: 'Place and label: each bit shows its value (1, 2, 4, 8 and on), and a bit that is on is solid.',
+    ages: '10+',
+    category: 'numbers',
+    // Three bits with the total shown suit a ten-year-old meeting binary;
+    // eight bits, some already on and no total, keep an adult thinking.
+    minAge: 10,
+    maxAge: 99,
+  },
+  {
+    id: 'flipit',
+    title: 'Flip It',
+    icon: 'flip',
+    color: tilePalette.citron,
+    skill: 'Logic: lighting every tile, when each tap flips its neighbours too',
+    roundEnds: 'Six boards lit.',
+    origin: 'public-domain',
+    priorArt:
+      'Neighbour-flipping puzzles, studied in recreational mathematics since the 1970s.',
+    toldApartBy: 'Fill: a lit tile is solid, a dark one hollow.',
+    ages: '9+',
+    category: 'logic',
+    // A three-by-three board one tap from lit suits a nine-year-old; four
+    // by four and five taps deep is a real puzzle at any age.
+    minAge: 9,
+    maxAge: 99,
+  },
+  {
+    id: 'hanoi',
+    title: 'Tower of Hanoi',
+    icon: 'hanoi',
+    color: tilePalette.cocoa,
+    skill: 'Planning ahead: moving a stack one disc at a time, never a bigger disc on a smaller one',
+    roundEnds: 'Two towers moved.',
+    origin: 'public-domain',
+    priorArt:
+      'The Tower of Hanoi, published by the mathematician Edouard Lucas in 1883.',
+    toldApartBy: 'Size: every disc is a different width.',
+    ages: '8+',
+    category: 'logic',
+    // Three discs suit an eight-year-old; six discs in close to the fewest
+    // moves is a classic test of planning for anyone.
+    minAge: 8,
+    maxAge: 99,
+  },
+  {
+    id: 'balancescale',
+    title: 'Balance Scale',
+    icon: 'balance',
+    color: tilePalette.pewter,
+    skill: 'Deduction: finding the one heavier coin in as few weighings as possible',
+    roundEnds: 'Six puzzles solved.',
+    origin: 'public-domain',
+    priorArt:
+      'The coin-weighing puzzle, a classic of recreational mathematics since the 1940s.',
+    toldApartBy: 'Place and number: the scale tips down on the heavier side, and every coin is numbered.',
+    ages: '9+',
+    category: 'logic',
+    // Three coins and one weighing suit a nine-year-old; twelve coins in
+    // three weighings asks an adult to plan every split.
+    minAge: 9,
+    maxAge: 99,
+  },
+  {
+    id: 'secretcodes',
+    title: 'Secret Codes',
+    icon: 'cipher',
+    color: tilePalette.dusk,
+    skill: 'Reading and pattern-finding: cracking a letter-shift code to read a message',
+    roundEnds: 'Six messages read.',
+    origin: 'public-domain',
+    priorArt:
+      'The shift cipher, used in ancient Rome.',
+    readingIsTheSkill: true,
+    toldApartBy: 'Letters: the coded message and the answer are written one above the other.',
+    ages: '10+',
+    category: 'words',
+    // Short messages moved a place or two suit a ten-year-old reader; long
+    // ones read a word at a time in the head suit anyone.
+    minAge: 10,
+    maxAge: 99,
+  },
+  {
+    id: 'anglejudge',
+    title: 'Angle Judge',
+    icon: 'angle',
+    color: tilePalette.denim,
+    skill: 'Estimating angles: turning a line to a given number of degrees by eye',
+    roundEnds: 'Ten angles set.',
+    origin: 'original',
+    toldApartBy: 'Place: the line, its arc, and the angle wanted written in degrees.',
+    ages: '10+',
+    category: 'numbers',
+    // Right angles and half-right-angles suit a ten-year-old; any angle to
+    // within four degrees, from a tilted line, tests an adult's eye.
+    minAge: 10,
+    maxAge: 99,
+  },
+  {
+    id: 'orbithop',
+    title: 'Orbit Hop',
+    icon: 'orbit',
+    color: tilePalette.mulberry,
+    skill: 'Timing: hopping a satellite between rings to slip past space rocks',
+    roundEnds: 'Twelve stars collected.',
+    origin: 'original',
+    toldApartBy: 'Shape: the satellite is a square, rocks are jagged, and stars are stars.',
+    ages: '10+',
+    category: 'arcade',
+    // Two slow rocks suit a ten-year-old finding the rhythm; six fast ones
+    // coming round three rings keep an adult's eyes busy.
+    minAge: 10,
+    maxAge: 99,
+  },
 ];
 
 export function findGameMeta(id: string): GameMeta | undefined {

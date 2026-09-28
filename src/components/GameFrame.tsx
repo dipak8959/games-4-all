@@ -5,6 +5,7 @@ import { BigButton } from './BigButton';
 import { NumberedRow } from './FactGrid';
 import { GameArt } from './GameArt';
 import { Icon, type IconName } from './Icon';
+import { nextShortQuote } from './quotes';
 import { Rule } from './Rule';
 import { Screen } from './Screen';
 import { findGameMeta } from '../games/catalog';
@@ -103,6 +104,15 @@ export function GameFrame({
   const setOpen = useCallback((next: boolean) => session?.setPaused(next), [session]);
   const leave = useCallback(() => (session?.finished.current ?? onExit)(), [session, onExit]);
 
+  // A few words from a sportsperson, top right: a new one each round, told
+  // apart by the round's progress falling back to the start.
+  const [quote, setQuote] = useState(nextShortQuote);
+  const was = useRef(clamped);
+  useEffect(() => {
+    if (clamped === 0 && was.current > 0) setQuote(nextShortQuote());
+    was.current = clamped;
+  }, [clamped]);
+
   // Android's back is this frame's Back: it closes "How to play" first, as
   // the sheet's own close does, and otherwise leaves the game the same way.
   useEffect(() => {
@@ -168,7 +178,13 @@ export function GameFrame({
       </View>
       <Rule weight="major" />
 
-      <View style={styles.body}>{children}</View>
+      <View style={styles.body}>
+        <Text style={[type.meta, styles.quote]} numberOfLines={2} accessibilityLabel={`${quote.text} ${quote.who}.`}>
+          {`“${quote.text}” `}
+          <Text style={styles.quoteWho}>{`— ${quote.who}`}</Text>
+        </Text>
+        {children}
+      </View>
 
       {help && open && session ? (
         <HelpSheet gameId={session.gameId} title={title} onClose={() => setOpen(false)} />
@@ -274,7 +290,9 @@ const styles = StyleSheet.create({
   nearly: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   track: { height: 10, backgroundColor: palette.surface, borderTopWidth: rule.hair, borderTopColor: palette.border },
   fill: { height: '100%', backgroundColor: palette.ink },
-  body: { flex: 1, paddingHorizontal: gutter, paddingTop: space.md },
+  body: { flex: 1, paddingHorizontal: gutter, paddingTop: space.sm },
+  quote: { textAlign: 'right', color: palette.inkSoft, marginBottom: space.xs },
+  quoteWho: { color: palette.ink },
   sheet: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: palette.bg },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', paddingLeft: gutter },
   sheetTitle: { flex: 1, gap: space.xs, paddingVertical: space.md },

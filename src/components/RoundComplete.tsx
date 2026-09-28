@@ -74,9 +74,10 @@ export function RoundComplete({
           ))}
         </View>
 
-        <View style={styles.quote} accessible accessibilityLabel={`${quote.text} ${quote.who}, ${quote.sport}.`}>
+        <View style={styles.quote} accessible accessibilityLabel={`${quote.text} ${quote.who}, ${quote.about}.`}>
           <Text style={[type.body, styles.quoteText]}>{`“${quote.text}”`}</Text>
-          <Text style={type.mono}>{`${quote.who.toUpperCase()} · ${quote.sport.toUpperCase()}`}</Text>
+          <Text style={type.mono}>{quote.who.toUpperCase()}</Text>
+          <Text style={type.meta}>{quote.about}</Text>
         </View>
 
         <BigButton label="Play again" icon="replay" onPress={onPlayAgain} chevron />

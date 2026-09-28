@@ -5,6 +5,7 @@ import { BigButton } from './BigButton';
 import { NumberedRow } from './FactGrid';
 import { GameArt } from './GameArt';
 import { Icon, type IconName } from './Icon';
+import { QuoteContext } from './GameStage';
 import { nextShortQuote } from './quotes';
 import { Rule } from './Rule';
 import { Screen } from './Screen';
@@ -179,11 +180,7 @@ export function GameFrame({
       <Rule weight="major" />
 
       <View style={styles.body}>
-        <Text style={[type.meta, styles.quote]} numberOfLines={2} accessibilityLabel={`${quote.text} ${quote.who}.`}>
-          {`“${quote.text}” `}
-          <Text style={styles.quoteWho}>{`— ${quote.who}`}</Text>
-        </Text>
-        {children}
+        <QuoteContext.Provider value={quote}>{children}</QuoteContext.Provider>
       </View>
 
       {help && open && session ? (
@@ -290,9 +287,7 @@ const styles = StyleSheet.create({
   nearly: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   track: { height: 10, backgroundColor: palette.surface, borderTopWidth: rule.hair, borderTopColor: palette.border },
   fill: { height: '100%', backgroundColor: palette.ink },
-  body: { flex: 1, paddingHorizontal: gutter, paddingTop: space.sm },
-  quote: { textAlign: 'right', color: palette.inkSoft, marginBottom: space.xs },
-  quoteWho: { color: palette.ink },
+  body: { flex: 1, paddingHorizontal: gutter, paddingTop: space.md },
   sheet: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: palette.bg },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', paddingLeft: gutter },
   sheetTitle: { flex: 1, gap: space.xs, paddingVertical: space.md },

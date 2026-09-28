@@ -18,9 +18,107 @@ export type Quote = {
   readonly text: string;
   readonly who: string;
   readonly sport: string;
+  /** Who they are, in a few words: why their words are worth a listen. */
+  readonly about: string;
 };
 
-const q = (text: string, who: string, sport: string): Quote => ({ text, who, sport });
+/**
+ * One line on each person, shown after their name: what they did, with the
+ * years where they matter. Facts only, the kind any encyclopedia agrees on.
+ */
+export const ABOUT: Readonly<Record<string, string>> = {
+  'Michael Jordan': '6-time NBA champion (1991–93, 1996–98)',
+  'John Wooden': 'UCLA coach, 10 college titles in 12 years (1964–75)',
+  'Kareem Abdul-Jabbar': '6-time NBA champion and 6-time MVP',
+  'Larry Bird': '3-time NBA champion with Boston (1981, 1984, 1986)',
+  'Magic Johnson': '5-time NBA champion with the Lakers in the 1980s',
+  'Bill Russell': '11-time NBA champion with Boston (1957–69)',
+  'LeBron James': '4-time NBA champion (2012, 2013, 2016, 2020)',
+  'Stephen Curry': '4-time NBA champion with Golden State',
+  'Kevin Garnett': 'NBA champion with Boston (2008)',
+  'Phil Jackson': 'won 11 NBA titles as a coach',
+  'Pat Riley': 'won 5 NBA titles as a coach',
+  'Tim Notke': 'high school basketball coach in Texas',
+  'Jerry West': 'NBA champion (1972), the player on the NBA logo',
+  'Mike Krzyzewski': 'Duke coach, 5 college titles',
+  'Jim Valvano': 'coached NC State to the 1983 college title',
+  'Arthur Ashe': 'Wimbledon champion (1975), the first Black man to win it',
+  'Billie Jean King': '39 Grand Slam titles; led the fight for equal prize money',
+  'Serena Williams': '23 Grand Slam singles titles',
+  'Venus Williams': '7 Grand Slam singles titles, 5 of them at Wimbledon',
+  'Roger Federer': '20 Grand Slam titles, 8 of them at Wimbledon',
+  'Rafael Nadal': '22 Grand Slam titles, 14 of them at the French Open',
+  'Martina Navratilova': '18 Grand Slam singles titles, 9 at Wimbledon',
+  'Chris Evert': '18 Grand Slam singles titles',
+  'Björn Borg': 'won Wimbledon 5 years running (1976–80)',
+  'Althea Gibson': 'first Black player to win a Grand Slam title (1956)',
+  'Stan Smith': 'Wimbledon champion (1972)',
+  'Jesse Owens': '4 Olympic golds at Berlin in 1936',
+  'Wilma Rudolph': '3 Olympic golds in 1960, after childhood polio',
+  'Carl Lewis': '9 Olympic golds (1984–96)',
+  'Jackie Joyner-Kersee': '3 Olympic golds; one of the great heptathletes',
+  'Emil Zátopek': 'won the 5,000m, 10,000m and marathon at the 1952 Olympics',
+  'Eliud Kipchoge': '2 Olympic marathon golds; first to run a marathon in under 2 hours',
+  'Michael Johnson': '4 Olympic golds; won the 200m and 400m in 1996',
+  'Roger Bannister': 'first to run a mile in under four minutes (1954)',
+  'Kathrine Switzer': 'first woman to run the Boston Marathon with a race number (1967)',
+  'Dean Karnazes': 'ran 50 marathons in 50 US states in 50 days (2006)',
+  'John Bingham': 'running writer known as “The Penguin”',
+  'Michael Phelps': '28 Olympic medals, 23 of them gold',
+  'Diana Nyad': 'swam from Cuba to Florida at 64 (2013)',
+  'Duke Kahanamoku': 'Olympic swimming champion (1912, 1920) who made surfing famous',
+  'Bethany Hamilton': 'pro surfer who came back after losing her arm at 13',
+  'Simone Biles': 'the most decorated gymnast of all time',
+  'Nadia Comăneci': 'first perfect 10 at the Olympics, aged 14 (1976)',
+  'Scott Hamilton': 'Olympic figure skating champion (1984)',
+  'Peggy Fleming': 'Olympic figure skating champion (1968)',
+  Pelé: 'won 3 World Cups with Brazil (1958, 1962, 1970)',
+  'Mia Hamm': '2 World Cups and 2 Olympic golds with the USA',
+  'Abby Wambach': 'World Cup winner (2015); 184 goals for the USA',
+  'Johan Cruyff': '3-time Ballon d’Or winner; the face of “Total Football”',
+  'David Beckham': 'England captain; 6 Premier League titles with Manchester United',
+  'Virat Kohli': 'won the Cricket World Cup with India (2011)',
+  'Mary Kom': '6-time world boxing champion; Olympic bronze (2012)',
+  'Babe Ruth': '7-time World Series champion; 714 home runs',
+  'Jackie Robinson': 'broke Major League Baseball’s colour line in 1947',
+  'Yogi Berra': 'won 10 World Series with the Yankees',
+  'Lou Gehrig': 'played 2,130 games in a row for the Yankees',
+  'Hank Aaron': '755 career home runs',
+  'Roberto Clemente': '3,000 hits; first Latin American in baseball’s Hall of Fame',
+  'Tommy Lasorda': 'managed the Dodgers to 2 World Series titles (1981, 1988)',
+  'Ted Williams': 'last player to hit .400 in a season (1941)',
+  'Derek Jeter': '5 World Series titles with the Yankees',
+  'Satchel Paige': 'pitched in the major leagues at 59',
+  'Willie Mays': '660 home runs, and “The Catch” (1954)',
+  'Ernie Banks': '“Mr. Cub”, 512 home runs',
+  'Nolan Ryan': '7 no-hitters and 5,714 strikeouts',
+  'Vince Lombardi': 'won the first two Super Bowls; the trophy bears his name',
+  'Tom Landry': 'coached the Dallas Cowboys for 29 seasons, 2 Super Bowls',
+  'Lou Holtz': 'coached Notre Dame to the 1988 national title',
+  'Knute Rockne': 'legendary Notre Dame coach of the 1920s',
+  'Jerry Rice': '3 Super Bowls; most touchdown catches in NFL history',
+  'Paul “Bear” Bryant': '6 national titles as Alabama’s coach',
+  'Joe Namath': 'won Super Bowl III (1969) after promising he would',
+  'Wayne Gretzky': '“The Great One”, 4 Stanley Cups',
+  'Herb Brooks': 'coached the USA’s “Miracle on Ice” team (1980)',
+  'Gary Player': '9 major championships',
+  'Arnold Palmer': '7 major championships',
+  'Jack Nicklaus': '18 major championships',
+  'Ben Hogan': '9 major championships',
+  'Bobby Jones': 'won golf’s Grand Slam in 1930; co-founded the Masters',
+  'Walter Hagen': '11 major championships',
+  'Muhammad Ali': '3-time world heavyweight champion; Olympic gold (1960)',
+  'Jack Dempsey': 'world heavyweight champion (1919–26)',
+  'Dan Gable': 'won Olympic wrestling gold (1972) without giving up a point',
+  'Bruce Lee': 'martial artist and film star',
+  'Jigoro Kano': 'founded judo (1882)',
+  'Edmund Hillary': 'first to the top of Everest, with Tenzing Norgay (1953)',
+  'George Mallory': 'Everest pioneer of the 1920s',
+  'Greg LeMond': '3-time Tour de France winner (1986, 1989, 1990)',
+  'Pierre de Coubertin': 'founded the modern Olympic Games (1896)',
+};
+
+const q = (text: string, who: string, sport: string): Quote => ({ text, who, sport, about: ABOUT[who] ?? sport });
 
 export const QUOTES: readonly Quote[] = [
   // Basketball
@@ -374,8 +472,8 @@ export const QUOTES: readonly Quote[] = [
   ),
 ];
 
-/** Short enough for the one line at the top of a game, with its name. */
-export const SHORT_QUOTES: readonly Quote[] = QUOTES.filter((quote) => quote.text.length + quote.who.length <= 78);
+/** Short enough for the line at the top of a game, with who said it. */
+export const SHORT_QUOTES: readonly Quote[] = QUOTES.filter((quote) => quote.text.length + quote.who.length + quote.about.length <= 120);
 
 /** Round by round through a list, starting somewhere new each time the app
  *  opens, so the same one never comes twice running. */

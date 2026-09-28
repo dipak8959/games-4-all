@@ -6,7 +6,7 @@ import { GameFrame, useGamePaused } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { palette, rule } from '../../theme/tokens';
+import { hitTarget, palette, rule } from '../../theme/tokens';
 import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, type GameScreenProps } from '../types';
@@ -83,6 +83,8 @@ export function NumberBubblesScreen({ level: initialLevel, onRoundComplete, onEx
 
   const k = Math.min(stage.width / FIELD_WIDTH, stage.height / FIELD_HEIGHT);
   const offsetX = (stage.width - FIELD_WIDTH * k) / 2;
+  // Never smaller than a finger, however small the phone.
+  const size = Math.max(hitTarget, BUBBLE * 2 * k);
   const picked = state.picked.map((id) => state.bubbles.find((b) => b.id === id)?.value ?? 0);
   const sofar = picked.length
     ? `${picked.join(` ${SIGN[state.kind]} `)} ${SIGN[state.kind]} ?`
@@ -120,10 +122,10 @@ export function NumberBubblesScreen({ level: initialLevel, onRoundComplete, onEx
                   onPressIn={() => onTap(b.id)}
                   style={[
                     on ? styles.bubblePicked : styles.bubble,
-                    { left: (at.x - BUBBLE) * k, top: (at.y - BUBBLE) * k, width: BUBBLE * 2 * k, height: BUBBLE * 2 * k, borderRadius: BUBBLE * k },
+                    { left: at.x * k - size / 2, top: at.y * k - size / 2, width: size, height: size, borderRadius: size / 2 },
                   ]}
                 >
-                  <Text allowFontScaling={false} style={[styles.number, { fontSize: BUBBLE * 0.8 * k }, on && styles.numberPicked]}>
+                  <Text allowFontScaling={false} style={[styles.number, { fontSize: size * 0.4 }, on && styles.numberPicked]}>
                     {b.value}
                   </Text>
                 </Pressable>

@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { font, gutter, hitTarget, palette, rule, space } from '../theme/tokens';
 import { fonts, type } from '../theme/type';
+import type { Quote } from './quotes';
 
 /**
  * The parts every game is built from.
@@ -38,18 +39,31 @@ export function StageLabel({
   readonly children: React.ReactNode;
   readonly live?: boolean;
 }) {
+  const quote = useContext(QuoteContext);
   return (
     <View style={styles.label}>
       <Text
-        style={type.mono}
+        style={[type.mono, styles.labelText]}
         accessibilityRole="header"
         accessibilityLiveRegion={live ? 'polite' : 'none'}
       >
         {children}
       </Text>
+      {/* The round's quote shares the line, on the right. Where the line
+          is too narrow for both, it wraps under, still on the right. */}
+      {quote ? (
+        <Text style={[type.meta, styles.quote]} numberOfLines={3} accessibilityLabel={`${quote.text} ${quote.who}, ${quote.about}.`}>
+          {`“${quote.text}” `}
+          <Text style={styles.quoteWho}>{`— ${quote.who}`}</Text>
+          {`, ${quote.about}`}
+        </Text>
+      ) : null}
     </View>
   );
 }
+
+/** The quote a game's frame has picked for this round, for its label's line. */
+export const QuoteContext = createContext<Quote | null>(null);
 
 /**
  * The band a game's prompt sits in.
@@ -234,7 +248,18 @@ export function HoldButton({
 }
 
 const styles = StyleSheet.create({
-  label: { paddingBottom: space.sm },
+  label: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    columnGap: space.lg,
+    rowGap: space.xs,
+    paddingBottom: space.sm,
+  },
+  labelText: { flexShrink: 1 },
+  quote: { flexGrow: 1, flexShrink: 1, textAlign: 'right', color: palette.inkSoft },
+  quoteWho: { color: palette.ink },
   // Out to the screen's edges and padded back in, so a grid that borrows
   // the gutters (see `fitTiles`) isn't clipped by the scroll view.
   scroll: { flex: 1, marginHorizontal: -gutter },

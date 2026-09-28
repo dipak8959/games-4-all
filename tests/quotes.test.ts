@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { QUOTES, SHORT_QUOTES, nextQuote, nextShortQuote } from '../src/components/quotes.ts';
+import { ABOUT, QUOTES, SHORT_QUOTES, nextQuote, nextShortQuote } from '../src/components/quotes.ts';
 
 /** Never in a quote a child reads between rounds. */
 const NEVER = [
@@ -26,15 +26,25 @@ test('there are plenty of quotes, each short enough, attributed, and listed once
 test('nothing in a quote a parent would wince at, and no one left out on purpose', () => {
   for (const q of QUOTES) {
     for (const word of NEVER) {
-      assert.doesNotMatch(q.text, new RegExp(`\\b${word}\\b`, 'i'), `"${word}" in: ${q.text}`);
+      for (const line of [q.text, q.about]) {
+        assert.doesNotMatch(line, new RegExp(`\\b${word}\\b`, 'i'), `"${word}" in: ${line}`);
+      }
     }
     assert.ok(!LEFT_OUT.includes(q.who), `${q.who} is left out on purpose`);
   }
 });
 
+test('everyone quoted has a line on who they are, short enough to follow their name', () => {
+  for (const q of QUOTES) {
+    assert.ok(ABOUT[q.who], `nothing on who ${q.who} is`);
+    assert.equal(q.about, ABOUT[q.who]);
+    assert.ok(q.about.length <= 70, `too long: ${q.about}`);
+  }
+});
+
 test('enough short ones for the line at the top of a game', () => {
   assert.ok(SHORT_QUOTES.length >= 60, `${SHORT_QUOTES.length} short quotes`);
-  for (const q of SHORT_QUOTES) assert.ok(q.text.length + q.who.length <= 78);
+  for (const q of SHORT_QUOTES) assert.ok(q.text.length + q.who.length + q.about.length <= 120);
 });
 
 test('the same quote never comes twice running', () => {

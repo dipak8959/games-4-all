@@ -1,18 +1,20 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { AnswerButton, AnswerRow, GameStage, StageLabel } from '../../components/GameStage';
 import { GameFrame } from '../../components/GameFrame';
 import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
-import { palette, rule, space } from '../../theme/tokens';
+import { gutter, palette, rule } from '../../theme/tokens';
 import { systemRng } from '../../util/random';
 import { Shape as ShapeMark } from '../shapes/Shape';
 import { nextLevel, starsForMistakes, type GameScreenProps } from '../types';
 import { SHOWN, STRINGS, choose, createGame, same, stringNow, type Bead, type BeadPatternState } from './logic';
 
+/** A bead's size, unless the whole string needs them smaller to stay on one line. */
 const BEAD = 30;
+const SLOT_ROOM = 6;
 const name = (b: Bead) => `${b.color === 'sun' ? 'yellow' : b.color === 'berry' ? 'red' : b.color === 'sky' ? 'blue' : b.color === 'leaf' ? 'green' : 'purple'} ${b.shape}`;
 
 export function BeadPatternScreen({ level: initialLevel, onRoundComplete, onExit }: GameScreenProps) {
@@ -40,6 +42,10 @@ export function BeadPatternScreen({ level: initialLevel, onRoundComplete, onExit
 
   const str = stringNow(state);
   const on = SHOWN + state.threaded;
+  // The string stays on one line: a gap that wrapped underneath would no
+  // longer read as the next bead.
+  const across = useWindowDimensions().width - gutter * 2;
+  const bead = Math.min(BEAD, Math.floor(across / str.beads.length) - SLOT_ROOM);
   const stars = starsForMistakes(state.mistakes);
 
   return (
@@ -54,8 +60,8 @@ export function BeadPatternScreen({ level: initialLevel, onRoundComplete, onExit
         >
           <View style={styles.thread} />
           {str.beads.map((b, i) => (
-            <View key={i} style={[styles.slot, i >= on && styles.bare]}>
-              {i < on ? <ShapeMark shape={b.shape} color={b.color} size={BEAD} /> : null}
+            <View key={i} style={[styles.slot, { width: bead + SLOT_ROOM, height: bead + SLOT_ROOM }, i >= on && styles.bare]}>
+              {i < on ? <ShapeMark shape={b.shape} color={b.color} size={bead} /> : null}
             </View>
           ))}
         </View>
@@ -93,8 +99,8 @@ export function BeadPatternScreen({ level: initialLevel, onRoundComplete, onExit
 }
 
 const styles = StyleSheet.create({
-  string: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', rowGap: space.md },
+  string: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   thread: { position: 'absolute', left: 0, right: 0, top: '50%', height: rule.major, backgroundColor: palette.inkSoft },
-  slot: { width: BEAD + 6, height: BEAD + 6, alignItems: 'center', justifyContent: 'center' },
+  slot: { alignItems: 'center', justifyContent: 'center' },
   bare: { borderWidth: rule.major, borderColor: palette.inkSoft, borderStyle: 'dashed', backgroundColor: palette.bg },
 });

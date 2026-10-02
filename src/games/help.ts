@@ -207,9 +207,10 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     grows: 'A bigger grid, with bends, T-pieces and crossings.',
   },
   bouncebricks: {
-    goal: 'Knock down the wall of bricks with the ball. You have five balls.',
+    goal: 'Knock down the wall of bricks in five serves.',
     steps: [
-      'Tap to send the ball up. Slide your finger to move the paddle.',
+      'Tap to serve the ball. Slide your finger to move the paddle.',
+      'A ball that gets past the paddle just means the next serve, up to five.',
       'Get the paddle under the ball to bounce it back up. Every brick it hits breaks.',
       'Where the ball lands on the paddle sets where it goes: the middle sends it straight up, the ends send it off to the side.',
     ],

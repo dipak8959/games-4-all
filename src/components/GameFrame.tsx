@@ -144,7 +144,18 @@ export function GameFrame({
           </Text>
         </View>
 
-        {minutesLeft != null ? (
+        {verdict.kind !== 'ok' ? (
+          // The limit has come mid-round: this round finishes, then the stop.
+          <View
+            style={styles.nearly}
+            accessible
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={`Last round, then ${verdict.kind === 'daily-over' ? "that's all for today" : 'a break'}`}
+          >
+            <Icon name="clock" size={16} color={palette.ink} />
+            <Text style={type.monoStrong}>LAST ROUND</Text>
+          </View>
+        ) : minutesLeft != null ? (
           <View
             style={styles.nearly}
             accessible

@@ -17,6 +17,9 @@ export type UsageState = {
   readonly playedTodayMs: number;
   /** Milliseconds played in the current unbroken sitting. */
   readonly sessionMs: number;
+  /** When play time last accrued (epoch ms), so a break can be measured.
+   *  Missing on usage saved before breaks were. */
+  readonly lastPlayedAt?: number;
 };
 
 export type ScreenTimeLimits = {
@@ -31,6 +34,16 @@ export type LimitVerdict =
   | { readonly kind: 'daily-over' };
 
 export const MINUTE_MS = 60 * 1000;
+
+/**
+ * How long away from play ends a sitting. Putting the app away for a moment
+ * is not a break — otherwise a sitting limit is one swipe from undone — but
+ * ten minutes doing something else is, wherever they were spent.
+ */
+export const BREAK_MS = 10 * MINUTE_MS;
+
+/** A limit reached mid-round lets that round finish, for at most this long. */
+export const LAST_ROUND_MS = 3 * MINUTE_MS;
 
 /** Choices offered in Parent Zone, in minutes. `null` means unlimited. */
 export const LIMIT_CHOICES_MIN: readonly (number | null)[] = [10, 15, 20, 30, 45, 60, null];
@@ -65,20 +78,38 @@ export function accrue(usage: UsageState, elapsedMs: number, now: Date): UsageSt
   const safeElapsed = Math.min(Math.max(elapsedMs, 0), 5 * MINUTE_MS);
   const today = dayKey(now);
 
+  const lastPlayedAt = now.getTime();
   if (today !== usage.day) {
-    return { day: today, playedTodayMs: safeElapsed, sessionMs: usage.sessionMs + safeElapsed };
+    return { day: today, playedTodayMs: safeElapsed, sessionMs: usage.sessionMs + safeElapsed, lastPlayedAt };
   }
 
   return {
     day: today,
     playedTodayMs: usage.playedTodayMs + safeElapsed,
     sessionMs: usage.sessionMs + safeElapsed,
+    lastPlayedAt,
   };
 }
 
-/** Called when the child stops playing (leaves a game, backgrounds the app). */
+/** Ends the sitting outright. */
 export function endSession(usage: UsageState): UsageState {
   return { ...usage, sessionMs: 0 };
+}
+
+/** How much of the break is still to go: 0 once the sitting is over. */
+export function breakLeftMs(usage: UsageState, now: Date): number {
+  if (usage.sessionMs === 0 || usage.lastPlayedAt == null) return 0;
+  // A clock set back can't stretch a break out for ever.
+  const away = Math.max(0, now.getTime() - usage.lastPlayedAt);
+  return Math.max(0, BREAK_MS - away);
+}
+
+/** Ends the sitting if the child has been away from play for a real break. */
+export function afterBreak(usage: UsageState, now: Date): UsageState {
+  // A clock set back: the break counts from now, not from a moment that
+  // hasn't come yet.
+  if (usage.lastPlayedAt != null && usage.lastPlayedAt > now.getTime()) return { ...usage, lastPlayedAt: now.getTime() };
+  return usage.sessionMs > 0 && breakLeftMs(usage, now) === 0 ? endSession(usage) : usage;
 }
 
 /** Drops stale totals when the app opens on a new day. */

@@ -3,13 +3,16 @@
  *
  * The page runs on a clock this pass controls, so ten minutes of play take a
  * moment. A sitting is one sitting however many games it spans; the game
- * says when two minutes are left; the stop screen stays up until a grown-up
- * changes the limit; and a day's allowance comes back at midnight even if
- * the app was left open on the stop screen.
+ * says when two minutes are left; a limit reached mid-round lets that round
+ * finish, for three minutes at most; the break screen survives the app put
+ * away or reopened and clears itself after a ten-minute break; and a day's
+ * allowance comes back at midnight even if the app was left open on the
+ * stop screen.
  *
  * See harness.mjs for how to run this.
  */
 import { openApp, openGame, passParentGate, reporter, summarise } from './harness.mjs';
+import { PLAYERS } from './players.mjs';
 
 const report = reporter();
 const { browser, page, errors } = await openApp({ clockAt: new Date('2026-09-26T17:00:00') });
@@ -49,15 +52,57 @@ await page.waitForTimeout(400);
 await openGame(page, 'How Many?');
 await play(2.5);
 await page.waitForTimeout(400);
-if (await onBreak()) report.ok('break time after 11 minutes across two games');
-else report.bug('sitting', 'no break after 11 minutes across two games — going Home restarted the sitting');
 
-console.log('\n=== the stop screen stays ===');
+console.log('\n=== the last round finishes ===');
+// The limit came mid-round: that round goes on, and says it's the last.
+if (await onBreak()) report.bug('sitting', 'the round was snatched away the moment the limit came, or going Home restarted the sitting');
+else if (await page.getByLabel('Last round, then a break').count()) report.ok('the limit came mid-round: "LAST ROUND", and the round goes on');
+else report.bug('sitting', 'no "LAST ROUND" in the header once the limit came mid-round');
+await PLAYERS['How Many?'](page, report);
+await page.waitForTimeout(600);
+await page.getByLabel('Play again').click();
+await page.waitForTimeout(600);
+if (await onBreak()) report.ok('after the last round, "Play again" goes to the break, not another round');
+else report.bug('sitting', 'another round started after the last one');
+
+console.log('\n=== the break holds ===');
 await play(1);
 await page.waitForTimeout(800);
-if (!(await onBreak())) report.bug('sitting', 'the break screen went away on its own');
+if (!(await onBreak())) report.bug('sitting', 'the break screen went away after a minute');
 else if (await page.getByLabel('Back to games').count()) report.bug('sitting', 'a game is still reachable from the break screen');
-else report.ok('the break screen stays up, with only the grown-ups’ door on it');
+else if (!(await page.getByText(/^BACK TO PLAY IN \d+ MIN$/).count())) report.bug('sitting', 'the break screen does not say how long the break is');
+else report.ok('the break screen stays, says how long is left, and has only the grown-ups’ door');
+// Away and straight back is not a break.
+const visibility = (state) =>
+  page.evaluate((state) => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state });
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => state === 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, state);
+await visibility('hidden');
+await page.waitForTimeout(300);
+await visibility('visible');
+await page.waitForTimeout(800);
+if (await onBreak()) report.ok('putting the app away and straight back does not end the break');
+else report.bug('sitting', 'putting the app away for a moment ended the break');
+await page.reload();
+await page.waitForTimeout(2500);
+if (await onBreak()) report.ok('nor does closing and reopening the app');
+else report.bug('sitting', 'reopening the app ended the break');
+await play(10);
+await page.waitForTimeout(800);
+if (await atHome()) report.ok('ten minutes on, the break is over by itself: back to the games');
+else report.bug('sitting', 'still on the break screen after a ten-minute break');
+
+console.log('\n=== a last round has an end ===');
+await openGame(page, 'Sort It Out');
+await play(11);
+await page.waitForTimeout(400);
+if (await onBreak()) report.bug('sitting', 'no last round at the limit, the second time');
+await play(3);
+await page.waitForTimeout(800);
+if (await onBreak()) report.ok('a last round left unfinished still stops after three minutes');
+else report.bug('sitting', 'a last round ran on past three minutes');
 
 console.log('\n=== a grown-up lifts it ===');
 await setLimit('sitting', 'No limit');
@@ -65,12 +110,21 @@ if (await atHome()) report.ok('lifting the limit goes straight back to the games
 else report.bug('sitting', 'still stopped after a grown-up lifted the limit');
 
 console.log('\n=== a day, and midnight ===');
-await setLimit('day', '15 minutes');
+// The day has had nearly half an hour of play already: an hour's limit,
+// played up to a minute at a time.
+await setLimit('day', '60 minutes');
 await openGame(page, 'Sort It Out');
-await play(16);
+const lastOfDay = page.getByLabel("Last round, then that's all for today");
+for (let m = 0; m < 45 && !(await lastOfDay.count()) && !(await doneForToday()); m += 1) {
+  await play(1);
+  await page.waitForTimeout(150);
+}
+if (await lastOfDay.count()) report.ok('the day\'s limit came mid-round: "LAST ROUND"');
+else report.bug('daily', 'no last round when the day\'s limit came mid-round');
+await play(3);
 await page.waitForTimeout(400);
-if (await doneForToday()) report.ok('done for today after 16 of 15 minutes');
-else report.bug('daily', 'no stop after 16 of 15 minutes');
+if (await doneForToday()) report.ok('done for today once the last round ran out');
+else report.bug('daily', 'no stop three minutes after the day\'s limit');
 await play(8 * 60);
 await page.waitForTimeout(800);
 if (await doneForToday()) report.bug('daily', 'still "done for today" the next morning, with the app left open');

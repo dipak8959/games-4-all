@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, type GestureResponderEvent } from 'react-native';
+import { StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
 
 import { StageLabel } from '../../components/GameStage';
 import { GameFrame, useGamePaused } from '../../components/GameFrame';
@@ -7,6 +7,7 @@ import { RoundComplete } from '../../components/RoundComplete';
 import { correct, nudge, tap } from '../../feedback/feedback';
 import { useApp } from '../../state/AppProvider';
 import { palette, playPalette, rule } from '../../theme/tokens';
+import { fonts } from '../../theme/type';
 import { systemRng } from '../../util/random';
 import { nextLevel, type GameScreenProps } from '../types';
 import {
@@ -94,9 +95,10 @@ export function BounceBricksScreen({ level: initialLevel, onRoundComplete, onExi
   const stars = starsForWall(state);
   const progress = (state.total - state.bricks.length) / state.total;
 
+  const serveNo = Math.min(BALLS_PER_ROUND, BALLS_PER_ROUND - state.ballsLeft + 1);
   return (
     <GameFrame title="Bounce Bricks" icon="bricks" onExit={onExit} progress={progress}>
-      <StageLabel live>{state.resting ? 'TAP TO SERVE, SLIDE TO MOVE' : 'KEEP THE BALL UP'}</StageLabel>
+      <StageLabel live>{state.resting ? `SERVE ${serveNo} OF ${BALLS_PER_ROUND} · TAP TO SERVE, SLIDE TO MOVE` : 'KEEP THE BALL UP'}</StageLabel>
 
       <View
         style={styles.stage}
@@ -107,7 +109,7 @@ export function BounceBricksScreen({ level: initialLevel, onRoundComplete, onExi
         onResponderMove={follow}
         accessible
         accessibilityRole="adjustable"
-        accessibilityLabel={`Paddle. ${state.bricks.length} bricks left, ${state.ballsLeft} of ${BALLS_PER_ROUND} balls to go.`}
+        accessibilityLabel={`Paddle. ${state.bricks.length} bricks left. Serve ${serveNo} of ${BALLS_PER_ROUND}.`}
         testID="field"
       >
         {k > 0 ? (
@@ -151,15 +153,11 @@ export function BounceBricksScreen({ level: initialLevel, onRoundComplete, onExi
               ]}
             />
 
-            {/* Balls still to play, as dots under the paddle. */}
-            <View style={[styles.balls, { top: (PADDLE_Y + 22) * k }]}>
-              {Array.from({ length: state.ballsLeft }, (_, i) => (
-                <View
-                  key={i}
-                  style={{ width: 10 * k, height: 10 * k, borderRadius: 5 * k, backgroundColor: palette.inkSoft }}
-                />
-              ))}
-            </View>
+            {/* Which serve this is, counting up like any round's progress —
+                not balls draining away, which would read as lives. */}
+            <Text allowFontScaling={false} style={[styles.serve, { top: (PADDLE_Y + 20) * k, fontSize: 11 * k }]}>
+              {`SERVE ${serveNo} OF ${BALLS_PER_ROUND}`}
+            </Text>
           </View>
         ) : null}
       </View>
@@ -198,5 +196,5 @@ const styles = StyleSheet.create({
   stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: palette.ink },
   paddle: { position: 'absolute', backgroundColor: palette.ink },
   ball: { position: 'absolute', backgroundColor: palette.accent },
-  balls: { position: 'absolute', left: 8, flexDirection: 'row', gap: 6 },
+  serve: { position: 'absolute', left: 8, fontFamily: fonts.heavy, color: palette.inkSoft, letterSpacing: 1 },
 });

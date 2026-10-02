@@ -13,6 +13,7 @@ import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { ParentZoneScreen } from './src/screens/ParentZoneScreen';
 import { PlayTimeScreen } from './src/screens/PlayTimeScreen';
 import { ProfilesScreen } from './src/screens/ProfilesScreen';
+import { BREAK_MS, LAST_ROUND_MS } from './src/safety/screenTime';
 import { TimeUpScreen } from './src/screens/TimeUpScreen';
 import { AppProvider, useApp } from './src/state/AppProvider';
 import { palette } from './src/theme/tokens';
@@ -41,6 +42,7 @@ function Root() {
     profiles,
     addProfile,
     verdict,
+    usage,
     finishRound,
     levelForGame,
     startPlaying,
@@ -58,10 +60,16 @@ function Root() {
     else stopPlaying();
   }, [inGame, startPlaying, stopPlaying]);
 
-  // A limit reached mid-game returns the child to the stop screen immediately.
+  // A limit reached mid-round lets that round finish — a game snatched away
+  // mid-move feels like a punishment — but only that round, and for no more
+  // than a few minutes. The stop screen follows the round's card, the way
+  // out, or the time running out; no new game can be opened meanwhile.
+  const lastRound = limitReached && inGame;
   useEffect(() => {
-    if (limitReached && inGame) setRoute({ name: 'home' });
-  }, [limitReached, inGame]);
+    if (!lastRound) return undefined;
+    const t = setTimeout(() => setRoute({ name: 'home' }), LAST_ROUND_MS);
+    return () => clearTimeout(t);
+  }, [lastRound]);
 
   // Android's back button and back gesture: one step back to Home, the way
   // every screen's own Back does — never straight out of the app from the
@@ -82,8 +90,12 @@ function Root() {
   const openProfiles = useCallback(() => setGateTarget('profiles'), []);
 
   const onRoundComplete = useCallback(
-    (gameId: string, result: RoundResult) => finishRound(gameId, result),
-    [finishRound],
+    (gameId: string, result: RoundResult) => {
+      finishRound(gameId, result);
+      // That was the last round: on to the break, not another.
+      if (limitReached) setRoute({ name: 'home' });
+    },
+    [finishRound, limitReached],
   );
 
   if (!ready) {
@@ -152,13 +164,14 @@ function Root() {
     );
   }
 
-  // The stop screen outranks everything except Parent Zone: a child cannot
-  // navigate around a reached limit.
-  if (limitReached) {
+  // The stop screen outranks everything except Parent Zone and a last round
+  // being finished: a child cannot navigate around a reached limit.
+  if (limitReached && !lastRound) {
     return (
       <>
         <TimeUpScreen
           kind={verdict.kind === 'daily-over' ? 'daily-over' : 'session-over'}
+          breakEndsAt={usage.lastPlayedAt == null ? null : usage.lastPlayedAt + BREAK_MS}
           onOpenParentZone={openParentZone}
         />
         {gate}

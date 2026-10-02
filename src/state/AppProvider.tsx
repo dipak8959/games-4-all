@@ -14,7 +14,7 @@ import {
   accrue,
   dayKey,
   emptyUsage,
-  endSession,
+  afterBreak,
   evaluate,
   rolloverIfNeeded,
   type LimitVerdict,
@@ -157,10 +157,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setProfilesState(loadedProfiles);
       setSettingsById(loadedSettings);
       setProgressById(loadedProgress);
-      // A fresh launch is always a fresh sitting, for every profile.
+      // A relaunch is a fresh sitting only after a real break: closing and
+      // reopening the app is not one.
       const freshSessionUsage: Record<string, UsageState> = {};
       for (const [id, u] of Object.entries(loadedUsage)) {
-        freshSessionUsage[id] = endSession(rolloverIfNeeded(u, new Date()));
+        freshSessionUsage[id] = afterBreak(rolloverIfNeeded(u, new Date()), new Date());
       }
       setUsageById(freshSessionUsage);
       setFreshnessById(loadedFreshness);
@@ -214,12 +215,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         lastTickRef.current = Date.now();
         // Left open past midnight, on Home or on the stop screen: the new
         // day's allowance starts without waiting for the app to be reopened.
+        // And a break, once long enough, ends the sitting where it's taken.
         const idle = activeIdRef.current;
         if (idle) {
           setUsageById((prev) => {
             const current = prev[idle];
-            if (!current || current.day === dayKey(new Date())) return prev;
-            const merged = { ...prev, [idle]: rolloverIfNeeded(current, new Date()) };
+            if (!current) return prev;
+            const next = afterBreak(rolloverIfNeeded(current, new Date()), new Date());
+            if (next === current) return prev;
+            const merged = { ...prev, [idle]: next };
             void writeJson(StorageKeys.usage, merged);
             return merged;
           });
@@ -240,21 +244,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(id);
   }, []);
 
-  // Backgrounding ends the sitting: time spent in another app is not play
-  // time, and coming back should not resume a half-spent session limit
-  // mid-stride.
+  // Backgrounding stops the clock: time spent in another app is not play
+  // time. It doesn't end the sitting — a swipe away and back is not a break —
+  // but coming back after a real one starts a new sitting.
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
       const id = activeIdRef.current;
       if (state === 'active') {
         lastTickRef.current = Date.now();
         if (id) {
-          setUsageById((prev) => ({ ...prev, [id]: rolloverIfNeeded(prev[id] ?? emptyUsage(new Date()), new Date()) }));
+          setUsageById((prev) => ({ ...prev, [id]: afterBreak(rolloverIfNeeded(prev[id] ?? emptyUsage(new Date()), new Date()), new Date()) }));
         }
         return;
       }
+      if (playingRef.current && id) {
+        const now = Date.now();
+        const elapsed = now - lastTickRef.current;
+        persistUsage(id, (u) => accrue(u, elapsed, new Date(now)));
+        lastTickRef.current = now;
+      }
       playingRef.current = false;
-      if (id) persistUsage(id, endSession);
     });
     return () => sub.remove();
   }, [persistUsage]);
@@ -373,13 +382,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const switchActiveProfile = useCallback(
     (id: string) => {
-      // Switching away from a profile mid-sitting ends that sitting, the same
-      // way backgrounding the app does — a new active profile always starts
-      // its own fresh session, never inherits one in progress.
+      // Each profile has its own sitting: switching away stops the outgoing
+      // one's clock, and the incoming one picks up its own — a new sitting
+      // if it has had a real break since it last played.
       const outgoing = activeIdRef.current;
       if (outgoing && outgoing !== id) {
         playingRef.current = false;
-        persistUsage(outgoing, endSession);
+        persistUsage(id, (u) => afterBreak(rolloverIfNeeded(u, new Date()), new Date()));
       }
       setProfilesState((prev) => {
         const next = switchProfileInState(prev, id);

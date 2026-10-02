@@ -66,7 +66,7 @@ Tower and Duck Crossing are arcade games — formats old enough to belong to eve
 with the parts that make arcade games hard to put down taken out. Nothing
 ends on a bump: the worm stops and waits, a bumpy landing is just a bump, a
 bumped duckling goes back to the grass. A round is a fixed number of turns —
-five balls, ten apples, twenty pals, ten throws, three landings, twelve
+five serves, ten apples, twenty pals, ten throws, three landings, twelve
 blocks, three ducklings — and there is no score or best to chase, only
 stars.
 

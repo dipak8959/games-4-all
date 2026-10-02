@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  BREAK_MS,
   accrue,
+  afterBreak,
+  breakLeftMs,
   dayKey,
   emptyUsage,
   endSession,
@@ -90,4 +93,32 @@ test('formatMinutes reads naturally for parents', () => {
   assert.equal(formatMinutes(90 * 1000), '2 min');
   assert.equal(formatMinutes(60 * MINUTE_MS), '1 hr');
   assert.equal(formatMinutes(95 * MINUTE_MS), '1 hr 35 min');
+});
+
+test('putting the app away for a moment is not a break: the sitting goes on', () => {
+  const played = accrue({ day: '2026-01-01', playedTodayMs: 0, sessionMs: 0 }, 5 * MINUTE_MS, at('2026-01-01T10:00:00'));
+  const back = afterBreak(played, at('2026-01-01T10:03:00'));
+  assert.equal(back.sessionMs, 5 * MINUTE_MS);
+  assert.equal(breakLeftMs(back, at('2026-01-01T10:03:00')), 7 * MINUTE_MS);
+});
+
+test('ten minutes away is a break: a new sitting, the day total kept', () => {
+  const played = accrue({ day: '2026-01-01', playedTodayMs: 0, sessionMs: 0 }, 5 * MINUTE_MS, at('2026-01-01T10:00:00'));
+  const back = afterBreak(played, new Date(at('2026-01-01T10:00:00').getTime() + BREAK_MS));
+  assert.equal(back.sessionMs, 0);
+  assert.equal(back.playedTodayMs, 5 * MINUTE_MS);
+  assert.equal(breakLeftMs(back, at('2026-01-01T10:20:00')), 0);
+});
+
+test('a clock set back restarts the break rather than stretching it', () => {
+  const played = accrue({ day: '2026-01-01', playedTodayMs: 0, sessionMs: 0 }, 5 * MINUTE_MS, at('2026-01-01T10:00:00'));
+  const earlier = at('2026-01-01T09:00:00');
+  const rebased = afterBreak(played, earlier);
+  assert.equal(rebased.sessionMs, 5 * MINUTE_MS);
+  assert.equal(breakLeftMs(rebased, earlier), BREAK_MS);
+  assert.equal(afterBreak(rebased, new Date(earlier.getTime() + BREAK_MS)).sessionMs, 0);
+});
+
+test('usage saved before breaks were measured ends its sitting', () => {
+  assert.equal(afterBreak({ day: '2026-01-01', playedTodayMs: 5, sessionMs: 5 }, at('2026-01-01T10:00:00')).sessionMs, 0);
 });

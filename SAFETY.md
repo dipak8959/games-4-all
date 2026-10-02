@@ -67,15 +67,22 @@ a limit still needs a grown-up.
 Two independent limits, both off by default and both parent-set:
 
 - **Per sitting** — how long one continuous session may run. Moving between
-  games and back to Home is the same sitting; it ends when the app is put
-  away, relaunched, or switched to another profile.
+  games and back to Home is the same sitting, and so is putting the app away
+  or relaunching it: a sitting ends only after a real break, ten minutes
+  without play (`BREAK_MS`), however they were spent. Each profile keeps its
+  own. The break screen says how long is left and clears itself when the
+  break is over.
+- **The last round** — a limit reached mid-round lets that round finish,
+  with "LAST ROUND" in the game's header, then the stop screen follows. It
+  never runs past three minutes (`LAST_ROUND_MS`), and no new game can be
+  opened meanwhile.
 - **Per day** — total play across the calendar day, reset at local midnight,
   including when the app has been left open on the stop screen overnight
 
 Time accrues only while a game is actually on screen and the app is
 foregrounded; menus and Parent Zone are free. Logic lives in
 `src/safety/screenTime.ts` and is unit-tested for the cases that matter:
-midnight rollover, backgrounding, and device clock changes (a clock jump
+midnight rollover, breaks, and device clock changes (a clock jump
 backwards or forwards cannot silently consume or refund the day's allowance).
 
 In the last two minutes before a limit, a game's header shows a small clock
@@ -246,10 +253,11 @@ game where reading is the point rather than something to avoid:
   stops at a wall and waits; Soft Landing's bumpy landing is a bump, and the
   next rocket comes down; a bumped duckling in Duck Crossing goes back to the
   grass and tries again; a block that misses the tower in Tall Tower just
-  falls, and the next one comes. Bounce Bricks' five balls are the round's length,
+  falls, and the next one comes. Bounce Bricks' five serves are the round's length,
   like Hoop Shot's ten throws — a ball that falls is served again when the
   child taps, nothing is taken away, and the stars come from how much of the
-  wall came down.
+  wall came down. The screen counts serves up ("SERVE 2 OF 5"), never balls
+  draining away, so nothing on it reads as lives.
 - **Group games have no winner.** The games for several players on one
   device — Market Memory, Count Around, Star Jar, Maze Team, Echo Beat — are
   co-operative: the group is one team with one goal, a slip is the team's

@@ -103,8 +103,11 @@ const LEVELS: readonly LevelSpec[] = [
   { gravity: 46, safeV: 38, safeH: 28, padW: 96, offset: 0, hills: 0, wind: 0, fuel: 12 },
   { gravity: 52, safeV: 34, safeH: 26, padW: 84, offset: 70, hills: 0, wind: 0, fuel: 12 },
   { gravity: 58, safeV: 31, safeH: 24, padW: 74, offset: 90, hills: 24, wind: 0, fuel: 11 },
-  { gravity: 64, safeV: 28, safeH: 22, padW: 66, offset: 110, hills: 40, wind: 10, fuel: 10 },
-  { gravity: 70, safeV: 25, safeH: 20, padW: 58, offset: 130, hills: 56, wind: 16, fuel: 9 },
+  // A breath of wind, no more: the buttons take one finger at a time, and
+  // holding the engine near the ground lets a stronger wind carry the rocket
+  // off the pad however carefully it's flown.
+  { gravity: 64, safeV: 28, safeH: 22, padW: 66, offset: 110, hills: 40, wind: 2, fuel: 10 },
+  { gravity: 70, safeV: 25, safeH: 20, padW: 58, offset: 130, hills: 56, wind: 3, fuel: 9 },
 ];
 
 export function specForLevel(level: number): LevelSpec {

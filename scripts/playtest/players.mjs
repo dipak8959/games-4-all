@@ -2358,6 +2358,11 @@ export async function playSpaceRocks(page, report) {
         let busy = false;
         let bumps = 0;
         let bumping = false;
+        // Rocks already shot at, by where they'll be: not worth a second shot.
+        let claims = [];
+        // How fast the ship turns, learnt by watching it.
+        let turnRate = (370 * Math.PI) / 180;
+        let lastAngle = null;
         const started = performance.now();
         const frame = async (now) => {
           if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) return resolve(bumps);
@@ -2367,10 +2372,21 @@ export async function playSpaceRocks(page, report) {
           if (text.includes('BUMP!') && !bumping) bumps += 1;
           bumping = text.includes('BUMP!');
           const field = document.querySelector('[data-testid="field"]')?.getBoundingClientRect();
-          const ship = document.querySelector('[data-testid="ship"]')?.getBoundingClientRect();
+          const shipEl = document.querySelector('[data-testid="ship"]');
+          const ship = shipEl?.getBoundingClientRect();
+          // The ship's nose: its turn, from straight up.
+          const m = shipEl ? getComputedStyle(shipEl).transform.match(/matrix\(([^,]+), ([^,]+)/) : null;
+          const facing = m ? Math.atan2(Number(m[2]), Number(m[1])) - Math.PI / 2 : -Math.PI / 2;
+          if (lastAngle) {
+            const d = Math.abs(Math.atan2(Math.sin(facing - lastAngle.a), Math.cos(facing - lastAngle.a)));
+            const dt = (now - lastAngle.t) / 1000;
+            // A frame spent turning all the way through shows the full rate.
+            if (d > 0.05 && dt > 0 && dt < 0.1) turnRate = Math.min(4 * Math.PI, Math.max(turnRate, d / dt));
+          }
+          lastAngle = { a: facing, t: now };
           const rocks = [...document.querySelectorAll('[data-testid^="rock:"]')].map((el) => {
             const b = el.getBoundingClientRect();
-            return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+            return { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 };
           });
           // Each rock's drift, from where the nearest rock was last frame.
           const seen = rocks.map((r) => {
@@ -2379,22 +2395,41 @@ export async function playSpaceRocks(page, report) {
             return { ...r, ...moved, t: now };
           });
           before = seen;
-          if (field && ship && seen.length && now - lastTap > 260 && !text.includes('DRIFTING IN')) {
+          claims = claims.filter((c) => c.until > now);
+          if (field && ship && seen.length && now - lastTap > 200 && !text.includes('DRIFTING IN')) {
             const sx = ship.left + ship.width / 2;
             const sy = ship.top + ship.height / 2;
-            const target = [...seen].sort((a, b) => Math.hypot(a.x - sx, a.y - sy) - Math.hypot(b.x - sx, b.y - sy))[0];
             const k = field.width / 320;
-            const t = Math.hypot(target.x - sx, target.y - sy) / (420 * k) + 0.35;
-            let x = target.x + target.vx * t;
-            let y = target.y + target.vy * t;
-            // Keep the tap on the screen: only the way matters.
-            const dx = x - sx;
-            const dy = y - sy;
-            const fit = Math.min(1, (field.width / 2 - 6) / Math.max(1e-6, Math.abs(dx)), (field.height / 2 - 6) / Math.max(1e-6, Math.abs(dy)));
-            x = sx + dx * fit;
-            y = sy + dy * fit;
-            lastTap = now;
-            await window.__tapAt(x, y);
+            const claimed = (r) =>
+              claims.some((c) => Math.hypot(c.x + c.vx * ((now - c.t) / 1000) - r.x, c.y + c.vy * ((now - c.t) / 1000) - r.y) < 14 * k);
+            // How soon each rock reaches the ship, if it does.
+            const threat = (r) => {
+              for (let t = 0; t < 3; t += 0.04) {
+                if (Math.hypot(r.x + r.vx * t - sx, r.y + r.vy * t - sy) < r.r + 22 * k) return t;
+              }
+              return Infinity;
+            };
+            const open = seen.filter((r) => !claimed(r));
+            const target = open.sort((a, b) => threat(a) - threat(b) || Math.hypot(a.x - sx, a.y - sy) - Math.hypot(b.x - sx, b.y - sy))[0];
+            if (target) {
+              // Lead it: where it'll be once the ship has turned and the
+              // shot has flown.
+              let p = { x: target.x, y: target.y };
+              let t = 0;
+              for (let i = 0; i < 5; i += 1) {
+                const want = Math.atan2(p.y - sy, p.x - sx);
+                const turn = Math.abs(Math.atan2(Math.sin(want - facing), Math.cos(want - facing))) / turnRate;
+                t = turn + Math.hypot(p.x - sx, p.y - sy) / (420 * k) + 0.05;
+                p = { x: target.x + target.vx * t, y: target.y + target.vy * t };
+              }
+              // Keep the tap on the screen: only the way matters.
+              const dx = p.x - sx;
+              const dy = p.y - sy;
+              const fit = Math.min(1, (field.width / 2 - 6) / Math.max(1e-6, Math.abs(dx)), (field.height / 2 - 6) / Math.max(1e-6, Math.abs(dy)));
+              lastTap = now;
+              claims.push({ ...target, t: now, until: now + t * 1000 + 300 });
+              await window.__tapAt(sx + dx * fit, sy + dy * fit);
+            }
           }
           busy = false;
           requestAnimationFrame(frame);

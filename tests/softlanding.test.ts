@@ -34,8 +34,10 @@ function press(s: SoftLandingState, want: Engines): SoftLandingState {
   return next;
 }
 
-/** A careful pilot: over the pad first, high enough to clear the hills,
- *  then down, braking to well under the safe speed near the ground. */
+/** A careful pilot with one finger, as the buttons allow: over the pad
+ *  first, high enough to clear the hills, then down, braking to well under
+ *  the safe speed near the ground — and steering only while the fall has
+ *  room to spare. */
 function pilot(s: SoftLandingState): Engines {
   const d = descentNow(s);
   const r = s.rocket;
@@ -43,8 +45,6 @@ function pilot(s: SoftLandingState): Engines {
   // Sideways: head for the pad, slowing as it gets close.
   const wantVx = Math.max(-40, Math.min(40, gap * 0.8));
   const over = Math.abs(gap) < s.padW / 2 - HALF_WIDTH - 2;
-  const left = s.sideways && r.vx > wantVx + 4;
-  const right = s.sideways && r.vx < wantVx - 4;
   // Down: as fast as it can still stop from, but never lower than the
   // hills between here and the pad until it's over the pad.
   let highest = PAD_Y;
@@ -54,8 +54,12 @@ function pilot(s: SoftLandingState): Engines {
   const height = Math.max(0, floor - r.y);
   const brake = s.gravity * 1.2;
   const wantVy = Math.min(s.safeV * 0.6 + Math.sqrt(2 * brake * height) * 0.7, 140);
-  const up = r.vy > (over ? wantVy : Math.min(wantVy, height < 10 ? -10 : wantVy));
-  return { up, left, right };
+  const most = over ? wantVy : Math.min(wantVy, height < 10 ? -10 : wantVy);
+  const left = s.sideways && r.vx > wantVx + 4;
+  const right = s.sideways && r.vx < wantVx - 4;
+  if ((left || right) && r.vy < most - 6) return { up: false, left, right };
+  if (r.vy > most - 2) return { up: true, left: false, right: false };
+  return { up: false, left, right };
 }
 
 function fly(s: SoftLandingState, driver: (s: SoftLandingState) => Engines): SoftLandingState {
@@ -98,7 +102,7 @@ test('side engines only from level 3, and hills from level 4', () => {
   assert.equal(setEngine(s, 'left', true), s, 'no side engines at level 1');
 });
 
-test('a careful pilot lands softly every time, at every level, with fuel to spare', () => {
+test('a careful pilot with one finger lands softly every time, at every level, with fuel to spare', () => {
   for (const level of LEVELS) {
     for (let seed = 0; seed < 25; seed += 1) {
       let s = createGame(seededRng(seed * 3 + level * 100), level);

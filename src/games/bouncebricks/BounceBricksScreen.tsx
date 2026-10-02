@@ -98,7 +98,7 @@ export function BounceBricksScreen({ level: initialLevel, onRoundComplete, onExi
   const serveNo = Math.min(BALLS_PER_ROUND, BALLS_PER_ROUND - state.ballsLeft + 1);
   return (
     <GameFrame title="Bounce Bricks" icon="bricks" onExit={onExit} progress={progress}>
-      <StageLabel live>{state.resting ? `SERVE ${serveNo} OF ${BALLS_PER_ROUND} · TAP TO SERVE, SLIDE TO MOVE` : 'KEEP THE BALL UP'}</StageLabel>
+      <StageLabel live>{state.resting ? 'TAP TO SERVE, SLIDE TO MOVE' : 'KEEP THE BALL UP'}</StageLabel>
 
       <View
         style={styles.stage}

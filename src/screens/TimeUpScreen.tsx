@@ -37,9 +37,7 @@ export function TimeUpScreen({
   const minutes = breakEndsAt == null ? null : Math.max(1, Math.ceil((breakEndsAt - now) / MINUTE_MS));
   const message =
     kind === 'session-over'
-      ? minutes != null
-        ? `Time for a break! Go stretch, and come back in ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}.`
-        : 'Time for a break! Go stretch, and come back soon.'
+      ? 'Time for a break! Go stretch, and come back soon.'
       : "That's all the play time for today. See you tomorrow!";
 
   return (

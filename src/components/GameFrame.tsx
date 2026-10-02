@@ -153,7 +153,8 @@ export function GameFrame({
             accessibilityLabel={`Last round, then ${verdict.kind === 'daily-over' ? "that's all for today" : 'a break'}`}
           >
             <Icon name="clock" size={16} color={palette.ink} />
-            <Text style={type.monoStrong}>LAST ROUND</Text>
+            {/* Two short lines, like HOW TO PLAY, so the title keeps its room. */}
+            <Text style={type.monoStrong}>{'LAST\nROUND'}</Text>
           </View>
         ) : minutesLeft != null ? (
           <View

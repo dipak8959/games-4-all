@@ -27,39 +27,48 @@ export async function playMemory(page, report) {
   }
   report.ok(`dealt ${size} cards`);
 
-  // Turn every card over once to learn the layout, letting each peek resolve.
-  const symbols = new Map();
-  for (let i = 0; i < size; i += 1) {
-    if (await roundResult(page)) break;
+  // Play as a child who forgets nothing would: a new card, then its partner
+  // if that's been seen, otherwise another new card — and a pair already
+  // known goes first. Nothing but the cards on screen is read.
+  const known = new Map();
+  const faceDown = (cards, i) => cards[i].label === 'Face down card';
+  async function turn(i, settle) {
     const cards = await memoryBoard(page);
-    if (cards[i].label !== 'Face down card') continue;
+    if (!faceDown(cards, i)) return;
     await cards[i].card.click();
     await page.waitForTimeout(260);
-    symbols.set(i, (await memoryBoard(page))[i].label.replace('Card showing ', ''));
-    await page.waitForTimeout(1400);
+    known.set(i, (await memoryBoard(page))[i].label.replace('Card showing ', ''));
+    await page.waitForTimeout(settle);
+  }
+  const knownPair = (cards) => {
+    for (const [i, sym] of known) {
+      if (!faceDown(cards, i)) continue;
+      for (const [j, other] of known) if (j !== i && other === sym && faceDown(cards, j)) return [i, j];
+    }
+    return null;
+  };
+  for (let t = 0; t < size * 2; t += 1) {
+    if (await roundResult(page)) break;
+    const cards = await memoryBoard(page);
+    const pair = knownPair(cards);
+    if (pair) {
+      await turn(pair[0], 0);
+      await turn(pair[1], 900);
+      continue;
+    }
+    const a = cards.findIndex((c, i) => faceDown(cards, i) && !known.has(i));
+    if (a < 0) break;
+    await turn(a, 0);
+    const partner = [...known].find(([k, sym]) => k !== a && sym === known.get(a) && faceDown(cards, k));
+    const b = partner ? partner[0] : cards.findIndex((c, i) => i !== a && faceDown(cards, i) && !known.has(i));
+    await turn(b, partner ? 900 : 1400);
   }
 
   const pairs = new Map();
-  for (const [i, symbol] of symbols) pairs.set(symbol, [...(pairs.get(symbol) ?? []), i]);
+  for (const [i, symbol] of known) pairs.set(symbol, [...(pairs.get(symbol) ?? []), i]);
   for (const [symbol, idxs] of pairs) {
     if (idxs.length !== 2) {
       report.bug('Find the Pairs', `${symbol} was dealt ${idxs.length} time(s), not as a pair`);
-    }
-  }
-
-  for (const [, idxs] of pairs) {
-    if (idxs.length !== 2) continue;
-    if (await roundResult(page)) break;
-    let cards = await memoryBoard(page);
-    if (cards[idxs[0]].label === 'Face down card') {
-      await cards[idxs[0]].card.click();
-      await page.waitForTimeout(260);
-    }
-    if (await roundResult(page)) break;
-    cards = await memoryBoard(page);
-    if (cards[idxs[1]].label === 'Face down card') {
-      await cards[idxs[1]].card.click();
-      await page.waitForTimeout(900);
     }
   }
 }

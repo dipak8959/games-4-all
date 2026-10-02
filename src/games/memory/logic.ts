@@ -20,6 +20,11 @@ export type MemoryState = {
   readonly cards: readonly Card[];
   /** Indices currently face up and not yet resolved (0, 1, or 2 entries). */
   readonly revealed: readonly number[];
+  /** Indices of cards that have been face up before, so the child could
+   *  know them. */
+  readonly seen: readonly number[];
+  /** Mismatches the child could have avoided — see `resolvePair`. A first
+   *  look at an unknown card is a guess, not a mistake. */
   readonly mistakes: number;
   readonly complete: boolean;
 };
@@ -62,6 +67,7 @@ export function createGame(
       faceUp: false,
     })),
     revealed: [],
+    seen: [],
     mistakes: 0,
     complete: false,
   };
@@ -93,12 +99,22 @@ export function hasPendingPair(state: MemoryState): boolean {
 /**
  * Resolves the two revealed cards: keeps them if they match, turns them back
  * over if they do not. Called after a short delay so the child sees both.
+ *
+ * A mismatch is a mistake only when memory could have prevented it: the
+ * second card had been seen before (so it was known not to match), or the
+ * first card's partner had been seen before (so the child could have gone
+ * straight to it). Turning up two cards nobody has seen is the only way to
+ * learn the board, so that costs nothing — otherwise even a child who
+ * forgets nothing would lose stars to luck and the game could never step up.
  */
 export function resolvePair(state: MemoryState): MemoryState {
   if (state.revealed.length !== 2) return state;
 
   const [a, b] = state.revealed;
   const isMatch = state.cards[a].symbol === state.cards[b].symbol;
+  const known = new Set(state.seen);
+  const partnerOfA = state.cards.findIndex((c, i) => i !== a && c.symbol === state.cards[a].symbol);
+  const avoidable = !isMatch && (known.has(b) || known.has(partnerOfA));
 
   const cards = state.cards.map((card, i) => {
     if (i !== a && i !== b) return card;
@@ -108,7 +124,8 @@ export function resolvePair(state: MemoryState): MemoryState {
   return {
     cards,
     revealed: [],
-    mistakes: state.mistakes + (isMatch ? 0 : 1),
+    seen: [...known.add(a).add(b)],
+    mistakes: state.mistakes + (avoidable ? 1 : 0),
     complete: cards.every((c) => c.matched),
   };
 }

@@ -97,11 +97,16 @@ async function playOne(title, level) {
     report.bug(title, `level ${level}: listed, but its card could not be opened`);
     return 'unopened';
   }
-  await page.waitForTimeout(900);
-  const prompt = await firstLook(where);
-  if (shots) await page.screenshot({ path: `${shots}/${slug(title)}-L${level}-a.png` });
+  // The player starts at once, as a child would: some games show what to
+  // remember in the first second, so the first look is taken alongside.
   const player = PLAYERS[title];
+  const looked = (async () => {
+    const prompt = await firstLook(where);
+    if (shots) await page.screenshot({ path: `${shots}/${slug(title)}-L${level}-a.png` });
+    return prompt;
+  })();
   if (!player) {
+    await looked;
     report.bug(where, 'no player to play it');
     await backHome(page, report, where);
     return 'no player';
@@ -120,6 +125,7 @@ async function playOne(title, level) {
     else threw = e.message;
   }
   clearTimeout(midShot);
+  const prompt = await looked.catch(() => '');
   const result = stuck ? await roundResult(page) : await waitForRound(page, 10000);
   const seconds = Math.round((Date.now() - t0) / 1000);
   if (threw) report.bug(where, `the player threw: ${threw.split('\n')[0]}`);

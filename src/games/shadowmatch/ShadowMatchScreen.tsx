@@ -56,7 +56,9 @@ export function ShadowMatchScreen({ level: initialLevel, onRoundComplete, onExit
 
   return (
     <GameFrame title="Shadow Match" icon="shadow" onExit={onExit} progress={progress}>
-      <StageLabel>FIND ITS SHADOW</StageLabel>
+      {/* Turned shadows say so: otherwise a child hunts for an upright one
+          that isn't there. */}
+      <StageLabel>{shadows.some((sh) => sh.turn) ? 'FIND ITS SHADOW · THE SHADOWS ARE TURNED' : 'FIND ITS SHADOW'}</StageLabel>
       <GameStage>
         <View accessible accessibilityLabel={`A ${COLOR_NAMES[color]} ${thing.name}`}>
           <FigureView figure={thing} size={140} color={SHAPE_COLORS[color]} />

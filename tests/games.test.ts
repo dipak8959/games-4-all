@@ -100,16 +100,73 @@ test('memory ignores taps on a revealed card and while a pair is pending', () =>
   assert.equal(afterThird.revealed.length, 2, 'a third card cannot be flipped mid-comparison');
 });
 
-test('memory counts a mismatch once and turns both cards back over', () => {
+test('memory: two unseen cards that differ cost nothing, and turn back over', () => {
   const state = createMemory(seededRng(11), 2);
   const first = state.cards[0];
   const mismatchIndex = state.cards.findIndex((c) => c.symbol !== first.symbol);
 
   const resolved = resolvePair(flip(flip(state, 0), mismatchIndex));
-  assert.equal(resolved.mistakes, 1);
+  assert.equal(resolved.mistakes, 0, 'a first look is a guess, not a mistake');
   assert.equal(resolved.cards[0].faceUp, false);
   assert.equal(resolved.cards[mismatchIndex].faceUp, false);
   assert.equal(resolved.complete, false);
+});
+
+test('memory counts a mismatch the child could have avoided, once', () => {
+  const state = createMemory(seededRng(11), 2);
+  const symbolOf = (i: number) => state.cards[i].symbol;
+  const other = state.cards.findIndex((c) => c.symbol !== symbolOf(0));
+  // Both seen once: neither matches the other.
+  let s = resolvePair(flip(flip(state, 0), other));
+  // Turning a known card up beside one it is known not to match.
+  s = resolvePair(flip(flip(s, other), 0));
+  assert.equal(s.mistakes, 1, 'the second card was seen before');
+  // A new card whose partner was seen, followed by anything else.
+  const partner = state.cards.findIndex((c, i) => i !== 0 && c.symbol === symbolOf(0));
+  const elsewhere = state.cards.findIndex((c, i) => i !== 0 && i !== partner && i !== other);
+  s = resolvePair(flip(flip(s, partner), elsewhere));
+  assert.equal(s.mistakes, 2, "the first card's partner was seen before");
+});
+
+test('memory: a child who forgets nothing finishes with no mistakes, at every level', () => {
+  // Plays only on what it has seen: a new card, then its partner if known,
+  // otherwise another new card.
+  for (let level = 1; level <= 6; level++) {
+    for (let seed = 0; seed < 20; seed++) {
+      let s = createMemory(seededRng(seed * 7 + level), level);
+      const known = new Map<number, string>();
+      const look = (i: number) => {
+        known.set(i, s.cards[i].symbol);
+        return s.cards[i].symbol;
+      };
+      const unseen = () => s.cards.findIndex((c, i) => !c.matched && !known.has(i));
+      const knownPair = () => {
+        for (const [i, sym] of known) {
+          if (s.cards[i].matched) continue;
+          const j = [...known].find(([k, other]) => k !== i && other === sym && !s.cards[k].matched);
+          if (j) return [i, j[0]];
+        }
+        return null;
+      };
+      for (let turns = 0; turns < 100 && !s.complete; turns++) {
+        const pair = knownPair();
+        if (pair) {
+          s = resolvePair(flip(flip(s, pair[0]), pair[1]));
+          continue;
+        }
+        const a = unseen();
+        const sym = s.cards[a].symbol;
+        const partner = [...known].find(([k, other]) => other === sym && !s.cards[k].matched);
+        look(a);
+        s = flip(s, a);
+        const b = partner ? partner[0] : unseen();
+        look(b);
+        s = resolvePair(flip(s, b));
+      }
+      assert.equal(s.complete, true, `level ${level}, seed ${seed}`);
+      assert.equal(s.mistakes, 0, `level ${level}, seed ${seed}: ${s.mistakes}`);
+    }
+  }
 });
 
 test('memory can always be completed, and a perfect game records no mistakes', () => {

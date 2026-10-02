@@ -335,8 +335,11 @@ npm install
 npm start          # Expo dev server — scan the QR code with Expo Go
 ```
 
-To try it on a real phone, with Expo Go today or as an installable build,
-follow [TESTING-ON-PHONES.md](TESTING-ON-PHONES.md).
+To try it on a real phone, `npm run phone` on a computer that stays on
+serves the app to Expo Go from anywhere, and follows the branch on GitHub so
+the phone always has the latest pushed code. `npm run phone:always` starts it
+at every login. See [TESTING-ON-PHONES.md](TESTING-ON-PHONES.md), which also
+covers installable builds.
 
 Platform targets:
 

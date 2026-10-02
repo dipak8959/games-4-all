@@ -335,6 +335,9 @@ npm install
 npm start          # Expo dev server — scan the QR code with Expo Go
 ```
 
+To try it on a real phone, with Expo Go today or as an installable build,
+follow [TESTING-ON-PHONES.md](TESTING-ON-PHONES.md).
+
 Platform targets:
 
 ```bash
@@ -438,9 +441,12 @@ Then run `npm run verify`.
 ## Building for the stores
 
 ```bash
-npx eas build --platform ios
-npx eas build --platform android
+npx eas build --platform android --profile preview   # an APK to install for testing
+npx eas build --platform ios --profile production
+npx eas build --platform android --profile production
 ```
+
+The profiles live in `eas.json`.
 
 Release Android builds drop the `INTERNET` permission entirely
 (`app.config.ts`); it is retained in development builds only so Metro can

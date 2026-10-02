@@ -1498,17 +1498,26 @@ export async function playSoftLanding(page, report) {
   }
 
   const holds = await page.evaluate(
-    () =>
+    (sideways) =>
       new Promise((resolve) => {
         let holds = 0;
         let busy = false;
         let history = [];
         let current = null;
+        // Learnt by watching: how hard it falls, and the safe speed — the
+        // gauge's line, a third of the way down it, against how fast the
+        // rocket is really going, both drawn in the same frame. Until then,
+        // the slowest any level asks for.
+        let gravity = 40;
+        let safeV = 25;
+        const outcomes = [];
+        let landed = false;
+        let lastSeen = null;
         const started = performance.now();
         const frame = async (now) => {
           if (document.querySelector('[aria-label="Play again"]') || now - started > 180000) {
             await window.__landingHold(null);
-            resolve(holds);
+            resolve({ holds, outcomes });
             return;
           }
           if (busy) {
@@ -1516,7 +1525,11 @@ export async function playSoftLanding(page, report) {
             return;
           }
           const text = document.body.innerText;
-          const rocket = document.querySelector('[data-testid="rocket"]')?.getBoundingClientRect();
+          const result = text.match(/SOFT LANDING!|MISSED THE PAD|BUMP!/)?.[0];
+          if (result && !landed) outcomes.push(`${result.replace('!', '').toLowerCase()} at ${lastSeen}`);
+          landed = Boolean(result);
+          const rocketEl = document.querySelector('[data-testid="rocket"]');
+          const rocket = rocketEl?.getBoundingClientRect();
           const padEl = document.querySelector('[data-testid^="pad:"]');
           const pad = padEl?.getBoundingClientRect();
           let want = null;
@@ -1524,26 +1537,68 @@ export async function playSoftLanding(page, report) {
             history = [];
             want = 'up';
           } else if (rocket && pad && !/SOFT LANDING!|MISSED THE PAD|BUMP!/.test(text)) {
+            // Into the field's own units, from the pad drawn on it.
             const k = rocket.width / 28;
-            history.push({ t: now, x: rocket.left + rocket.width / 2, y: rocket.bottom });
-            history = history.filter((h) => now - h.t < 160);
+            const padX = Number(padEl.dataset.testid.split(':')[1]);
+            const padW = pad.width / k;
+            const left0 = pad.left - (padX - padW / 2) * k;
+            const top0 = pad.top - 432 * k;
+            const x = (rocket.left + rocket.width / 2 - left0) / k;
+            const y = (rocket.bottom - top0) / k;
+            const ground = [];
+            for (const el of document.querySelectorAll('[data-testid="ground"]')) {
+              const b = el.getBoundingClientRect();
+              ground[Math.round((b.left - left0) / (8 * k))] = (b.top - top0) / k;
+            }
+            const under = (at) => {
+              let top = Infinity;
+              for (let c = Math.max(0, Math.floor((at - 14) / 8)); c <= Math.min(39, Math.floor((at + 14 - 1e-6) / 8)); c += 1) top = Math.min(top, ground[c] ?? Infinity);
+              return top;
+            };
+            history.push({ t: now, x, y, held: current });
+            history = history.filter((h) => now - h.t < 140);
             const first = history[0];
             const last = history[history.length - 1];
             const span = (last.t - first.t) / 1000;
             if (span > 0.06) {
-              const vx = (last.x - first.x) / span / k;
-              const vy = (last.y - first.y) / span / k;
-              const height = (pad.top - last.y) / k;
-              const gap = (pad.left + pad.width / 2 - last.x) / k;
-              const over = Math.abs(gap) < pad.width / k / 2 - 18;
-              // Near the ground, slow; not over the pad yet, don't come down
-              // among the hills at all.
-              const wantVy = over ? Math.max(8, Math.min(70, height * 0.28)) : height < 130 ? -6 : 30;
-              const wantVx = Math.max(-35, Math.min(35, gap * 0.7));
-              if (vy > wantVy) want = 'up';
-              else if (vx < wantVx - 5 && !over) want = 'right';
-              else if (vx > wantVx + 5 && !over) want = 'left';
-              else if (over && Math.abs(vx) > 6) want = vx > 0 ? 'left' : 'right';
+              const vx = (last.x - first.x) / span;
+              const vy = (last.y - first.y) / span;
+              // Falling free for the whole window: that's gravity.
+              if (history.length >= 4 && history.every((h) => h.held === null)) {
+                const mid = history[Math.floor(history.length / 2)];
+                const v1 = (mid.y - first.y) / ((mid.t - first.t) / 1000);
+                const v2 = (last.y - mid.y) / ((last.t - mid.t) / 1000);
+                const g = (v2 - v1) / ((last.t - first.t) / 2000);
+                if (g > 20 && g < 120) gravity = gravity * 0.8 + g * 0.2;
+              }
+              const gauge = document.querySelector('[data-testid="gauge"]')?.getBoundingClientRect();
+              const bar = document.querySelector('[data-testid="speed"]')?.getBoundingClientRect();
+              const share = gauge && bar ? (3 * bar.height) / gauge.height : 0;
+              const prev = history[history.length - 2];
+              if (prev && share > 0.3 && share < 2.7 && last.t - prev.t > 8) {
+                const now = (last.y - prev.y) / ((last.t - prev.t) / 1000);
+                if (now > 5) safeV = safeV * 0.9 + (now / share) * 0.1;
+              }
+              // The careful pilot of the game's own test, with one finger:
+              // over the pad first, above the hills, then down, braking to
+              // well under the safe speed; steering only while the fall has
+              // room to spare.
+              const gap = padX - x;
+              const wantVx = Math.max(-40, Math.min(40, gap * 0.8));
+              const over = Math.abs(gap) < padW / 2 - 16;
+              let highest = 432;
+              for (let at = Math.min(x, padX); at <= Math.max(x, padX); at += 4) highest = Math.min(highest, under(at));
+              const floor = over ? under(x) : highest - 40;
+              const height = Math.max(0, floor - y);
+              const wantVy = Math.min(safeV * 0.6 + Math.sqrt(2 * gravity * 1.2 * height) * 0.7, 140);
+              const most = over ? wantVy : Math.min(wantVy, height < 10 ? -10 : wantVy);
+              lastSeen = `${Math.round(vy)} down (most ${Math.round(most)}, safe ${Math.round(safeV)}, ${Math.round(height)} up), g ${Math.round(gravity)}, ${Math.round(gap)} from the pad's middle`;
+              const steer = sideways ? (vx > wantVx + 4 ? 'left' : vx < wantVx - 4 ? 'right' : null) : null;
+              if (steer && vy < most - 6) want = steer;
+              else if (vy > most - 2) want = 'up';
+              else want = steer;
+            } else {
+              want = current;
             }
           }
           if (want !== current) {
@@ -1557,8 +1612,9 @@ export async function playSoftLanding(page, report) {
         };
         requestAnimationFrame(frame);
       }),
+    Boolean(buttons.left),
   );
-  report.ok(`flew three descents with ${holds} presses`);
+  report.ok(`flew three descents with ${holds.holds} presses: ${holds.outcomes.join('; ')}`);
 }
 
 /**

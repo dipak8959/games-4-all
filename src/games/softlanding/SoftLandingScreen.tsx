@@ -215,7 +215,7 @@ export function SoftLandingScreen({ level: initialLevel, onRoundComplete, onExit
           <View style={[styles.field, { left: offsetX, width: FIELD_WIDTH * k, height: FIELD_HEIGHT * k }]}>
             {/* The ground, column by column, hills and all. */}
             {descent.ground.map((top, c) => (
-              <View key={c} style={[styles.ground, { left: c * COLUMN * k, top: top * k, width: COLUMN * k + 1, height: (FIELD_HEIGHT - top) * k }]} />
+              <View key={c} testID="ground" style={[styles.ground, { left: c * COLUMN * k, top: top * k, width: COLUMN * k + 1, height: (FIELD_HEIGHT - top) * k }]} />
             ))}
             {/* The pad: a flat striped block. */}
             <View
@@ -261,12 +261,13 @@ export function SoftLandingScreen({ level: initialLevel, onRoundComplete, onExit
             {/* Speed: the bar grows down as the rocket falls faster. Past the
                 line is too fast to land. */}
             <View
+              testID="gauge"
               style={[
                 styles.track,
                 { position: 'absolute', left: GAUGE.x * k, top: GAUGE.top * k, width: GAUGE.width * k, height: GAUGE.height * k },
               ]}
             >
-              <View style={{ width: '100%', height: `${speedShare * 100}%`, backgroundColor: speedShare > 1 / 3 ? palette.accent : palette.ink }} />
+              <View testID="speed" style={{ width: '100%', height: `${speedShare * 100}%`, backgroundColor: speedShare > 1 / 3 ? palette.accent : palette.ink }} />
               <View style={[styles.safeLine, { top: (GAUGE.height / 3) * k - 1 }]} />
             </View>
             <Text

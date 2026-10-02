@@ -1,6 +1,6 @@
 # Playtests
 
-Five passes that play the real app in a real browser. Nothing here imports
+Six passes that play the real app in a real browser. Nothing here imports
 the games' logic: each pass reads the board through the same accessibility
 labels a screen reader gets, works out the answer itself, and taps. A pass
 only goes green if what a child actually touches works.
@@ -12,6 +12,7 @@ only goes green if what a child actually touches works.
 | `rapid-taps.mjs` | Five fast taps on one answer, and five on "Play again" — neither may count twice. |
 | `tap-targets.mjs` | Every screen on a 320x568 phone — Home, search, TIME, the gate, Parent Zone, Profiles, the editor, and every game at level 1 and 6 — measured for 72dp targets, sideways scrolling, and buttons that can't be reached. |
 | `screen-time.mjs` | The limits a grown-up sets, on a clock the pass moves on: a sitting spans games, the stop screen stays until a grown-up changes the limit, and a new day brings a new allowance. |
+| `every-level.mjs` | Every game at every level, 1 to 6, through admin mode: a first look (nothing sideways, nothing off the edge, a prompt), then the round played to its end, and every round under three stars listed for a person to look into. `PLAYTEST_LEVELS` and `PLAYTEST_GAMES` split it up; `PLAYTEST_SHOTS` saves a picture of each game at the start and partway through. |
 
 ## Running them
 
@@ -27,7 +28,11 @@ node scripts/playtest/edge-cases.mjs
 node scripts/playtest/rapid-taps.mjs
 node scripts/playtest/screen-time.mjs
 node scripts/playtest/tap-targets.mjs
+PLAYTEST_ADMIN_PASSWORD=… node scripts/playtest/every-level.mjs
 ```
+
+The password is the grown-up's, never written down here; the pass only
+takes it from the environment.
 
 `PLAYTEST_URL` overrides where the build is served from; `PLAYTEST_CHROME`
 points at a Chromium binary if Playwright's own download isn't on the machine.
@@ -103,3 +108,23 @@ Each pass exits non-zero if it finds a bug or the page logs an error.
   a dot near the right edge pushed its number off the picture and the
   page scrolled sideways (tap-targets.mjs). Numbers now sit on the side
   nearer the middle.
+- Every game at every level, and its pictures looked over by a person,
+  found:
+  - Find the Pairs counted every mismatch as a mistake, including the
+    guesses that are the only way to learn the board. A child who forgot
+    nothing still lost stars at four pairs and up, so the game never
+    stepped up. Only a mismatch memory could have prevented counts now.
+  - Soft Landing's top two levels needed two fingers. Its buttons take one
+    touch at a time, and at levels 5 and 6 the wind carried a rocket held
+    on its engine off the pad in half of all careful landings. The wind
+    there is now a breath, and the logic test flies with one finger.
+  - Bead Patterns' string, with two beads missing, was wider than a phone:
+    the second gap wrapped under the line and stopped reading as the next
+    bead. Beads now shrink to keep the string on one line.
+  - Tower of Hanoi drew its pegs small in the middle of an empty stage.
+  - Words a child reads: Flip It said "light every tile" while lit tiles
+    are drawn solid ink; it now says fill. "FEWEST 7" became "7 CAN DO IT",
+    and Shadow Match now says when its shadows are turned.
+  - Its own players needed fixing too: Pattern Play's missed the first
+    tile while the pass took its first look, and Train Switch's flipped
+    the points for the next train while the one ahead was still on them.

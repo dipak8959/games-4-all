@@ -48,8 +48,9 @@ import { fonts, type } from '../theme/type';
 type Place = { readonly query: string; readonly category: GameCategory | null; readonly y: number };
 const places = new Map<string, Place>();
 
-/** A tile's picture takes three quarters of the tile, with its colour round it. */
-const TILE_ART = 0.75;
+/** A tile's picture takes under two thirds of the tile (three quarters, then
+ *  15% smaller again), with its colour round it. */
+const TILE_ART = 0.64;
 
 export function HomeScreen({
   onOpenGame,

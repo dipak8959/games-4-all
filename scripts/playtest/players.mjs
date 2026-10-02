@@ -190,18 +190,25 @@ export async function watchPattern(page, report) {
 }
 
 export async function playPatternPlay(page, report) {
-  const seen = await watchPattern(page, report);
-  if (seen.length === 0) {
-    report.bug('Pattern Play', 'no tile ever lit up during the reveal');
-    return;
-  }
-  report.ok(`watched a ${seen.length}-step sequence`);
+  // A child who lost the thread watches it again, as the game invites: a
+  // busy machine can blink past a tile the same way.
+  for (let watch = 0; watch < 3; watch += 1) {
+    const seen = await watchPattern(page, report);
+    if (seen.length === 0) {
+      report.bug('Pattern Play', 'no tile ever lit up during the reveal');
+      return;
+    }
+    report.ok(`watched a ${seen.length}-step sequence`);
 
-  for (const label of seen) {
-    await page.getByLabel(label, { exact: true }).first().click();
-    await page.waitForTimeout(170);
+    for (const label of seen) {
+      await page.getByLabel(label, { exact: true }).first().click();
+      await page.waitForTimeout(170);
+    }
+    await page.waitForTimeout(800);
+    if (await roundResult(page)) return;
+    await page.getByLabel('Watch the pattern again').click();
+    await page.waitForTimeout(100);
   }
-  await page.waitForTimeout(800);
 }
 
 export async function playNumberCrunch(page, report) {

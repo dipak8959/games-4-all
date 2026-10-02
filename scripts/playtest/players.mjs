@@ -2489,10 +2489,16 @@ export async function playTrainSwitch(page, report) {
       new Promise((resolve) => {
         let busy = false;
         const lastFlip = new Map();
+        let astray = false;
+        let looked = 0;
         const started = performance.now();
         const frame = async (now) => {
+          if (now - looked > 300) {
+            looked = now;
+            astray ||= document.body.innerText.includes('WRONG STATION');
+          }
           if (document.querySelector('[aria-label="Play again"]') || now - started > 240000) {
-            const wrong = document.body.innerText.includes('WRONG STATION');
+            const wrong = astray;
             return resolve(wrong);
           }
           if (busy) return requestAnimationFrame(frame);
@@ -2507,11 +2513,18 @@ export async function playTrainSwitch(page, report) {
             const jx = b.left + b.width / 2;
             const ups = up.split('.');
             const all = [...ups, ...down.split('.')];
-            const coming = trains.filter((t) => t.x < jx - 4 && all.includes(t.shape)).sort((a, c) => c.x - a.x)[0];
+            // The train still to pass this junction — counting one right on
+            // it as not yet past, as a careful child would wait for it to
+            // clear the points before flipping them for the next.
+            const coming = trains.filter((t) => t.x < jx + 8 && all.includes(t.shape)).sort((a, c) => c.x - a.x)[0];
             if (!coming) continue;
             const want = ups.includes(coming.shape) ? '0' : '1';
-            if (want !== set && now - (lastFlip.get(id) ?? 0) > 250) {
-              lastFlip.set(id, now);
+            // One tap, then wait to see the points move before another: a
+            // slow redraw would otherwise read as a tap that didn't take.
+            const last = lastFlip.get(id);
+            const waiting = last && last.from === set && now - last.at < 1500;
+            if (want !== set && !waiting) {
+              lastFlip.set(id, { at: now, from: set });
               await window.__tapAt(jx, b.top + b.height / 2);
             }
           }

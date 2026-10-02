@@ -486,14 +486,14 @@ export const HELP: Readonly<Record<string, GameHelp>> = {
     grows: 'More switches and bigger numbers, then no running total, then some switches already on.',
   },
   flipit: {
-    goal: 'Light every tile on six boards.',
+    goal: 'Fill every square on six boards.',
     steps: [
-      'Tap a tile and it flips, lit or dark.',
-      'The tiles above, below and either side of it flip too.',
-      'Plan your taps so every tile ends up lit.',
-      'The top of the screen says how few taps it can be done in.',
+      'Tap a square and it flips, filled or empty.',
+      'The squares above, below and either side of it flip too.',
+      'Plan your taps so every square ends up filled.',
+      'The top of the screen says how few taps can do it.',
     ],
-    example: 'One dark cross of five tiles: tap its middle once and they all light.',
+    example: 'An empty cross of five squares: tap its middle once and they all fill.',
     grows: 'Bigger boards, and boards that take more taps.',
   },
   hanoi: {

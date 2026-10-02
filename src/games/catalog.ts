@@ -1001,8 +1001,8 @@ export const GAMES_META: readonly GameMeta[] = [
     title: 'Flip It',
     icon: 'flip',
     color: tilePalette.citron,
-    skill: 'Logic: lighting every tile, when each tap flips its neighbours too',
-    roundEnds: 'Six boards lit.',
+    skill: 'Logic: filling every square, when each tap flips its neighbours too',
+    roundEnds: 'Six boards filled.',
     origin: 'public-domain',
     priorArt:
       'Neighbour-flipping puzzles, studied in recreational mathematics since the 1970s.',

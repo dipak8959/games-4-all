@@ -95,7 +95,7 @@ export function HanoiScreen({ level: initialLevel, onRoundComplete, onExit }: Ga
             );
           })}
         </View>
-        <Text style={[type.mono, styles.moves]}>{`MOVES ${state.moves} · FEWEST ${fewest(state.discs)}`}</Text>
+        <Text style={[type.mono, styles.moves]}>{`MOVES ${state.moves} · ${fewest(state.discs)} CAN DO IT`}</Text>
       </GameStage>
 
       {state.complete ? (

@@ -82,7 +82,7 @@ export function BalanceScaleScreen({ level: initialLevel, onRoundComplete, onExi
     ? 'FOUND IT!'
     : picking
       ? 'TAP THE HEAVY COIN'
-      : `PUT COINS ON THE PANS, THEN WEIGH · FEWEST ${fewest}`;
+      : `PUT COINS ON THE PANS, THEN WEIGH · ${fewest} WEIGHING${fewest === 1 ? '' : 'S'} CAN DO IT`;
   const stars = starsForExtra(state.extra);
   const said = (r: string) => (r === 'left' ? 'LEFT SIDE DOWN' : r === 'right' ? 'RIGHT SIDE DOWN' : 'LEVEL');
 

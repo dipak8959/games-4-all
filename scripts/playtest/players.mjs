@@ -2851,7 +2851,7 @@ export async function playFlipIt(page, report) {
     let count = 0;
     const started = performance.now();
     while (!window.__done() && performance.now() - started < 120000) {
-      if (document.body.innerText.includes('ALL LIT')) { await window.__wait(200); continue; }
+      if (document.body.innerText.includes('ALL FILLED')) { await window.__wait(200); continue; }
       const tiles = [...document.querySelectorAll('[data-testid^="tile:"]')].map((el) => el.dataset.testid.split(':')[2] === '1');
       const n = Math.round(Math.sqrt(tiles.length));
       for (const cell of solve(tiles, n)) {
@@ -2863,7 +2863,7 @@ export async function playFlipIt(page, report) {
     }
     return count;
   });
-  report.ok(`lit every board in ${taps} taps`);
+  report.ok(`filled every board in ${taps} taps`);
 }
 
 /** Tower of Hanoi, played the classic way round. */

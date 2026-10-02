@@ -50,9 +50,9 @@ export function FlipItScreen({ level: initialLevel, onRoundComplete, onExit }: G
 
   return (
     <GameFrame title="Flip It" icon="flip" onExit={onExit} progress={(state.index + (state.done ? 1 : 0)) / BOARDS}>
-      <StageLabel live>{state.done ? 'ALL LIT!' : `LIGHT EVERY TILE · IT CAN BE DONE IN ${par}`}</StageLabel>
+      <StageLabel live>{state.done ? 'ALL FILLED!' : `FILL EVERY SQUARE · ${par} TAP${par === 1 ? '' : 'S'} CAN DO IT`}</StageLabel>
       <StageScroll>
-        <View style={[styles.grid, { marginHorizontal: -bleed }]} accessibilityLabel={`${dark} of ${state.lit.length} tiles dark. ${state.taps} taps so far.`}>
+        <View style={[styles.grid, { marginHorizontal: -bleed }]} accessibilityLabel={`${dark} of ${state.lit.length} squares empty. ${state.taps} taps so far.`}>
           {rows.map((r) => (
             <View key={r} style={styles.row}>
               {rows.map((c) => {
@@ -62,7 +62,7 @@ export function FlipItScreen({ level: initialLevel, onRoundComplete, onExit }: G
                   <Pressable
                     key={c}
                     accessibilityRole="button"
-                    accessibilityLabel={`Row ${r + 1}, column ${c + 1}: ${on ? 'lit' : 'dark'}`}
+                    accessibilityLabel={`Row ${r + 1}, column ${c + 1}: ${on ? 'filled' : 'empty'}`}
                     testID={`tile:${cell}:${on ? 1 : 0}`}
                     onPress={() => onTap(cell)}
                     style={({ pressed }) => [on ? styles.lit : styles.dark, { width: tile, height: tile }, pressed && styles.pressed]}

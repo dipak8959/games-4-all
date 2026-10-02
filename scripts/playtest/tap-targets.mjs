@@ -9,7 +9,7 @@
  * the bottom of the screen that can't be scrolled to.
  *
  * With PLAYTEST_ADMIN_PASSWORD set, admin mode opens every game at level 1
- * and level 6. Without it, the games are reached through profiles aged 3, 8
+ * and level 6 — or at the levels PLAYTEST_LEVELS lists ("1,2,3,4,5,6"). Without it, the games are reached through profiles aged 3, 8
  * and 17, at the levels those ages start on.
  *
  * See harness.mjs for how to run this.
@@ -113,7 +113,7 @@ async function measureGame(title, where) {
 
 const adminPassword = process.env.PLAYTEST_ADMIN_PASSWORD;
 if (adminPassword) {
-  for (const level of [1, 6]) {
+  for (const level of (process.env.PLAYTEST_LEVELS ?? '1,6').split(',').map(Number)) {
     console.log(`\n=== every game at level ${level} ===`);
     await page.getByLabel('Parent zone, grown-ups only').click();
     await page.waitForTimeout(500);

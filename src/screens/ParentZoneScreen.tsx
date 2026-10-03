@@ -7,12 +7,14 @@ import { ConfirmModal } from '../components/ConfirmModal';
 import { FactGrid, NumberedRow } from '../components/FactGrid';
 import { Icon } from '../components/Icon';
 import { PlayTimeMeter } from '../components/PlayTimeMeter';
+import { PolicySheet } from '../components/PolicySheet';
 import { Rule } from '../components/Rule';
 import { Screen } from '../components/Screen';
 import { SectionHeader } from '../components/SectionHeader';
 import { GAMES_META } from '../games/catalog';
 import { MAX_LEVEL } from '../games/types';
 import { ADMIN_AVAILABLE } from '../safety/adminLock';
+import { APP_NAME, APP_VERSION } from '../safety/privacyPolicy';
 import { LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
 import { useApp } from '../state/AppProvider';
 import { progressFor } from '../state/progress';
@@ -42,6 +44,7 @@ export function ParentZoneScreen({
   const { settings, progress, usage, activeProfile, updateSettings, resetEverything, levelForGame } = useApp();
   const [erased, setErased] = useState(false);
   const [confirmingErase, setConfirmingErase] = useState(false);
+  const [readingPolicy, setReadingPolicy] = useState(false);
 
   const eraseNow = useCallback(() => {
     setConfirmingErase(false);
@@ -145,7 +148,7 @@ export function ParentZoneScreen({
         <SectionHeader label="WHAT PARENTS SHOULD KNOW" />
         <NumberedRow
           index="01"
-          copy="Runs fully offline. Release builds have no internet permission at all."
+          copy="Runs fully offline: it never connects to the internet, and on Android it can't."
         />
         <NumberedRow
           index="02"
@@ -157,7 +160,7 @@ export function ParentZoneScreen({
         />
         <NumberedRow
           index="04"
-          copy="Every game adjusts itself round to round. Nobody can lose, and nothing is timed."
+          copy="Every game adjusts itself round to round, and every round has a fixed end. No scores, no streaks."
         />
         <Rule weight="major" />
 
@@ -183,16 +186,28 @@ export function ParentZoneScreen({
         })}
         <Rule weight="major" />
 
-        {ADMIN_AVAILABLE ? <AdminPanel /> : null}
-        <Rule weight="major" />
+        {ADMIN_AVAILABLE ? (
+          <>
+            <AdminPanel />
+            <Rule weight="major" />
+          </>
+        ) : null}
 
         <SectionHeader label="PRIVACY" />
         <View style={styles.block}>
           <Text style={type.secondary}>
             This app works entirely offline. It has no ads, no in-app purchases, no accounts, no
-            analytics, and no third-party trackers. It does not ask for any device permission.
+            analytics, and no third-party trackers. It asks for no permissions beyond vibration.
             Play history and settings are stored only on this device and are never sent anywhere.
           </Text>
+          <BigButton
+            label="Read the privacy policy"
+            icon="lock"
+            tone="quiet"
+            chevron
+            onPress={() => setReadingPolicy(true)}
+            style={styles.gap}
+          />
           <BigButton
             label={erased ? 'Data deleted' : 'Delete all data'}
             icon={erased ? 'check' : 'trash'}
@@ -201,8 +216,11 @@ export function ParentZoneScreen({
             disabled={erased}
             style={styles.gap}
           />
+          <Text style={[type.monoSm, styles.version]}>{`${APP_NAME.toUpperCase()} · VERSION ${APP_VERSION}`}</Text>
         </View>
       </ScrollView>
+
+      <PolicySheet visible={readingPolicy} onClose={() => setReadingPolicy(false)} />
 
       <ConfirmModal
         visible={confirmingErase}
@@ -410,6 +428,7 @@ function LimitPicker({
 }
 
 const styles = StyleSheet.create({
+  version: { color: palette.inkSoft, marginTop: space.md },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

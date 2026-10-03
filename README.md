@@ -456,5 +456,9 @@ permissions (`app.config.ts`), leaving only `VIBRATE` for haptics. A local
 development build that needs Metro sets `APP_VARIANT=development` to keep
 them. Expo Go and the phone server are unaffected.
 
+Everything else a submission needs — the questionnaires' answers, the
+review notes, screenshots, listing text and the steps only the owner can
+take — is in [SUBMISSION.md](SUBMISSION.md).
+
 Both stores require a children's-category declaration. The honest answers here
 are: no data collected, no third-party SDKs, no ads, no purchases, no accounts.

@@ -12,6 +12,7 @@
     "phone:always": "node scripts/phone/autostart.mjs install",
     "phone:never": "node scripts/phone/autostart.mjs uninstall",
     "phone:status": "node scripts/phone/autostart.mjs status",
+    "store:pages": "node --import ./tests/register.mjs scripts/store/write-pages.mjs",
     "typecheck": "tsc --noEmit",
     "safety": "node scripts/check-safety.mjs",
     "propose": "node --import ./tests/register.mjs scripts/propose.mjs",

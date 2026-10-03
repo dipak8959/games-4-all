@@ -1,0 +1,41 @@
+{
+  "name": "games-4-all",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "phone": "node scripts/phone/serve.mjs",
+    "phone:always": "node scripts/phone/autostart.mjs install",
+    "phone:never": "node scripts/phone/autostart.mjs uninstall",
+    "phone:status": "node scripts/phone/autostart.mjs status",
+    "store:pages": "node --import ./tests/register.mjs scripts/store/write-pages.mjs",
+    "typecheck": "tsc --noEmit",
+    "safety": "node scripts/check-safety.mjs",
+    "propose": "node --import ./tests/register.mjs scripts/propose.mjs",
+    "test": "node --import ./tests/register.mjs --test \"tests/**/*.test.ts\"",
+    "verify": "npm run safety && npm run typecheck && npm test"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~57.0.20",
+    "expo-font": "~57.0.3",
+    "expo-haptics": "~57.0.2",
+    "expo-splash-screen": "~57.0.8",
+    "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.3",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "@types/react": "~19.2.2",
+    "react-dom": "^19.2.3",
+    "react-native-web": "^0.21.2",
+    "typescript": "~6.0.3"
+  }
+}

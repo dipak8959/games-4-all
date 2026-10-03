@@ -1,0 +1,29 @@
+{
+  "app_store": {
+    "name": "Games 4 All",
+    "subtitle": "Calm learning games, no ads",
+    "promotional_text": "Sixty calm games that grow with your child — counting, reading, memory and logic, plus games to play together. Offline, no ads, nothing to buy.",
+    "description": "Games 4 All is sixty short, calm games for children and the grown-ups who play with them — counting, reading, memory, logic, timing, and games to play together on one device.\n\nEVERY GAME TEACHES SOMETHING\n• Numbers: counting, number bonds, telling the time, number patterns, place value\n• Words: spelling, rhymes, word ladders, letter codes\n• Memory and logic: pairs, sequences, sudoku, mazes, deduction, symmetry\n• Sorting and shapes: size order, shadows, patterns, odd one out\n• Timing and arcade: gentle reflex games where a bump is only a bump\n• Together: five co-operative games for the whole family on one phone or tablet — one team, no winner\n\nGROWS WITH YOUR CHILD\nEach game has six levels. A clean round moves the next one up a level; a rough one steps down. Each profile sees the games that suit its age, from 3 to adult.\n\nBUILT TO BE PUT DOWN\nEvery round has a fixed end. There are no scores, streaks, bests, daily rewards or endless modes — nothing to chase. A friendly sportsperson's quote cheers each round on.\n\nFOR GROWN-UPS\n• Profiles for each player, with nicknames picked from a list — the app never asks for a real name\n• Play-time limits per sitting and per day; a limit lets the round in progress finish, and a break is a real break\n• Settings sit behind a grown-ups-only question\n• Large buttons, screen-reader labels, colour never the only signal, and a reduced-motion setting\n\nPRIVATE BY DESIGN\nWorks entirely offline. No ads, no in-app purchases, no accounts, no analytics, no tracking — and no data collected at all. Everything stays on the device.",
+    "keywords": "kids,learning,math,counting,reading,spelling,memory,logic,puzzle,preschool,family,offline,toddler",
+    "primary_category": "Education",
+    "secondary_category": "Games: Family",
+    "age_rating": "4+",
+    "support_url": "https://dipak8959.github.io/games-4-all/support.html",
+    "privacy_url": "https://dipak8959.github.io/games-4-all/privacy.html",
+    "marketing_url": "https://dipak8959.github.io/games-4-all/",
+    "copyright": "2026 Games 4 All"
+  },
+  "google_play": {
+    "title": "Games 4 All: Calm Kids Games",
+    "short_description": "60 calm learning games that grow with your child. Offline, no ads, no buying.",
+    "full_description": "Games 4 All is sixty short, calm games for children and the grown-ups who play with them — counting, reading, memory, logic, timing, and games to play together on one device.\n\nEVERY GAME TEACHES SOMETHING\n• Numbers: counting, number bonds, telling the time, number patterns, place value\n• Words: spelling, rhymes, word ladders, letter codes\n• Memory and logic: pairs, sequences, sudoku, mazes, deduction, symmetry\n• Sorting and shapes: size order, shadows, patterns, odd one out\n• Timing and arcade: gentle reflex games where a bump is only a bump\n• Together: five co-operative games for the whole family on one phone or tablet — one team, no winner\n\nGROWS WITH YOUR CHILD\nEach game has six levels. A clean round moves the next one up a level; a rough one steps down. Each profile sees the games that suit its age, from 3 to adult.\n\nBUILT TO BE PUT DOWN\nEvery round has a fixed end. There are no scores, streaks, bests, daily rewards or endless modes — nothing to chase. A friendly sportsperson's quote cheers each round on.\n\nFOR GROWN-UPS\n• Profiles for each player, with nicknames picked from a list — the app never asks for a real name\n• Play-time limits per sitting and per day; a limit lets the round in progress finish, and a break is a real break\n• Settings sit behind a grown-ups-only question\n• Large buttons, screen-reader labels, colour never the only signal, and a reduced-motion setting\n\nPRIVATE BY DESIGN\nWorks entirely offline. No ads, no in-app purchases, no accounts, no analytics, no tracking — and no data collected at all. Everything stays on the device.",
+    "category": "Education",
+    "tags": [
+      "Educational",
+      "Family",
+      "Puzzle"
+    ],
+    "privacy_url": "https://dipak8959.github.io/games-4-all/privacy.html",
+    "contact_website": "https://dipak8959.github.io/games-4-all/support.html"
+  }
+}

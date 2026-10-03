@@ -17,7 +17,7 @@ violation. The rules live in `scripts/check-safety.mjs`.
 
 | Guarantee | How it is enforced |
 | --- | --- |
-| No network requests of any kind | `fetch`, `XMLHttpRequest`, `WebSocket`, and `sendBeacon` are rejected in source by the safety check. Release Android builds additionally have `INTERNET` stripped from the manifest (`app.config.ts`). |
+| No network requests of any kind | `fetch`, `XMLHttpRequest`, `WebSocket`, and `sendBeacon` are rejected in source by the safety check. Android builds additionally have `INTERNET` stripped from the manifest (`app.config.ts`) unless a development build sets `APP_VARIANT=development`. |
 | No adverts | Every known mobile ad SDK is on the banned-dependency list, checked against both `package.json` and the full resolved lockfile. |
 | No analytics, telemetry, or crash reporting | Same banned-dependency list (Segment, Amplitude, Mixpanel, PostHog, Sentry, Firebase, AppsFlyer, …). |
 | No in-app purchases | Purchase and subscription SDKs are banned. There is no store, no currency, and no paid content. |

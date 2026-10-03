@@ -51,3 +51,21 @@ test('admin play is never charged to the active profile', () => {
   assert.match(provider, /playingRef\.current = !adminRef\.current\.on;/);
   assert.match(provider, /admin\.on \? \{ kind: 'ok', remainingMs: null \}/);
 });
+
+test('store builds leave admin mode out: no panel, and no password opens it', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const ask = (env: Record<string, string>) =>
+    execFileSync(process.execPath, ['--import', './tests/register.mjs', '--input-type=module', '-e', "import { ADMIN_AVAILABLE } from './src/safety/adminLock.ts'; console.log(ADMIN_AVAILABLE)"], {
+      env: { ...process.env, ...env },
+      encoding: 'utf8',
+    }).trim();
+  assert.equal(ask({ EXPO_PUBLIC_STORE_BUILD: '1' }), 'false');
+  assert.equal(ask({ EXPO_PUBLIC_STORE_BUILD: '' }), 'true');
+
+  const eas = JSON.parse(readFileSync('eas.json', 'utf8'));
+  assert.equal(eas.build.production.env.EXPO_PUBLIC_STORE_BUILD, '1', 'the production profile is a store build');
+  const zone = readFileSync('src/screens/ParentZoneScreen.tsx', 'utf8');
+  assert.match(zone, /\{ADMIN_AVAILABLE \? <AdminPanel \/> : null\}/);
+  const provider = readFileSync('src/state/AppProvider.tsx', 'utf8');
+  assert.match(provider, /if \(!ADMIN_AVAILABLE \|\| !isAdminPassword\(password\)\) return false;/);
+});

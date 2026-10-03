@@ -21,6 +21,14 @@ import { fromHex, pbkdf2, toHex, utf8 } from '../util/sha256';
  * did — but the password should not be one that is used anywhere else.
  */
 
+/**
+ * Whether this build has admin mode at all. Store builds leave it out — set
+ * by `EXPO_PUBLIC_STORE_BUILD` in eas.json's production profile — so a
+ * reviewer, or a parent, never meets a feature they can't use. Development,
+ * preview builds and the web build keep it for testing.
+ */
+export const ADMIN_AVAILABLE = process.env.EXPO_PUBLIC_STORE_BUILD !== '1';
+
 const SALT = '0bd7375abae3cd00c9c2ee73b75576b2';
 const DIGEST = '3ba2385625d41fd0f9f9936f829d4bd75b97bc8f02157e9e5746ffcc6d5980ac';
 /** Enough to slow guessing, few enough to check in a moment on a phone. */

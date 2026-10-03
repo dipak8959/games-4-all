@@ -63,9 +63,10 @@ export async function openApp({ clockAt, viewport = { width: 390, height: 844 } 
 
 /** Answers the grown-ups-only multiplication gate with the right product. */
 export async function passParentGate(page) {
+  await page.waitForTimeout(300); // a fresh question each time it opens
   const prompt = await page.getByText(/\d+\s*×\s*\d+/).first().innerText();
   const [a, b] = prompt.split('×').map((x) => parseInt(x.trim(), 10));
-  await page.getByText(String(a * b), { exact: true }).first().click();
+  for (const digit of String(a * b)) await page.getByTestId(`gate-key-${digit}`).click();
   await page.waitForTimeout(900);
 }
 

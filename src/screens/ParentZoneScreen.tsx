@@ -12,6 +12,7 @@ import { Screen } from '../components/Screen';
 import { SectionHeader } from '../components/SectionHeader';
 import { GAMES_META } from '../games/catalog';
 import { MAX_LEVEL } from '../games/types';
+import { ADMIN_AVAILABLE } from '../safety/adminLock';
 import { LIMIT_CHOICES_MIN, MINUTE_MS } from '../safety/screenTime';
 import { useApp } from '../state/AppProvider';
 import { progressFor } from '../state/progress';
@@ -182,7 +183,7 @@ export function ParentZoneScreen({
         })}
         <Rule weight="major" />
 
-        <AdminPanel />
+        {ADMIN_AVAILABLE ? <AdminPanel /> : null}
         <Rule weight="major" />
 
         <SectionHeader label="PRIVACY" />

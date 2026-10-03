@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  answerLength,
   createChallenge,
   GATE_SESSION_MS,
   isCorrect,
@@ -9,30 +10,16 @@ import {
 } from '../src/safety/parentGate.ts';
 import { seededRng } from '../src/util/random.ts';
 
-test('every challenge offers four distinct choices containing the answer', () => {
-  for (let seed = 0; seed < 500; seed++) {
+test('the answer is typed, never offered: always three digits, so a guess almost never works', () => {
+  const answers = new Set<number>();
+  for (let seed = 0; seed < 2000; seed++) {
     const challenge = createChallenge(seededRng(seed));
-    assert.equal(challenge.choices.length, 4, `seed ${seed}`);
-    assert.equal(new Set(challenge.choices).size, 4, `seed ${seed}: choices must be distinct`);
-    assert.ok(challenge.choices.includes(challenge.answer), `seed ${seed}`);
-    assert.ok(challenge.choices.every((c) => c > 0), `seed ${seed}: no nonsense choices`);
+    assert.equal(answerLength(challenge), 3, `seed ${seed}: ${challenge.answer}`);
+    assert.equal('choices' in challenge, false, 'nothing to pick from');
+    answers.add(challenge.answer);
   }
-});
-
-test('the answer is not findable by always picking the largest or smallest', () => {
-  let largestWins = 0;
-  let smallestWins = 0;
-  const trials = 400;
-
-  for (let seed = 0; seed < trials; seed++) {
-    const { choices, answer } = createChallenge(seededRng(seed));
-    if (Math.max(...choices) === answer) largestWins++;
-    if (Math.min(...choices) === answer) smallestWins++;
-  }
-
-  // A pure guessing strategy should stay near chance, well short of reliable.
-  assert.ok(largestWins / trials < 0.5, `largest-wins rate ${largestWins / trials}`);
-  assert.ok(smallestWins / trials < 0.5, `smallest-wins rate ${smallestWins / trials}`);
+  // A child pressing three digits at random gets in one time in 900.
+  assert.ok(answers.size > 100, `only ${answers.size} different answers`);
 });
 
 test('the challenge stays beyond an early-primary arithmetic level', () => {
@@ -45,8 +32,8 @@ test('the challenge stays beyond an early-primary arithmetic level', () => {
 test('only the correct answer passes', () => {
   const challenge = createChallenge(seededRng(7));
   assert.equal(isCorrect(challenge, challenge.answer), true);
-  for (const choice of challenge.choices) {
-    if (choice !== challenge.answer) assert.equal(isCorrect(challenge, choice), false);
+  for (const near of [challenge.answer - 1, challenge.answer + 1, challenge.answer + 10, 0]) {
+    assert.equal(isCorrect(challenge, near), false);
   }
 });
 

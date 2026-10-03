@@ -220,8 +220,17 @@ function checkAppConfig() {
     }
   }
 
-  if (config?.ios?.infoPlist?.ITSAppUsesNonExemptEncryption !== false) {
-    fail('app.json must declare ITSAppUsesNonExemptEncryption: false');
+  // Expo writes ITSAppUsesNonExemptEncryption from this, so App Store
+  // Connect doesn't ask about export compliance on every upload.
+  if (config?.ios?.config?.usesNonExemptEncryption !== false) {
+    fail('app.json must declare ios.config.usesNonExemptEncryption: false');
+  }
+
+  // A portrait-only iPad app must run full screen: without it, Apple's
+  // validation insists on every orientation for iPad multitasking, and Expo
+  // quietly adds landscape the games aren't laid out for.
+  if (config?.ios?.supportsTablet && config?.ios?.requireFullScreen !== true) {
+    fail('app.json supports iPad, so it must set ios.requireFullScreen: true');
   }
 }
 

@@ -35,7 +35,7 @@ import {
   type ProfilesState,
 } from './profiles';
 import { DEFAULT_LEVEL, startingLevelForAge } from '../games/types';
-import { isAdminPassword } from '../safety/adminLock';
+import { ADMIN_AVAILABLE, isAdminPassword } from '../safety/adminLock';
 
 /**
  * Admin mode, for the owner testing the app: every game listed whatever the
@@ -321,7 +321,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const unlockAdmin = useCallback((password: string) => {
-    if (!isAdminPassword(password)) return false;
+    if (!ADMIN_AVAILABLE || !isAdminPassword(password)) return false;
     setAdmin({ on: true, level: null });
     return true;
   }, []);

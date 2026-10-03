@@ -13,10 +13,17 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 const PRODUCTION_BLOCKED_PERMISSIONS = [
   'android.permission.INTERNET',
   'android.permission.ACCESS_NETWORK_STATE',
+  // "Display over other apps": React Native's template adds it for its
+  // developer overlay. Nothing a player sees needs it, and Google Play asks
+  // apps for children to justify it.
+  'android.permission.SYSTEM_ALERT_WINDOW',
 ];
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const isDev = process.env.APP_VARIANT === 'development' || process.env.NODE_ENV === 'development';
+  // Blocked unless a build explicitly asks to be a development build. Expo's
+  // tools set NODE_ENV=development for many commands — prebuild among them —
+  // so it can't be the test: a store build must never depend on it.
+  const isDev = process.env.APP_VARIANT === 'development';
 
   if (isDev) return config as ExpoConfig;
 

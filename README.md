@@ -451,9 +451,10 @@ npx eas build --platform android --profile production
 
 The profiles live in `eas.json`.
 
-Release Android builds drop the `INTERNET` permission entirely
-(`app.config.ts`); it is retained in development builds only so Metro can
-attach.
+Android builds drop the `INTERNET`, network-state and draw-over-apps
+permissions (`app.config.ts`), leaving only `VIBRATE` for haptics. A local
+development build that needs Metro sets `APP_VARIANT=development` to keep
+them. Expo Go and the phone server are unaffected.
 
 Both stores require a children's-category declaration. The honest answers here
 are: no data collected, no third-party SDKs, no ads, no purchases, no accounts.

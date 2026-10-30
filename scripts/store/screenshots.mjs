@@ -8,12 +8,14 @@
  *   store/play-feature-graphic.png  1024×500,  Google Play (required)
  *   store/play-icon-512.png         512×512,   Google Play (required)
  *
- * Nothing is staged or mocked up: every screen is one a player meets. Needs
- * Playwright and the web build served, like the playtests:
+ * Nothing is staged or mocked up: every screen is one a player meets. Taken
+ * from a store build (no admin mode), so the pictures are what the store's
+ * own build shows. `--clear` matters: Metro otherwise reuses what it built
+ * before, admin mode and all. Needs Playwright, like the playtests:
  *
- *   npx expo export --platform web --output-dir dist-web
- *   python3 -m http.server 8099 --directory dist-web &
- *   PLAYTEST_CHROME=/path/to/chrome node scripts/store/screenshots.mjs
+ *   EXPO_PUBLIC_STORE_BUILD=1 npx expo export --platform web --output-dir dist-store --clear
+ *   python3 -m http.server 8098 --directory dist-store &
+ *   PLAYTEST_URL=http://localhost:8098 PLAYTEST_CHROME=/path/to/chrome node scripts/store/screenshots.mjs
  */
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

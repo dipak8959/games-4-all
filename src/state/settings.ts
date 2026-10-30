@@ -4,12 +4,13 @@ import { DEFAULT_LIMITS, type ScreenTimeLimits } from '../safety/screenTime';
  * Per-profile play preferences. Kept separate from `Profile` itself
  * (`src/state/profiles.ts`) — a profile is "who", settings are "how they
  * like to play" — and stored keyed by profile id in `AppProvider`, so a
- * parent's sound/haptics/limits never leak into a child's profile or vice
+ * parent's haptics/limits never leak into a child's profile or vice
  * versa.
+ *
+ * There is no sound setting: the app makes no sound at all, so a switch for
+ * it would be a control that does nothing.
  */
 export type Settings = ScreenTimeLimits & {
-  /** Sound effects for correct/incorrect feedback. */
-  readonly soundOn: boolean;
   /** Vibration feedback. Some children find it aversive, so it is switchable. */
   readonly hapticsOn: boolean;
   /** Honours a child who is sensitive to movement; also mirrors the OS setting. */
@@ -25,7 +26,6 @@ export type Settings = ScreenTimeLimits & {
 
 export const DEFAULT_SETTINGS: Settings = {
   ...DEFAULT_LIMITS,
-  soundOn: true,
   hapticsOn: true,
   reduceMotion: false,
   pinnedGameIds: [],

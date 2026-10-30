@@ -87,7 +87,7 @@ there's nothing left for a shortcut to shortcut.
 
 Plus **Profiles**, so a parent and each child sharing this device get their
 own separate stars, adaptive levels, favourites, and settings; **Parent
-Zone** behind a parent gate, holding screen-time limits, sound and motion
+Zone** behind a parent gate, holding screen-time limits, vibration and motion
 toggles, profile management, a plain-language privacy statement, and a
 delete-all-data control; and **Play time**, a child-readable account of how
 long today has gone, which is the one destination that needs no gate.
@@ -110,7 +110,7 @@ able to hand themselves an adult's profile, an older sibling's, or spin up a
 new one, without a grown-up saying so.
 
 Everything that varies per-person is kept fully separate — stars, each
-game's adaptive level, sound/haptics/reduce-motion preferences, and even
+game's adaptive level, haptics/reduce-motion preferences, and even
 screen-time usage — so a parent playing Sudoku on their own profile never
 inflates a child's star count, and vice versa (`AppProvider`, which keys all
 of this by profile id under the same four storage keys `SAFETY.md` lists —
@@ -449,7 +449,9 @@ npx eas build --platform ios --profile production
 npx eas build --platform android --profile production
 ```
 
-The profiles live in `eas.json`.
+The profiles live in `eas.json`. Every iOS build uses Expo's `sdk-57` image
+(Xcode 26): a build on Xcode 27 wouldn't launch on iOS 27 until the app moves
+to an SDK with scene support. `tests/store.test.ts` keeps the pin.
 
 Android builds drop the `INTERNET`, network-state and draw-over-apps
 permissions (`app.config.ts`), leaving only `VIBRATE` for haptics. A local

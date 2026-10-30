@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": true,
-      "bundleIdentifier": "com.games4all.kids",
+      "bundleIdentifier": "io.github.dipak8959.games4all",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -54,7 +54,7 @@
       }
     },
     "android": {
-      "package": "com.games4all.kids",
+      "package": "io.github.dipak8959.games4all",
       "adaptiveIcon": {
         "backgroundColor": "#f3f2f2",
         "foregroundImage": "./assets/android-icon-foreground.png",

@@ -14,6 +14,24 @@ const NEVER = [
  *  known for as much as their sport. */
 const LEFT_OUT = ['Kobe Bryant', 'Lance Armstrong', 'Tiger Woods', 'Mike Tyson', 'Pete Rose', 'O. J. Simpson', 'Diego Maradona', 'Oscar Pistorius', 'Joe Paterno'];
 
+/** Found in October 2026 to be someone else's words, or never traced to the
+ *  person they're credited to — plus "Tennis just a game", which reads as a
+ *  mistake to a child. They don't come back. */
+const MISATTRIBUTED = [
+  'pebble in your shoe', 'hated every minute of training', 'ten percent what happens to you', 'the load that breaks you down',
+  'Knowing is not enough', 'Great moments are born from great opportunity', 'The vision of a champion',
+  'the luckier I get', 'Success is a journey, not a destination', 'Start where you are', 'From what we get, we can make a living',
+  'not the mountain we conquer', 'mind over matter', 'Today I will do what others won', 'some wish it would happen',
+  'Just play. Have fun', 'To learn to succeed, you must first learn to fail', 'shadow of great opportunity',
+  'better than yesterday', 'Tennis just a game',
+];
+
+test('no quote found to belong to someone else comes back', () => {
+  for (const q of QUOTES) {
+    for (const words of MISATTRIBUTED) assert.ok(!q.text.includes(words), `misattributed: ${q.text}`);
+  }
+});
+
 test('there are plenty of quotes, each short enough, attributed, and listed once', () => {
   assert.ok(QUOTES.length >= 150, `${QUOTES.length} quotes`);
   for (const q of QUOTES) {

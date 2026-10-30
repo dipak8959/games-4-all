@@ -12,7 +12,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { APP_NAME, APP_VERSION, POLICY_DATE, PRIVACY_POLICY, SUPPORT_URL } from '../../src/safety/privacyPolicy.ts';
+import { APP_NAME, APP_VERSION, POLICY_DATE, PRIVACY_POLICY, SUPPORT_EMAIL, SUPPORT_URL } from '../../src/safety/privacyPolicy.ts';
 
 const DOCS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs');
 
@@ -61,7 +61,7 @@ ${PRIVACY_POLICY.map((s) => `<h2>${escape(s.heading)}</h2>\n${s.paragraphs.map((
 );
 
 const FAQ = [
-  ['Where are the settings?', 'On the Home screen, tap Parent Zone and answer the grown-ups’ question (it asks you to work out a sum like 7 × 93). Profiles, play-time limits, sound, vibration and reduced motion are all there.'],
+  ['Where are the settings?', 'On the Home screen, tap Parent Zone and answer the grown-ups’ question (it asks you to work out a sum like 7 × 93). Profiles, play-time limits, vibration and reduced motion are all there.'],
   ['How do I limit play time?', 'In Parent Zone, choose a limit for each sitting and for each day. When a limit arrives mid-round, the round finishes first (for three minutes at most), then a break screen appears. A sitting ends after ten minutes away from play; the day’s allowance comes back at midnight.'],
   ['Why did the game stop?', 'A play-time limit was reached. The break screen says how long is left, and clears itself when the break is over. A grown-up can change the limit in Parent Zone.'],
   ['Which games will my child see?', 'The ones that suit the age in their profile. Each game starts at a level for that age, steps up after a clean round and down after a rough one.'],
@@ -72,7 +72,11 @@ const FAQ = [
 const support = page(
   `Support — ${APP_NAME}`,
   `<h1>Support</h1>
-<p>Questions, a problem, or something that doesn’t seem right? Tell us at <a href="${SUPPORT_URL}">${SUPPORT_URL.replace(/^https:\/\//, '')}</a> and we’ll answer there.</p>
+<p>Questions, a problem, or something that doesn’t seem right? ${
+   SUPPORT_EMAIL
+     ? `Email <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>, or tell us at <a href="${SUPPORT_URL}">${SUPPORT_URL.replace(/^https:\/\//, '')}</a>.`
+     : `Tell us at <a href="${SUPPORT_URL}">${SUPPORT_URL.replace(/^https:\/\//, '')}</a> and we’ll answer there.`
+ }</p>
 <h2>Common questions</h2>
 <dl>
 ${FAQ.map(([q, a]) => `<dt>${escape(q)}</dt><dd>${escape(a)}</dd>`).join('\n')}

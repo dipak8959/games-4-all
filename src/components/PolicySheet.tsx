@@ -1,8 +1,8 @@
 import React from 'react';
-import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import { APP_NAME, APP_VERSION, POLICY_DATE, PRIVACY_POLICY } from '../safety/privacyPolicy';
+import { APP_NAME, APP_VERSION, POLICY_DATE, privacyPolicy, type PolicyPlatform } from '../safety/privacyPolicy';
 import { gutter, palette, rule, space } from '../theme/tokens';
 import { type } from '../theme/type';
 import { BigButton } from './BigButton';
@@ -12,8 +12,12 @@ import { Rule } from './Rule';
  * The privacy policy, read in full inside the app — the stores ask for it
  * there as well as on the listing. Shown from Parent Zone, so it sits behind
  * the grown-ups' gate with everything else that isn't for the child. The
- * text is src/safety/privacyPolicy.ts, the same words as the web page.
+ * text is src/safety/privacyPolicy.ts, the same words as the web page, in
+ * the version for the system it runs on.
  */
+const PLATFORM: PolicyPlatform = Platform.OS === 'ios' ? 'ios' : Platform.OS === 'android' ? 'android' : 'web';
+const POLICY = privacyPolicy(PLATFORM);
+
 export function PolicySheet({ visible, onClose }: { readonly visible: boolean; readonly onClose: () => void }) {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -30,7 +34,7 @@ export function PolicySheet({ visible, onClose }: { readonly visible: boolean; r
         </View>
         <Rule weight="major" />
         <ScrollView contentContainerStyle={styles.body}>
-          {PRIVACY_POLICY.map((section) => (
+          {POLICY.map((section) => (
             <View key={section.heading} style={styles.section}>
               <Text style={type.rowTitle} accessibilityRole="header">
                 {section.heading}

@@ -34,7 +34,8 @@ PLAYTEST_ADMIN_PASSWORD=… node scripts/playtest/every-level.mjs
 The password is the grown-up's, never written down here; the pass only
 takes it from the environment.
 
-`PLAYTEST_URL` overrides where the build is served from; `PLAYTEST_CHROME`
+`PLAYTEST_URL` overrides where the build is served from; `PLAYTEST_VIEWPORT`
+(`1032x1376` for a 13" iPad) plays on another screen size; `PLAYTEST_CHROME`
 points at a Chromium binary if Playwright's own download isn't on the machine.
 Each pass exits non-zero if it finds a bug or the page logs an error.
 

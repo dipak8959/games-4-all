@@ -11,7 +11,7 @@ test('togglePinned pins an unpinned game, appending it', () => {
   const next = togglePinned(DEFAULT_SETTINGS, 'sudoku');
   assert.deepEqual(next.pinnedGameIds, ['sudoku']);
   // Nothing else about settings should change.
-  assert.equal(next.soundOn, DEFAULT_SETTINGS.soundOn);
+  assert.equal(next.hapticsOn, DEFAULT_SETTINGS.hapticsOn);
 });
 
 test('togglePinned unpins an already-pinned game', () => {

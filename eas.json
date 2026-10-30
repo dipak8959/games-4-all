@@ -8,18 +8,25 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "image": "sdk-57"
       }
     },
     "preview-simulator": {
       "extends": "preview",
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "image": "sdk-57"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_STORE_BUILD": "1"
+      },
+      "ios": {
+        "image": "sdk-57"
       }
     }
   },

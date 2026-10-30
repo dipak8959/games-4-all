@@ -7,9 +7,17 @@
  *   enjoying the game — never about beating anyone, which would sit badly
  *   with games that have no score and no winner.
  * - Only well-known quotes, under the names they are widely cited with. None
- *   is invented, and none is reworded. They were gathered without access to
- *   a source to check against, so some attributions may still be the popular
- *   rather than the proven ones.
+ *   is invented, and none is reworded.
+ * - Checked in October 2026 against Quote Investigator, Barry Popik's
+ *   research, Snopes and the books they cite. Nineteen came out: someone
+ *   else's words (Goethe's, a film script's, a coach's note to his player) or
+ *   words no one has traced to the person. One more went because a child
+ *   learning to read would take it for a mistake ("Tennis just a game").
+ *   Two went back to what was printed: Babe Ruth in The Rotarian (1940) and
+ *   Abby Wambach's 2018 commencement speech. Nothing is known against the
+ *   rest, but most haven't been traced to a first printing (SUBMISSION.md).
+ *   A new quote needs its source: the book, speech or interview it was said
+ *   in. `tests/quotes.test.ts` keeps the twenty out.
  * - Nothing a parent would wince at: no swearing, violence, faith or
  *   politics, and no one known for a doping, criminal or abuse scandal.
  *   `tests/quotes.test.ts` holds the words that must never appear.
@@ -59,7 +67,6 @@ export const ABOUT: Readonly<Record<string, string>> = {
   'Jackie Joyner-Kersee': '3 Olympic golds; one of the great heptathletes',
   'Emil Zátopek': 'won the 5,000m, 10,000m and marathon at the 1952 Olympics',
   'Eliud Kipchoge': '2 Olympic marathon golds; first to run a marathon in under 2 hours',
-  'Michael Johnson': '4 Olympic golds; won the 200m and 400m in 1996',
   'Roger Bannister': 'first to run a mile in under four minutes (1954)',
   'Kathrine Switzer': 'first woman to run the Boston Marathon with a race number (1967)',
   'Dean Karnazes': 'ran 50 marathons in 50 US states in 50 days (2006)',
@@ -96,11 +103,9 @@ export const ABOUT: Readonly<Record<string, string>> = {
   'Tom Landry': 'coached the Dallas Cowboys for 29 seasons, 2 Super Bowls',
   'Lou Holtz': 'coached Notre Dame to the 1988 national title',
   'Knute Rockne': 'legendary Notre Dame coach of the 1920s',
-  'Jerry Rice': '3 Super Bowls; most touchdown catches in NFL history',
   'Paul “Bear” Bryant': '6 national titles as Alabama’s coach',
   'Joe Namath': 'won Super Bowl III (1969) after promising he would',
   'Wayne Gretzky': '“The Great One”, 4 Stanley Cups',
-  'Herb Brooks': 'coached the USA’s “Miracle on Ice” team (1980)',
   'Gary Player': '9 major championships',
   'Arnold Palmer': '7 major championships',
   'Jack Nicklaus': '18 major championships',
@@ -111,8 +116,6 @@ export const ABOUT: Readonly<Record<string, string>> = {
   'Jack Dempsey': 'world heavyweight champion (1919–26)',
   'Dan Gable': 'won Olympic wrestling gold (1972) without giving up a point',
   'Bruce Lee': 'martial artist and film star',
-  'Jigoro Kano': 'founded judo (1882)',
-  'Edmund Hillary': 'first to the top of Everest, with Tenzing Norgay (1953)',
   'George Mallory': 'Everest pioneer of the 1920s',
   'Greg LeMond': '3-time Tour de France winner (1986, 1989, 1990)',
   'Pierre de Coubertin': 'founded the modern Olympic Games (1896)',
@@ -125,10 +128,7 @@ export const QUOTES: readonly Quote[] = [
   q('I’ve failed over and over and over again in my life. And that is why I succeed.', 'Michael Jordan', 'Basketball'),
   q('Never say never, because limits, like fears, are often just an illusion.', 'Michael Jordan', 'Basketball'),
   q('Talent wins games, but teamwork and intelligence win championships.', 'Michael Jordan', 'Basketball'),
-  q('Some people want it to happen, some wish it would happen, others make it happen.', 'Michael Jordan', 'Basketball'),
   q('I can accept failure, everyone fails at something. But I can’t accept not trying.', 'Michael Jordan', 'Basketball'),
-  q('Just play. Have fun. Enjoy the game.', 'Michael Jordan', 'Basketball'),
-  q('To learn to succeed, you must first learn to fail.', 'Michael Jordan', 'Basketball'),
   q('Don’t let what you cannot do interfere with what you can do.', 'John Wooden', 'Basketball coach'),
   q('Make each day your masterpiece.', 'John Wooden', 'Basketball coach'),
   q('Be quick, but don’t hurry.', 'John Wooden', 'Basketball coach'),
@@ -170,10 +170,7 @@ export const QUOTES: readonly Quote[] = [
   q('Don’t give up. Don’t ever give up.', 'Jim Valvano', 'Basketball coach'),
 
   // Tennis
-  q('Start where you are. Use what you have. Do what you can.', 'Arthur Ashe', 'Tennis'),
-  q('Success is a journey, not a destination. The doing is often more important than the outcome.', 'Arthur Ashe', 'Tennis'),
   q('One important key to success is self-confidence. An important key to self-confidence is preparation.', 'Arthur Ashe', 'Tennis'),
-  q('From what we get, we can make a living; what we give, however, makes a life.', 'Arthur Ashe', 'Tennis'),
   q(
     'You are never really playing an opponent. You are playing yourself, your own highest standards, and when you reach your limits, that is real joy.',
     'Arthur Ashe',
@@ -187,7 +184,6 @@ export const QUOTES: readonly Quote[] = [
     'Serena Williams',
     'Tennis',
   ),
-  q('Tennis just a game, family is forever.', 'Serena Williams', 'Tennis'),
   q('The success of every woman should be the inspiration to another. We should raise each other up.', 'Serena Williams', 'Tennis'),
   q('I don’t focus on what I’m up against. I focus on my goals and I try to ignore the rest.', 'Venus Williams', 'Tennis'),
   q('There’s no way around hard work. Embrace it.', 'Roger Federer', 'Tennis'),
@@ -228,7 +224,6 @@ export const QUOTES: readonly Quote[] = [
   ),
   q('No human is limited.', 'Eliud Kipchoge', 'Athletics'),
   q('Only the disciplined ones in life are free.', 'Eliud Kipchoge', 'Athletics'),
-  q('Pressure is nothing more than the shadow of great opportunity.', 'Michael Johnson', 'Athletics'),
   q('The human spirit is indomitable.', 'Roger Bannister', 'Athletics'),
   q('If you are losing faith in human nature, go out and watch a marathon.', 'Kathrine Switzer', 'Athletics'),
   q('Run when you can, walk if you have to, crawl if you must; just never give up.', 'Dean Karnazes', 'Running'),
@@ -274,13 +269,8 @@ export const QUOTES: readonly Quote[] = [
     'Football',
   ),
   q('Failure happens all the time. It happens every day in practice. What makes you better is how you react to it.', 'Mia Hamm', 'Football'),
-  q(
-    'The vision of a champion is someone who is bent over, drenched in sweat, at the point of exhaustion, when no one else is watching.',
-    'Mia Hamm',
-    'Football',
-  ),
   q('Celebrate what you’ve accomplished, but raise the bar a little higher each time you succeed.', 'Mia Hamm', 'Football'),
-  q('Make your failure your fuel.', 'Abby Wambach', 'Football'),
+  q('Make failure your fuel.', 'Abby Wambach', 'Football'),
   q('Playing football is very simple, but playing simple football is the hardest thing there is.', 'Johan Cruyff', 'Football'),
   q('Every disadvantage has its advantage.', 'Johan Cruyff', 'Football'),
   q('I’ve always believed that if you put in the work, the results will come.', 'David Beckham', 'Football'),
@@ -290,7 +280,7 @@ export const QUOTES: readonly Quote[] = [
   q('Don’t let anyone tell you that you are weak because you are a woman.', 'Mary Kom', 'Boxing'),
 
   // Baseball
-  q('It’s hard to beat a person who never gives up.', 'Babe Ruth', 'Baseball'),
+  q('You just can’t beat the person who never gives up.', 'Babe Ruth', 'Baseball'),
   q('Never let the fear of striking out keep you from playing the game.', 'Babe Ruth', 'Baseball'),
   q('Every strike brings me closer to the next home run.', 'Babe Ruth', 'Baseball'),
   q('A life is not important except in the impact it has on other lives.', 'Jackie Robinson', 'Baseball'),
@@ -328,7 +318,6 @@ export const QUOTES: readonly Quote[] = [
     'Baseball',
   ),
   q('Don’t look back. Something might be gaining on you.', 'Satchel Paige', 'Baseball'),
-  q('Age is a question of mind over matter. If you don’t mind, it doesn’t matter.', 'Satchel Paige', 'Baseball'),
   q('It isn’t hard to be good from time to time in sports. What’s tough is being good every day.', 'Willie Mays', 'Baseball'),
   q('Let’s play two!', 'Ernie Banks', 'Baseball'),
   q('Enjoying success requires the ability to adapt.', 'Nolan Ryan', 'Baseball'),
@@ -363,8 +352,6 @@ export const QUOTES: readonly Quote[] = [
     'Lou Holtz',
     'American football coach',
   ),
-  q('It’s not the load that breaks you down, it’s the way you carry it.', 'Lou Holtz', 'American football coach'),
-  q('Life is ten percent what happens to you and ninety percent how you respond to it.', 'Lou Holtz', 'American football coach'),
   q(
     'Show me someone who has done something worthwhile, and I’ll show you someone who has overcome adversity.',
     'Lou Holtz',
@@ -372,7 +359,6 @@ export const QUOTES: readonly Quote[] = [
   ),
   q('One man practicing sportsmanship is far better than 50 preaching it.', 'Knute Rockne', 'American football coach'),
   q('Build up your weaknesses until they become your strong points.', 'Knute Rockne', 'American football coach'),
-  q('Today I will do what others won’t, so tomorrow I can accomplish what others can’t.', 'Jerry Rice', 'American football'),
   q(
     'It’s not the will to win that matters—everyone has that. It’s the will to prepare to win that matters.',
     'Paul “Bear” Bryant',
@@ -401,10 +387,8 @@ export const QUOTES: readonly Quote[] = [
     'Wayne Gretzky',
     'Ice hockey',
   ),
-  q('Great moments are born from great opportunity.', 'Herb Brooks', 'Ice hockey coach'),
 
   // Golf
-  q('The more I practise, the luckier I get.', 'Gary Player', 'Golf'),
   q('We create success or failure on the course primarily by our thoughts.', 'Gary Player', 'Golf'),
   q('Success in golf depends less on strength of body than upon strength of mind and character.', 'Arnold Palmer', 'Golf'),
   q('The most rewarding things you do in life are often the ones that look like they cannot be done.', 'Arnold Palmer', 'Golf'),
@@ -431,11 +415,6 @@ export const QUOTES: readonly Quote[] = [
   ),
 
   // Boxing, wrestling and martial arts
-  q(
-    'I hated every minute of training, but I said, ‘Don’t quit. Suffer now and live the rest of your life as a champion.’',
-    'Muhammad Ali',
-    'Boxing',
-  ),
   q('He who is not courageous enough to take risks will accomplish nothing in life.', 'Muhammad Ali', 'Boxing'),
   q('Service to others is the rent you pay for your room here on Earth.', 'Muhammad Ali', 'Boxing'),
   q(
@@ -443,7 +422,6 @@ export const QUOTES: readonly Quote[] = [
     'Muhammad Ali',
     'Boxing',
   ),
-  q('It isn’t the mountains ahead to climb that wear you out; it’s the pebble in your shoe.', 'Muhammad Ali', 'Boxing'),
   q('Float like a butterfly, sting like a bee.', 'Muhammad Ali', 'Boxing'),
   q('The man who has no imagination has no wings.', 'Muhammad Ali', 'Boxing'),
   q('A champion is someone who gets up when he can’t.', 'Jack Dempsey', 'Boxing'),
@@ -458,11 +436,8 @@ export const QUOTES: readonly Quote[] = [
     'Bruce Lee',
     'Martial arts',
   ),
-  q('Knowing is not enough, we must apply. Willing is not enough, we must do.', 'Bruce Lee', 'Martial arts'),
-  q('It is not important to be better than someone else, but to be better than yesterday.', 'Jigoro Kano', 'Judo'),
 
   // Mountains, bikes and the Games
-  q('It is not the mountain we conquer but ourselves.', 'Edmund Hillary', 'Mountaineering'),
   q('Because it’s there.', 'George Mallory', 'Mountaineering'),
   q('It never gets easier, you just go faster.', 'Greg LeMond', 'Cycling'),
   q(

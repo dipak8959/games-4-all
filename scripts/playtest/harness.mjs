@@ -36,8 +36,14 @@ export function reporter() {
   };
 }
 
+/** A phone, unless `PLAYTEST_VIEWPORT` (say `1032x1376`, a 13" iPad) asks for another screen. */
+const VIEWPORT = (() => {
+  const m = /^(\d+)x(\d+)$/.exec(process.env.PLAYTEST_VIEWPORT ?? '');
+  return m ? { width: Number(m[1]), height: Number(m[2]) } : { width: 390, height: 844 };
+})();
+
 /** Opens the app on a phone-sized viewport, past the onboarding screen. */
-export async function openApp({ clockAt, viewport = { width: 390, height: 844 } } = {}) {
+export async function openApp({ clockAt, viewport = VIEWPORT } = {}) {
   const browser = await chromium.launch({
     executablePath: process.env.PLAYTEST_CHROME ?? undefined,
   });

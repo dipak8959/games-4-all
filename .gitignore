@@ -42,6 +42,7 @@ yarn-error.*
 
 # local export output
 dist-web/
+dist-store/
 dist-native/
 
 # packed single-file build for phone testing

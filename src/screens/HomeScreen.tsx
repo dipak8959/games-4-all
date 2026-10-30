@@ -176,7 +176,7 @@ export function HomeScreen({
             <TextInput
               value={query}
               onChangeText={setQuery}
-              placeholder={`Search ${shelf.length === 1 ? '1 game' : `${shelf.length} games`} on this device`}
+              placeholder={admin.on ? `Search all ${shelf.length} games` : `Search the ${shelf.length} games for age ${age}`}
               placeholderTextColor={palette.inkSoft}
               style={styles.searchInput}
               accessibilityLabel="Search games"
@@ -240,7 +240,7 @@ export function HomeScreen({
 
         <SectionHeader
           label="ON THIS DEVICE"
-          meta={`${games.length} ${games.length === 1 ? 'GAME' : 'GAMES'} · OFFLINE`}
+          meta={`${games.length} ${games.length === 1 ? 'GAME' : 'GAMES'} · ${admin.on ? 'ALL AGES' : `AGE ${age}`}`}
         />
 
         {games.length === 0 ? (

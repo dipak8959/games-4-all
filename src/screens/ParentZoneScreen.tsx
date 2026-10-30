@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { Avatar } from '../components/Avatar';
 import { BigButton } from '../components/BigButton';
@@ -129,11 +129,6 @@ export function ParentZoneScreen({
 
         <SectionHeader label="PLAY" />
         <Toggle
-          label="Sound effects"
-          value={settings.soundOn}
-          onChange={(v) => updateSettings({ soundOn: v })}
-        />
-        <Toggle
           label="Vibration"
           value={settings.hapticsOn}
           onChange={(v) => updateSettings({ hapticsOn: v })}
@@ -148,7 +143,11 @@ export function ParentZoneScreen({
         <SectionHeader label="WHAT PARENTS SHOULD KNOW" />
         <NumberedRow
           index="01"
-          copy="Runs fully offline: it never connects to the internet, and on Android it can't."
+          copy={
+            Platform.OS === 'android'
+              ? 'Runs fully offline: it never connects to the internet, and has no permission to.'
+              : 'Runs fully offline: it never connects to the internet.'
+          }
         />
         <NumberedRow
           index="02"

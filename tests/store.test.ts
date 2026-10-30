@@ -21,6 +21,47 @@ test('store-facing config: no network or overlay permission, iPad full screen, p
   for (const permission of ['INTERNET', 'SYSTEM_ALERT_WINDOW']) assert.match(config, new RegExp(`android\\.permission\\.${permission}`));
   // Blocked by default: only an explicit development build keeps them.
   assert.match(config, /const isDev = process\.env\.APP_VARIANT === 'development';/);
+  // One ID on both stores, in a namespace the owner controls (their GitHub
+  // Pages address, reversed). Google Play never lets it change after upload.
+  assert.equal(app.ios.bundleIdentifier, 'io.github.dipak8959.games4all');
+  assert.equal(app.android.package, app.ios.bundleIdentifier);
+});
+
+test('every iOS build uses the Expo SDK 57 image (Xcode 26), never whatever "latest" has become', () => {
+  // Uploads need Xcode 26 or later (from 28 April 2026). Xcode 27 images
+  // need the UIKit scene life cycle, which SDK 57 apps don't have: built
+  // there, the app would not launch on iOS 27, and iPads would ignore
+  // requireFullScreen. Move this with the SDK upgrade, not before.
+  const eas = JSON.parse(readFileSync('eas.json', 'utf8'));
+  const sdk = JSON.parse(readFileSync('node_modules/expo/package.json', 'utf8')).version.split('.')[0];
+  for (const [name, profile] of Object.entries(eas.build) as [string, { ios?: { image?: string } }][]) {
+    assert.equal(profile.ios?.image, `sdk-${sdk}`, `eas.json build.${name}.ios.image`);
+  }
+});
+
+test('nothing an iPhone shows or the App Store lists names another platform (App Review 2.3.10)', async () => {
+  const { privacyPolicy } = await import('../src/safety/privacyPolicy.ts');
+  const other = /android|google|play store|windows/i;
+  const ios = privacyPolicy('ios').flatMap((s) => [s.heading, ...s.paragraphs]).join('\n');
+  assert.doesNotMatch(ios, other, 'the policy the iPhone app shows');
+  // Everything else in the app: code with its comments stripped, and the
+  // platform names used only as values ('android', `android:` keys) removed.
+  const files = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? files(`${dir}/${e.name}`) : /\.tsx?$/.test(e.name) ? [`${dir}/${e.name}`] : [],
+    );
+  for (const file of [...files('src'), 'App.tsx']) {
+    if (file.endsWith('privacyPolicy.ts')) continue; // held above, per platform
+    const code = readFileSync(file, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/(^|[^:])\/\/.*$/gm, '$1')
+      .replace(/(['"])android\1|\bandroid:/g, '');
+    assert.doesNotMatch(code, other, `${file} names another platform`);
+  }
+  const { app_store: apple } = JSON.parse(readFileSync('store/listing.json', 'utf8'));
+  for (const text of [apple.name, apple.subtitle, apple.promotional_text, apple.description, apple.keywords, readFileSync('store/review-notes.txt', 'utf8')]) {
+    assert.doesNotMatch(text, other);
+  }
 });
 
 test('the privacy policy on the web is the one in the app, word for word, and loads nothing from elsewhere', async () => {
@@ -59,6 +100,11 @@ test('the store listings fit each store\'s limits', () => {
   for (const word of apple.name.toLowerCase().split(/\s+/)) {
     assert.ok(!apple.keywords.split(',').includes(word), `keyword "${word}" repeats the name`);
   }
+  // Made for Kids: the listing may say who it's for (guidelines 2.3.8 and
+  // 5.1.4), and Apple keeps Kids apps off Vision Pro. Chosen once: App
+  // Review's approval makes it permanent.
+  assert.ok(['5 and under', '6-8', '9-11'].includes(apple.made_for_kids), `made_for_kids: ${apple.made_for_kids}`);
+  assert.equal(apple.apple_vision_pro, false);
   // Nothing a reviewer would call misleading: no prices, rankings or other platforms.
   for (const text of [apple.description, apple.promotional_text, play.full_description, play.short_description]) {
     assert.doesNotMatch(text, /\$|£|€|#1|number one|best |android|iphone|google play|app store/i);

@@ -1,0 +1,16 @@
+Games 4 All is a fully offline collection of 60 short learning games for children and families, submitted as Made for Kids (ages 6–8). There is no sign-in, no account, no network access, no advertising, no analytics, no third-party code that collects data, no links out of the app and no in-app purchase. No demo account is needed.
+
+PARENTAL GATE
+Everything for grown-ups (profiles, play-time limits, settings, the privacy policy and "Delete all data") is in Parent Zone, behind a grown-ups-only question. It shows a multiplication such as 7 × 93: type the answer (651) on the number pad. A wrong answer brings a new question, and each opening asks a new one.
+
+FIRST LAUNCH
+Tap "Let's set this up" (the same question) to make a profile, or "Skip for now" to start playing straight away. A profile is a nickname picked from a list, an age and a colour. The age only chooses which games are shown and where each starts; like everything else, it stays on the device.
+
+PLAY-TIME LIMITS
+None are set at first. In Parent Zone, a grown-up can set a limit per sitting or per day. If a limit is reached in the middle of a round, that round may finish (for up to three minutes, marked LAST ROUND in the game's header); then a break screen appears. A sitting ends after ten minutes without play, and the break screen clears itself then.
+
+SPORTS QUOTES
+Each game shows a short quotation from a well-known athlete, with their name, as encouragement. No endorsement by them is implied.
+
+PRIVACY
+The app collects no data at all; everything it keeps stays on the device. The privacy policy is in Parent Zone → "Read the privacy policy", and at the privacy URL on this listing.

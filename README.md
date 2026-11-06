@@ -13,3 +13,7 @@ It is one HTML file with no dependencies, so you can open it in any browser.
 
 **Controls:** tap the sky to launch a firework, tap near the bottom to release a lantern.
 Keys: `F` fullscreen, `Space` pause, `Enter` firework.
+
+**Make a video file** (for iPad full screen or a USB stick):
+`node tools/render-video.js diwali-lanterns/index.html diwali.mp4 120` renders a 2-minute 2048×1536 MP4.
+For a 1080p TV version, pass `120 30 960 540`.
